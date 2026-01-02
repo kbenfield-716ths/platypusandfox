@@ -1,0 +1,1 @@
+const e=document.querySelector(".mobile-menu-toggle"),t=document.querySelector(".nav-links");e?.addEventListener("click",()=>{t?.classList.toggle("active"),e?.classList.toggle("active")});document.addEventListener("click",c=>{!e?.contains(c.target)&&!t?.contains(c.target)&&(t?.classList.remove("active"),e?.classList.remove("active"))});
