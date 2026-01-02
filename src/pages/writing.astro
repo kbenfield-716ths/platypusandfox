@@ -4,9 +4,12 @@ import Parser from "rss-parser";
 
 const parser = new Parser();
 
+const SUBSTACKS = [
+  { label: "Healthspan Lab", base: "https://healthspanlab.substack.com" },
+  { label: "By Campfire and Candlelight", base: "https://kbe716ths.substack.com" },
+];
+
 const FEEDS = [
-  { label: "Healthspan Lab", type: "Substack", url: "https://healthspanlab.substack.com/feed" },
-  { label: "By Campfire and Candlelight", type: "Substack", url: "https://kbe716ths.substack.com/feed" },
   {
     label: "Publications (PubMed RSS)",
     type: "PubMed",
@@ -14,54 +17,56 @@ const FEEDS = [
   },
 ];
 
-function pickLink(item: any) {
-  // rss-parser sometimes returns link as string, sometimes as object (Atom), sometimes not at all
-  return (
-    item.link?.href ??
-    item.link ??
-    item.guid ??
-    item.id ??
-    ""
-  );
-}
-
-function pickDate(item: any) {
-  return item.isoDate ?? item.pubDate ?? item.published ?? "";
-}
-
-async function loadFeed(feed: { label: string; type: string; url: string }) {
-  const headers = {
-    // A boring, browser-like UA tends to work better with some hosts/CDNs
-    "user-agent":
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
-    "accept": "application/rss+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.7",
-  };
-
+async function loadSubstackArchive(pub: { label: string; base: string }) {
+  const url = `${pub.base}/api/v1/archive?sort=new&offset=0&limit=10`; // archive endpoint  [oai_citation:2‡wonderingaboutai.substack.com](https://wonderingaboutai.substack.com/p/i-built-a-chrome-extension-to-manage?utm_source=chatgpt.com)
   try {
-    const res = await fetch(feed.url, { headers });
+    const res = await fetch(url, {
+      headers: {
+        accept: "application/json",
+        "user-agent": "Mozilla/5.0 (Astro build; platypusandfox.com)",
+      },
+    });
 
     if (!res.ok) {
-      console.warn(`[feeds] ${feed.label} ${feed.url} -> HTTP ${res.status}`);
+      console.warn(`[substack] ${pub.label} -> HTTP ${res.status}`);
       return [];
     }
 
+    const data = await res.json();
+
+    // data is typically an array of post objects
+    const posts = Array.isArray(data) ? data : (data?.posts ?? []);
+    return posts.map((p: any) => ({
+      source: pub.label,
+      type: "Substack",
+      title: p?.title ?? "(untitled)",
+      link: p?.canonical_url ?? p?.url ?? (p?.slug ? `${pub.base}/p/${p.slug}` : ""),
+      date: p?.post_date ?? p?.published_at ?? p?.pubDate ?? "",
+      excerpt: p?.description ?? p?.subtitle ?? "",
+    }));
+  } catch (e: any) {
+    console.warn(`[substack] ${pub.label} fetch/parse failed:`, e?.message ?? e);
+    return [];
+  }
+}
+
+async function loadRss(feed: { label: string; type: string; url: string }) {
+  try {
+    const res = await fetch(feed.url, {
+      headers: { "user-agent": "Mozilla/5.0 (Astro build; platypusandfox.com)" },
+    });
+    if (!res.ok) {
+      console.warn(`[feeds] ${feed.label} -> HTTP ${res.status}`);
+      return [];
+    }
     const xml = await res.text();
-
-    // quick sanity check so you can catch “HTML instead of feed”
-    if (!xml.includes("<rss") && !xml.includes("<feed")) {
-      console.warn(`[feeds] ${feed.label} did not look like RSS/Atom (first 120 chars): ${xml.slice(0, 120)}`);
-      return [];
-    }
-
     const parsed = await parser.parseString(xml);
-    const items = parsed.items ?? [];
-
-    return items.map((item: any) => ({
+    return (parsed.items ?? []).map((item: any) => ({
       source: feed.label,
       type: feed.type,
       title: item.title ?? "(untitled)",
-      link: pickLink(item),
-      date: pickDate(item),
+      link: item.link ?? "",
+      date: item.isoDate ?? item.pubDate ?? "",
       excerpt: item.contentSnippet ?? item.summary ?? "",
     }));
   } catch (e: any) {
@@ -69,11 +74,12 @@ async function loadFeed(feed: { label: string; type: string; url: string }) {
     return [];
   }
 }
-const results = await Promise.allSettled(FEEDS.map(loadFeed));
-const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
 
-const posts = all
-  .filter((p) => p.title)
+const substackResults = (await Promise.all(SUBSTACKS.map(loadSubstackArchive))).flat();
+const rssResults = (await Promise.all(FEEDS.map(loadRss))).flat();
+
+const posts = [...substackResults, ...rssResults]
+  .filter((p) => p.link)
   .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
   .slice(0, 12);
 ---
