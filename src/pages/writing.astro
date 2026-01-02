@@ -14,32 +14,61 @@ const FEEDS = [
   },
 ];
 
-async function loadFeed(feed: { label: string; type: string; url: string }) {
-  try {
-    const res = await fetch(feed.url, { headers: { "user-agent": "platypusandfox.com (Astro build)" } });
-    const xml = await res.text();
-    const parsed = await parser.parseString(xml);
+function pickLink(item: any) {
+  // rss-parser sometimes returns link as string, sometimes as object (Atom), sometimes not at all
+  return (
+    item.link?.href ??
+    item.link ??
+    item.guid ??
+    item.id ??
+    ""
+  );
+}
 
-    return (parsed.items ?? []).map((item: any) => ({
+function pickDate(item: any) {
+  return item.isoDate ?? item.pubDate ?? item.published ?? "";
+}
+
+async function loadFeed(feed: { label: string; type: string; url: string }) {
+  const headers = {
+    // A boring, browser-like UA tends to work better with some hosts/CDNs
+    "user-agent":
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+    "accept": "application/rss+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.7",
+  };
+
+  try {
+    const res = await fetch(feed.url, { headers });
+
+    if (!res.ok) {
+      console.warn(`[feeds] ${feed.label} ${feed.url} -> HTTP ${res.status}`);
+      return [];
+    }
+
+    const xml = await res.text();
+
+    // quick sanity check so you can catch “HTML instead of feed”
+    if (!xml.includes("<rss") && !xml.includes("<feed")) {
+      console.warn(`[feeds] ${feed.label} did not look like RSS/Atom (first 120 chars): ${xml.slice(0, 120)}`);
+      return [];
+    }
+
+    const parsed = await parser.parseString(xml);
+    const items = parsed.items ?? [];
+
+    return items.map((item: any) => ({
       source: feed.label,
       type: feed.type,
       title: item.title ?? "(untitled)",
-      link: item.link ?? "",
-      date: item.isoDate ?? item.pubDate ?? "",
+      link: pickLink(item),
+      date: pickDate(item),
       excerpt: item.contentSnippet ?? item.summary ?? "",
     }));
-  } catch {
+  } catch (e: any) {
+    console.warn(`[feeds] ${feed.label} fetch/parse failed:`, e?.message ?? e);
     return [];
   }
 }
-
-const results = await Promise.all(FEEDS.map(loadFeed));
-const all = results.flat();
-
-const posts = all
-  .filter((p) => p.link)
-  .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-  .slice(0, 12);
 ---
 
 <BaseLayout title="Writing" description="Recent posts and publications">
