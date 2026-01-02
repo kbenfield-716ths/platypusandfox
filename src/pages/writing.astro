@@ -1,84 +1,105 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Parser from "rss-parser";
+import { XMLParser } from "fast-xml-parser";
 
 const parser = new Parser();
+const xmlParser = new XMLParser({ ignoreAttributes: false });
 
 const SUBSTACKS = [
   { label: "Healthspan Lab", base: "https://healthspanlab.substack.com" },
   { label: "By Campfire and Candlelight", base: "https://kbe716ths.substack.com" },
 ];
 
-const FEEDS = [
-  {
-    label: "Publications (PubMed RSS)",
-    type: "PubMed",
-    url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1RwSy84-6Ztr-eeqbigUAL6oO8zFVead0wPzCxnfyBMdA7aAVM/?limit=10&utm_campaign=pubmed-2&fc=20260102170310",
-  },
-];
+const PUBMED = {
+  label: "Publications (PubMed RSS)",
+  type: "PubMed",
+  url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1RwSy84-6Ztr-eeqbigUAL6oO8zFVead0wPzCxnfyBMdA7aAVM/?limit=10&utm_campaign=pubmed-2&fc=20260102170310",
+};
 
-async function loadSubstackArchive(pub: { label: string; base: string }) {
-  const url = `${pub.base}/api/v1/archive?sort=new&offset=0&limit=10`; // archive endpoint  [oai_citation:2‡wonderingaboutai.substack.com](https://wonderingaboutai.substack.com/p/i-built-a-chrome-extension-to-manage?utm_source=chatgpt.com)
+function prettyFromSlug(url: string) {
+  const slug = url.split("/p/")[1]?.split(/[?#]/)[0] ?? "";
+  return slug
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase()) || "(untitled)";
+}
+
+async function loadSubstackFromSitemap(pub: { label: string; base: string }) {
+  const sitemapUrl = `${pub.base}/sitemap.xml`;
+
   try {
-    const res = await fetch(url, {
+    const res = await fetch(sitemapUrl, {
       headers: {
-        accept: "application/json",
         "user-agent": "Mozilla/5.0 (Astro build; platypusandfox.com)",
+        "accept": "application/xml,text/xml;q=0.9,*/*;q=0.8",
       },
     });
 
     if (!res.ok) {
-      console.warn(`[substack] ${pub.label} -> HTTP ${res.status}`);
+      console.warn(`[substack-sitemap] ${pub.label} -> HTTP ${res.status}`);
       return [];
     }
 
-    const data = await res.json();
+    const xml = await res.text();
+    const parsed = xmlParser.parse(xml);
 
-    // data is typically an array of post objects
-    const posts = Array.isArray(data) ? data : (data?.posts ?? []);
-    return posts.map((p: any) => ({
-      source: pub.label,
-      type: "Substack",
-      title: p?.title ?? "(untitled)",
-      link: p?.canonical_url ?? p?.url ?? (p?.slug ? `${pub.base}/p/${p.slug}` : ""),
-      date: p?.post_date ?? p?.published_at ?? p?.pubDate ?? "",
-      excerpt: p?.description ?? p?.subtitle ?? "",
-    }));
+    const urlsRaw = parsed?.urlset?.url ?? [];
+    const urls = Array.isArray(urlsRaw) ? urlsRaw : [urlsRaw];
+
+    // Substack post URLs are typically /p/<slug>
+    const posts = urls
+      .map((u: any) => ({
+        loc: u.loc,
+        lastmod: u.lastmod,
+      }))
+      .filter((u: any) => typeof u.loc === "string" && u.loc.includes("/p/"))
+      .slice(0, 10)
+      .map((u: any) => ({
+        source: pub.label,
+        type: "Substack",
+        title: prettyFromSlug(u.loc),
+        link: u.loc,
+        date: u.lastmod ?? "",
+        excerpt: "",
+      }));
+
+    return posts;
   } catch (e: any) {
-    console.warn(`[substack] ${pub.label} fetch/parse failed:`, e?.message ?? e);
+    console.warn(`[substack-sitemap] ${pub.label} failed:`, e?.message ?? e);
     return [];
   }
 }
 
-async function loadRss(feed: { label: string; type: string; url: string }) {
+async function loadPubMedRss() {
   try {
-    const res = await fetch(feed.url, {
+    const res = await fetch(PUBMED.url, {
       headers: { "user-agent": "Mozilla/5.0 (Astro build; platypusandfox.com)" },
     });
     if (!res.ok) {
-      console.warn(`[feeds] ${feed.label} -> HTTP ${res.status}`);
+      console.warn(`[pubmed] -> HTTP ${res.status}`);
       return [];
     }
     const xml = await res.text();
     const parsed = await parser.parseString(xml);
+
     return (parsed.items ?? []).map((item: any) => ({
-      source: feed.label,
-      type: feed.type,
+      source: PUBMED.label,
+      type: PUBMED.type,
       title: item.title ?? "(untitled)",
       link: item.link ?? "",
       date: item.isoDate ?? item.pubDate ?? "",
       excerpt: item.contentSnippet ?? item.summary ?? "",
     }));
   } catch (e: any) {
-    console.warn(`[feeds] ${feed.label} fetch/parse failed:`, e?.message ?? e);
+    console.warn(`[pubmed] failed:`, e?.message ?? e);
     return [];
   }
 }
 
-const substackResults = (await Promise.all(SUBSTACKS.map(loadSubstackArchive))).flat();
-const rssResults = (await Promise.all(FEEDS.map(loadRss))).flat();
+const substackResults = (await Promise.all(SUBSTACKS.map(loadSubstackFromSitemap))).flat();
+const pubmedResults = await loadPubMedRss();
 
-const posts = [...substackResults, ...rssResults]
+const posts = [...substackResults, ...pubmedResults]
   .filter((p) => p.link)
   .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
   .slice(0, 12);
