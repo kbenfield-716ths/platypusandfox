@@ -1,0 +1,246 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout 
+  title="About" 
+  description="About Platypus & Fox - Augmented problem solving"
+>
+  <section class="hero" style="min-height: 50vh;">
+    <div class="hero-content">
+      <h1>About Platypus & Fox</h1>
+      <p class="tagline">A Unique Combination That Works</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <p style="font-size: 1.2rem; line-height: 1.8; color: var(--text-dark);">
+          Like the platypus—a unique combination of traits that shouldn't work together but do—I 
+          bring together medicine, technology, leadership, and creativity. Like the fox, I focus on 
+          solving one problem at a time with precision and strategy.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background-color: var(--light-gray);">
+    <div class="container">
+      <div class="section-header">
+        <h2>Core Strengths</h2>
+        <p>Click each card to learn more</p>
+      </div>
+      
+      <div class="flip-card-grid">
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front card-clinical">
+              <h3>Clinical Excellence</h3>
+              <p class="tap-hint">Click to learn more</p>
+            </div>
+            <div class="flip-card-back">
+              <h3>Clinical Excellence</h3>
+              <p>
+                Board-certified in Pulmonary and Critical Care Medicine with extensive experience in 
+                quality improvement, patient safety, and healthcare systems optimization.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front card-technical">
+              <h3>Technical Innovation</h3>
+              <p class="tap-hint">Click to learn more</p>
+            </div>
+            <div class="flip-card-back">
+              <h3>Technical Innovation</h3>
+              <p>
+                Building practical software solutions for healthcare, education, and productivity. 
+                From iOS apps to web platforms, I create tools that solve real problems.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front card-leadership">
+              <h3>Strategic Leadership</h3>
+              <p class="tap-hint">Click to learn more</p>
+            </div>
+            <div class="flip-card-back">
+              <h3>Strategic Leadership</h3>
+              <p>
+                Leading quality improvement initiatives, developing faculty systems, and managing 
+                complex projects at the intersection of medicine and technology.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>The Augmented Approach</h2>
+        <p>I don't believe AI replaces human creativity—it amplifies it. My work combines:</p>
+      </div>
+      
+      <div class="card-grid">
+        <div class="card">
+          <h3>Human Insight</h3>
+          <p>
+            Pattern recognition from years of clinical practice, understanding of complex systems, 
+            and the ability to ask the right questions.
+          </p>
+        </div>
+        
+        <div class="card">
+          <h3>AI Acceleration</h3>
+          <p>
+            Using AI tools to handle repetitive tasks, explore possibilities faster, and implement 
+            solutions more efficiently.
+          </p>
+        </div>
+        
+        <div class="card">
+          <h3>Practical Solutions</h3>
+          <p>
+            Delivering results that work in the real world—tested, refined, and ready to deploy.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="background-color: var(--light-gray);">
+    <div class="container">
+      <div class="section-header">
+        <h2>Let's Connect</h2>
+        <p>Ready to explore how we can work together?</p>
+      </div>
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="/contact" class="btn btn-primary">Get in Touch</a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .flip-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .flip-card {
+    background-color: transparent;
+    height: 300px;
+    perspective: 1000px;
+    cursor: pointer;
+  }
+
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+
+  .flip-card:hover .flip-card-inner,
+  .flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-front,
+  .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .flip-card-front {
+    color: white;
+  }
+
+  .card-clinical {
+    background: linear-gradient(135deg, var(--primary-green), var(--dark-teal));
+  }
+
+  .card-technical {
+    background: linear-gradient(135deg, var(--light-green), var(--primary-green));
+  }
+
+  .card-leadership {
+    background: linear-gradient(135deg, var(--primary-orange), #e85d2d);
+  }
+
+  .flip-card-back {
+    background: white;
+    color: var(--text-dark);
+    transform: rotateY(180deg);
+    border: 2px solid var(--primary-green);
+  }
+
+  .flip-card-front h3 {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    color: white;
+  }
+
+  .tap-hint {
+    font-size: 0.95rem;
+    opacity: 0.9;
+    font-style: italic;
+  }
+
+  .flip-card-back h3 {
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    color: var(--primary-green);
+  }
+
+  .flip-card-back p {
+    line-height: 1.6;
+    color: var(--text-light);
+  }
+
+  /* Mobile: tap to flip instead of hover */
+  @media (max-width: 768px) {
+    .flip-card:hover .flip-card-inner {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  // Mobile tap to flip functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.flip-card');
+    
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('flipped');
+      });
+    });
+  });
+</script>
