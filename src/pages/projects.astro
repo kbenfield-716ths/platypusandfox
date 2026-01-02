@@ -15,246 +15,183 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   <section class="section">
     <div class="container">
-      <div class="projects-grid">
+      <div style="max-width: 1100px; margin: 0 auto;">
         
-        <!-- Stronger Together -->
-        <div class="project-card" id="stronger-together">
-          <div class="project-header">
+        <!-- Stronger Together - Complete A3 Example -->
+        <div class="project-container" id="stronger-together">
+          <div class="project-title">
             <span class="project-category">Leadership Development</span>
-            <h3>Stronger Together</h3>
+            <h2>Stronger Together</h2>
+            <p class="project-subtitle">A physician leadership program using rowing as a vehicle for team building</p>
           </div>
-          <div class="project-body">
-            <p class="project-summary">
-              A 2.5-day immersive physician leadership program using sweep rowing as an experiential 
-              learning tool for team building and high-performance leadership.
-            </p>
-            <div class="project-details">
-              <h4>What It Is</h4>
+
+          <div class="a3-grid">
+            <!-- Card 1: Problem -->
+            <div class="a3-card problem-card">
+              <div class="card-number">1</div>
+              <h3>Problem</h3>
               <p>
-                Developed in partnership with the Darden School and Team Concepts, Stronger Together 
-                addresses the critical need for leadership development in high-pressure healthcare 
-                environments. Participants experience firsthand what it means to move as one team 
-                through the physical challenge of rowing.
-              </p>
-              <h4>Key Features</h4>
-              <ul>
-                <li>Classroom sessions on high-performing teams and learning under pressure</li>
-                <li>Hands-on rowing experience with professional coaching</li>
-                <li>Insights diagnostic for understanding personal strengths under stress</li>
-                <li>Culminating regatta where teams apply their learning</li>
-                <li>Quarterly "boathouse time" follow-ups to maintain momentum</li>
-              </ul>
-              <h4>Impact</h4>
-              <p>
-                Pilot participants reported dramatic improvements in leadership engagement and 
-                reduced feelings of isolation. With only 8 hours of coaching, three eight-person 
-                boats successfully raced 500 meters with all rowers engaged—demonstrating the 
-                power of focused leadership development.
+                Coming out of the pandemic, we had burned out leaders with no local tools to reconnect 
+                them with the "why" behind their work or inspire their teams. Healthcare professionals 
+                were struggling with isolation, exhaustion, and loss of purpose in their calling.
               </p>
             </div>
+
+            <!-- Card 2: Current State -->
+            <div class="a3-card current-card">
+              <div class="card-number">2</div>
+              <h3>Current State</h3>
+              <p>
+                The Darden School offered a leadership course using rowing, but it didn't focus on 
+                physicians or connect with the medical field's unique challenges. The course was also 
+                a week long, making it difficult for busy clinicians to attend.
+              </p>
+            </div>
+
+            <!-- Card 3: Solution -->
+            <div class="a3-card solution-card">
+              <div class="card-number">3</div>
+              <h3>Solution</h3>
+              <p>
+                We drew from collective rowing and clinical experience to build a shorter, focused 
+                course specifically for clinicians. The 2.5-day immersive program combined classroom 
+                sessions on high-performing teams with hands-on rowing experience, creating space for 
+                physicians to learn about leadership while physically experiencing teamwork.
+              </p>
+            </div>
+
+            <!-- Card 4: Outcomes -->
+            <div class="a3-card outcomes-card">
+              <div class="card-number">4</div>
+              <h3>Reflection & Outcomes</h3>
+              <p>
+                In just a few days, we developed a group that could row all 8 together for 500 meters. 
+                Participants walked away with new skills for engaging their teams and dramatically 
+                improved leadership engagement.
+              </p>
+              
+              <div class="outcomes-visual">
+                <img src="/images/stronger-together-outcomes.png" alt="Burnout and Engagement Outcomes" />
+              </div>
+
+              <blockquote class="participant-quote">
+                "Finally, and this is probably the most important. The course made me feel less isolated 
+                and alone. By taking this course with leaders OUTSIDE my normal day/life/work etc it made 
+                me feel part of something bigger. It also gave me a different network that I feel like I 
+                can tap into the next time I'm feeling like I'm struggling."
+                <cite>— Pilot Program Participant</cite>
+              </blockquote>
+
+              <div class="project-status-badge">
+                <strong>Status:</strong> Pilot completed • Available for custom cohorts
+              </div>
+            </div>
           </div>
+
           <div class="project-footer">
-            <span class="project-status">Pilot completed • Available for custom cohorts</span>
-            <a href="/contact" class="project-link">Inquire About This Program →</a>
+            <a href="/contact" class="btn btn-primary">Inquire About Stronger Together</a>
           </div>
         </div>
 
-        <!-- FacultyHub / Faculty Scheduling System -->
-        <div class="project-card" id="facultyhub">
-          <div class="project-header">
+        <!-- FacultyHub - Template (to be filled in) -->
+        <div class="project-container" id="facultyhub">
+          <div class="project-title">
             <span class="project-category">Healthcare Operations</span>
-            <h3>FacultyHub</h3>
+            <h2>FacultyHub</h2>
+            <p class="project-subtitle">Automated scheduling for academic medical centers</p>
           </div>
-          <div class="project-body">
-            <p class="project-summary">
-              An automated scheduling platform for academic medical centers featuring point-based 
-              bidding, conflict resolution, and equitable time-off allocation.
-            </p>
-            <div class="project-details">
-              <h4>What It Is</h4>
+
+          <div class="a3-grid">
+            <div class="a3-card problem-card">
+              <div class="card-number">1</div>
+              <h3>Problem</h3>
               <p>
-                FacultyHub solves the complex scheduling challenges faced by academic medical 
-                centers where faculty balance clinical duties, teaching, and research. The system 
-                uses sophisticated algorithms to create fair, efficient schedules while respecting 
-                individual preferences and institutional needs.
-              </p>
-              <h4>Key Features</h4>
-              <ul>
-                <li>Point-based bidding system for time-off requests</li>
-                <li>Automated conflict detection and resolution</li>
-                <li>Equitable distribution of desirable and undesirable shifts</li>
-                <li>Integration with clinical operations systems</li>
-                <li>Real-time schedule adjustments and notifications</li>
-              </ul>
-              <h4>Impact</h4>
-              <p>
-                Currently deployed at UVA Health Division of Pulmonary and Critical Care Medicine, 
-                FacultyHub has streamlined scheduling for complex clinical operations while 
-                improving faculty satisfaction and reducing administrative burden.
+                [To be filled: What scheduling challenges were faculty facing?]
               </p>
             </div>
+
+            <div class="a3-card current-card">
+              <div class="card-number">2</div>
+              <h3>Current State</h3>
+              <p>
+                [To be filled: What was the manual scheduling process like?]
+              </p>
+            </div>
+
+            <div class="a3-card solution-card">
+              <div class="card-number">3</div>
+              <h3>Solution</h3>
+              <p>
+                Point-based bidding system with automated conflict detection, equitable time-off 
+                allocation, and real-time schedule management.
+              </p>
+            </div>
+
+            <div class="a3-card outcomes-card">
+              <div class="card-number">4</div>
+              <h3>Reflection & Outcomes</h3>
+              <p>
+                Currently deployed at UVA Health Division of Pulmonary and Critical Care Medicine.
+              </p>
+              <div class="project-status-badge">
+                <strong>Status:</strong> Deployed at UVA Health
+              </div>
+            </div>
           </div>
+
           <div class="project-footer">
-            <span class="project-status">Deployed at UVA Health</span>
-            <a href="/contact" class="project-link">Request a Demo →</a>
+            <a href="/contact" class="btn btn-secondary">Request a Demo</a>
           </div>
         </div>
 
-        <!-- JamboHub -->
-        <div class="project-card" id="jambohub">
-          <div class="project-header">
+        <!-- JamboHub - Template -->
+        <div class="project-container" id="jambohub">
+          <div class="project-title">
             <span class="project-category">Event Management</span>
-            <h3>JamboHub</h3>
+            <h2>JamboHub</h2>
+            <p class="project-subtitle">Communication platform for large-scale Scout events</p>
           </div>
-          <div class="project-body">
-            <p class="project-summary">
-              A communication and coordination platform designed specifically for large-scale 
-              Scout events like National Jamborees.
-            </p>
-            <div class="project-details">
-              <h4>What It Is</h4>
-              <p>
-                Managing logistics for thousands of participants across multiple locations requires 
-                robust communication tools. JamboHub provides a centralized platform for schedules, 
-                announcements, emergency communications, and participant tracking.
-              </p>
-              <h4>Key Features</h4>
-              <ul>
-                <li>Real-time schedule updates and notifications</li>
-                <li>Location-based announcements and alerts</li>
-                <li>Participant check-in and tracking</li>
-                <li>Resource allocation and logistics management</li>
-                <li>Multi-role access (leaders, staff, participants)</li>
-              </ul>
-              <h4>Vision</h4>
-              <p>
-                Drawing from years of Scouting leadership experience, JamboHub aims to solve the 
-                communication challenges unique to large outdoor events where traditional tools fall short.
-              </p>
-            </div>
-          </div>
-          <div class="project-footer">
-            <span class="project-status">Concept development</span>
-            <a href="/contact" class="project-link">Learn More →</a>
-          </div>
-        </div>
 
-        <!-- LongevityLab -->
-        <div class="project-card" id="longevitylab">
-          <div class="project-header">
-            <span class="project-category">Health Technology</span>
-            <h3>LongevityLab</h3>
-          </div>
-          <div class="project-body">
-            <p class="project-summary">
-              A comprehensive health tracking application for longevity optimization and 
-              Long COVID management.
-            </p>
-            <div class="project-details">
-              <h4>What It Is</h4>
+          <div class="a3-grid">
+            <div class="a3-card problem-card">
+              <div class="card-number">1</div>
+              <h3>Problem</h3>
               <p>
-                LongevityLab brings together biomarker tracking, symptom monitoring, and 
-                lifestyle interventions in one intuitive iOS app. Designed for people serious 
-                about optimizing their health span or managing post-COVID symptoms.
-              </p>
-              <h4>Key Features</h4>
-              <ul>
-                <li>Comprehensive biomarker and vital sign tracking</li>
-                <li>Symptom pattern recognition and analysis</li>
-                <li>Lifestyle intervention recommendations</li>
-                <li>Data visualization and trend analysis</li>
-                <li>Integration with health data sources</li>
-              </ul>
-              <h4>Approach</h4>
-              <p>
-                Combines clinical medicine expertise with user-centered design to make complex 
-                health data actionable and meaningful for individuals taking control of their health.
+                [To be filled: What communication challenges exist at Jamborees?]
               </p>
             </div>
-          </div>
-          <div class="project-footer">
-            <span class="project-status">In active development</span>
-            <a href="/contact" class="project-link">Stay Updated →</a>
-          </div>
-        </div>
 
-        <!-- College Activity Tracker -->
-        <div class="project-card" id="college-activity-tracker">
-          <div class="project-header">
-            <span class="project-category">Education</span>
-            <h3>College Activity Tracker</h3>
-          </div>
-          <div class="project-body">
-            <p class="project-summary">
-              A streamlined app for high school students to organize extracurricular activities, 
-              leadership roles, and achievements for college applications.
-            </p>
-            <div class="project-details">
-              <h4>What It Is</h4>
+            <div class="a3-card current-card">
+              <div class="card-number">2</div>
+              <h3>Current State</h3>
               <p>
-                College applications require documenting years of activities, awards, and 
-                experiences. This iOS app makes it easy to capture and organize everything as 
-                it happens, eliminating the stress of trying to remember details years later.
-              </p>
-              <h4>Key Features</h4>
-              <ul>
-                <li>Activity logging with dates, roles, and descriptions</li>
-                <li>Award and achievement tracking</li>
-                <li>Volunteer hour documentation</li>
-                <li>Export to Common App and other formats</li>
-                <li>Reminder system for capturing ongoing activities</li>
-              </ul>
-              <h4>Goal</h4>
-              <p>
-                Help students maintain a complete, accurate record of their high school 
-                achievements without the last-minute scramble when application season arrives.
+                [To be filled: What tools are currently used and their limitations?]
               </p>
             </div>
-          </div>
-          <div class="project-footer">
-            <span class="project-status">In active development</span>
-            <a href="/contact" class="project-link">Learn More →</a>
-          </div>
-        </div>
 
-        <!-- The Rekindling Project -->
-        <div class="project-card" id="rekindling">
-          <div class="project-header">
-            <span class="project-category">Wellness & Recovery</span>
-            <h3>The Rekindling Project</h3>
-          </div>
-          <div class="project-body">
-            <p class="project-summary">
-              Moving beyond burnout to rediscover purpose, joy, and sustainable practice in 
-              healthcare and beyond.
-            </p>
-            <div class="project-details">
-              <h4>What It Is</h4>
+            <div class="a3-card solution-card">
+              <div class="card-number">3</div>
+              <h3>Solution</h3>
               <p>
-                The Rekindling Project emerged from personal experience with burnout and the 
-                realization that recovery isn't about becoming more efficient—it's about 
-                rediscovering what makes work meaningful. This initiative focuses on helping 
-                professionals rekindle the spark that drew them to their calling in the first place.
-              </p>
-              <h4>Core Themes</h4>
-              <ul>
-                <li><strong>Balance (Lagom):</strong> Finding sustainable rhythms in life and work</li>
-                <li><strong>Boundaries:</strong> Learning to say "no" and protect what matters</li>
-                <li><strong>Joy Over Utility:</strong> Valuing experiences for their own sake</li>
-                <li><strong>Intentional Living:</strong> Making choices aligned with values</li>
-                <li><strong>Community:</strong> Building supportive networks and authentic connections</li>
-              </ul>
-              <h4>Resources</h4>
-              <p>
-                Reflective writing on Substack bridges medical practice, wilderness wisdom, and 
-                personal transformation, combining practical insights with deeper questions about 
-                purpose and wellbeing.
+                Centralized platform for schedules, announcements, emergency communications, and 
+                participant tracking across multiple locations.
               </p>
             </div>
+
+            <div class="a3-card outcomes-card">
+              <div class="card-number">4</div>
+              <h3>Reflection & Outcomes</h3>
+              <p>
+                [To be filled: Vision for how this will improve Jamboree coordination]
+              </p>
+              <div class="project-status-badge">
+                <strong>Status:</strong> Concept development
+              </div>
+            </div>
           </div>
+
           <div class="project-footer">
-            <span class="project-status">Ongoing</span>
-            <a href="/writing" class="project-link">Read My Writing →</a>
+            <a href="/contact" class="btn btn-secondary">Learn More</a>
           </div>
         </div>
 
@@ -262,16 +199,37 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 
+  <section class="section" id="rekindling" style="background: linear-gradient(135deg, rgba(127, 176, 105, 0.1), rgba(255, 107, 53, 0.1));">
+    <div class="container">
+      <div style="max-width: 900px; margin: 0 auto;">
+        <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--primary-green); font-size: 1.5rem;">The Rekindling Project</h2>
+        <p style="text-align: center; color: var(--text-light); margin-bottom: 2rem;">
+          Moving beyond burnout to rediscover purpose, joy, and sustainable practice.
+        </p>
+        
+        <div class="card">
+          <p>
+            The Rekindling Project emerged from personal experience with burnout and the realization 
+            that recovery isn't about becoming more efficient—it's about rediscovering what makes 
+            work meaningful. Rather than teaching resilience, I focus on helping professionals 
+            rekindle the spark that drew them to their calling in the first place.
+          </p>
+          <div style="margin-top: 1.5rem; text-align: center;">
+            <a href="/writing" class="btn btn-primary">Read My Writing</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section" style="background-color: var(--light-gray);">
     <div class="container">
-      <div class="section-header">
-        <h2>Collaborate on a Project</h2>
-        <p>
+      <div style="max-width: 700px; margin: 0 auto; text-align: center;">
+        <h2 style="margin-bottom: 1rem; color: var(--primary-green); font-size: 1.5rem;">Collaborate on a Project</h2>
+        <p style="color: var(--text-light); margin-bottom: 2rem;">
           Have an idea for a project or want to learn more about any of these initiatives? 
           I'm always interested in meaningful collaborations.
         </p>
-      </div>
-      <div style="text-align: center; margin-top: 2rem;">
         <a href="/contact" class="btn btn-primary">Get in Touch</a>
       </div>
     </div>
@@ -279,31 +237,19 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 </BaseLayout>
 
 <style>
-  .projects-grid {
-    display: grid;
-    gap: 2.5rem;
-    max-width: 900px;
-    margin: 0 auto;
+  .project-container {
+    margin-bottom: 4rem;
+    padding-bottom: 3rem;
+    border-bottom: 2px solid var(--light-gray);
   }
 
-  .project-card {
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    border-left: 4px solid var(--primary-green);
-    transition: all 0.3s ease;
+  .project-container:last-of-type {
+    border-bottom: none;
   }
 
-  .project-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    border-left-color: var(--primary-orange);
-  }
-
-  .project-header {
-    padding: 2rem 2rem 1rem;
-    border-bottom: 1px solid var(--light-gray);
+  .project-title {
+    text-align: center;
+    margin-bottom: 2.5rem;
   }
 
   .project-category {
@@ -316,106 +262,179 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
   }
 
-  .project-header h3 {
+  .project-title h2 {
     font-size: 2rem;
     color: var(--text-dark);
-    margin: 0;
+    margin: 0.5rem 0;
   }
 
-  .project-body {
-    padding: 2rem;
+  .project-subtitle {
+    color: var(--text-light);
+    font-size: 1.05rem;
+    font-style: italic;
+    margin: 0.5rem 0 0;
   }
 
-  .project-summary {
+  /* A3 Grid Layout */
+  .a3-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (min-width: 768px) {
+    .a3-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .a3-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* A3 Cards */
+  .a3-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    transition: all 0.3s ease;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .a3-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Card Number Badge */
+  .card-number {
+    position: absolute;
+    top: -12px;
+    left: 1.5rem;
+    width: 32px;
+    height: 32px;
+    background: var(--primary-green);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Card Type Colors */
+  .problem-card {
+    border-top: 4px solid #e74c3c;
+  }
+
+  .current-card {
+    border-top: 4px solid #f39c12;
+  }
+
+  .solution-card {
+    border-top: 4px solid #3498db;
+  }
+
+  .outcomes-card {
+    border-top: 4px solid #27ae60;
+  }
+
+  .outcomes-card .card-number {
+    background: #27ae60;
+  }
+
+  .a3-card h3 {
     font-size: 1.1rem;
     color: var(--text-dark);
-    font-weight: 500;
+    margin: 0.5rem 0 0.75rem;
+    font-weight: 600;
+  }
+
+  .a3-card p {
+    color: var(--text-light);
     line-height: 1.6;
-    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    flex-grow: 1;
   }
 
-  .project-details h4 {
-    color: var(--primary-green);
-    font-size: 1.1rem;
-    margin: 1.5rem 0 0.75rem;
+  /* Outcomes Card Special Styling */
+  .outcomes-visual {
+    margin: 1.5rem 0;
+    text-align: center;
   }
 
-  .project-details h4:first-child {
-    margin-top: 0;
+  .outcomes-visual img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
 
-  .project-details p {
-    color: var(--text-light);
+  .participant-quote {
+    background: var(--light-gray);
+    padding: 1.25rem;
+    border-radius: 8px;
+    font-style: italic;
+    color: var(--text-dark);
     line-height: 1.7;
-    margin-bottom: 1rem;
+    margin: 1.5rem 0;
+    border-left: 4px solid var(--primary-orange);
+    font-size: 0.95rem;
   }
 
-  .project-details ul {
-    list-style: none;
-    padding: 0;
-    margin: 0.75rem 0;
+  .participant-quote cite {
+    display: block;
+    margin-top: 0.75rem;
+    font-style: normal;
+    font-weight: 600;
+    color: var(--primary-green);
+    font-size: 0.9rem;
   }
 
-  .project-details ul li {
-    color: var(--text-light);
-    line-height: 1.8;
-    padding-left: 1.5rem;
-    position: relative;
-    margin-bottom: 0.5rem;
+  .project-status-badge {
+    display: inline-block;
+    background: white;
+    border: 2px solid var(--light-green);
+    color: var(--text-dark);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-top: 1rem;
   }
 
-  .project-details ul li::before {
-    content: "→";
-    position: absolute;
-    left: 0;
-    color: var(--primary-orange);
-    font-weight: bold;
+  /* Outcomes card needs to be taller on desktop */
+  @media (min-width: 1024px) {
+    .outcomes-card {
+      grid-column: span 2;
+      min-height: 280px;
+    }
   }
 
   .project-footer {
-    padding: 1.5rem 2rem;
-    background: var(--light-gray);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem;
+    text-align: center;
+    margin-top: 1.5rem;
   }
 
-  .project-status {
-    color: var(--text-light);
-    font-size: 0.9rem;
-    font-style: italic;
-  }
-
-  .project-link {
-    color: var(--primary-orange);
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-  }
-
-  .project-link:hover {
-    color: var(--primary-green);
-    transform: translateX(5px);
-  }
-
-  @media (max-width: 768px) {
-    .project-header {
-      padding: 1.5rem 1.5rem 1rem;
+  /* Mobile: Stack cards vertically */
+  @media (max-width: 767px) {
+    .a3-card {
+      min-height: auto;
     }
-
-    .project-body {
-      padding: 1.5rem;
-    }
-
-    .project-footer {
-      padding: 1.25rem 1.5rem;
-      flex-direction: column;
-      align-items: flex-start;
+    
+    .outcomes-card {
+      min-height: auto;
     }
   }
 </style>
