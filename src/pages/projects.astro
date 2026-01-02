@@ -6,6 +6,7 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   title="Projects" 
   description="Software development, leadership programs, and wellness initiatives"
 >
+
   <section class="hero" style="min-height: 50vh;">
     <div class="hero-content">
       <h1>Projects</h1>
@@ -16,26 +17,101 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   <section class="section">
     <div class="container">
       <div style="max-width: 1100px; margin: 0 auto;">
-        
-        <!-- Stronger Together - Complete A3 Example -->
-        <div class="project-container" id="stronger-together">
-          <div class="project-title">
-            <span class="project-category">Leadership Development</span>
-            <h2>Stronger Together</h2>
-            <p class="project-subtitle">A physician leadership program using rowing as a vehicle for team building</p>
-          </div>
 
-          <div class="a3-grid">
-            <!-- Card 1: Problem -->
-            <div class="a3-card problem-card">
-              <div class="card-number">1</div>
-              <h3>Problem</h3>
-              <p>
-                Coming out of the pandemic, we had burned out leaders with no local tools to reconnect 
-                them with the "why" behind their work or inspire their teams. Healthcare professionals 
-                were struggling with isolation, exhaustion, and loss of purpose in their calling.
-              </p>
+<!-- Stronger Together - Complete A3 Example -->
+<div class="project-container" id="stronger-together">
+  <div class="project-title">
+    <span class="project-category">Leadership Development</span>
+    <h2>Stronger Together</h2>
+    <p class="project-subtitle">A physician leadership program using rowing as a vehicle for team building</p>
+  </div>
+
+  <!-- Carousel wrapper (replaces .a3-grid) -->
+  <div class="a3-carousel" data-embla>
+    <div class="a3-carousel__controls">
+      <button type="button" class="btn btn-secondary" data-prev aria-label="Previous card">←</button>
+
+      <div class="embla__dots" data-dots aria-label="Card navigation"></div>
+
+      <button type="button" class="btn btn-secondary" data-next aria-label="Next card">→</button>
+    </div>
+
+    <div class="embla__viewport">
+      <div class="embla__container">
+
+        <!-- Slide 1 -->
+        <div class="embla__slide">
+          <div class="a3-card problem-card">
+            <div class="card-number">1</div>
+            <h3>Problem</h3>
+            <p>
+              Coming out of the pandemic, we had burned out leaders with no local tools to reconnect
+              them with the "why" behind their work or inspire their teams. Healthcare professionals
+              were struggling with isolation, exhaustion, and loss of purpose in their calling.
+            </p>
+          </div>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="embla__slide">
+          <div class="a3-card current-card">
+            <div class="card-number">2</div>
+            <h3>Current State</h3>
+            <p>
+              The Darden School offered a leadership course using rowing, but it didn't focus on
+              physicians or connect with the medical field's unique challenges. The course was also
+              a week long, making it difficult for busy clinicians to attend.
+            </p>
+          </div>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="embla__slide">
+          <div class="a3-card solution-card">
+            <div class="card-number">3</div>
+            <h3>Solution</h3>
+            <p>
+              We drew from collective rowing and clinical experience to build a shorter, focused
+              course specifically for clinicians. The 2.5-day immersive program combined classroom
+              sessions on high-performing teams with hands-on rowing experience, creating space for
+              physicians to learn about leadership while physically experiencing teamwork.
+            </p>
+          </div>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="embla__slide">
+          <div class="a3-card outcomes-card">
+            <div class="card-number">4</div>
+            <h3>Reflection & Outcomes</h3>
+            <p>
+              In just a few days, we developed a group that could row all 8 together for 500 meters.
+              Participants walked away with new skills for engaging their teams and dramatically
+              improved leadership engagement.
+            </p>
+
+            <div class="outcomes-visual">
+              <img src="/images/stronger-together-outcomes.png" alt="Burnout and Engagement Outcomes" />
             </div>
+
+            <blockquote class="participant-quote">
+              "Finally, and this is probably the most important. The course made me feel less isolated
+              and alone. By taking this course with leaders OUTSIDE my normal day/life/work etc it made
+              me feel part of something bigger. It also gave me a different network that I feel like I
+              can tap into the next time I'm feeling like I'm struggling."
+              <cite>— Pilot Program Participant</cite>
+            </blockquote>
+
+            <div class="project-status-badge">
+              <strong>Status:</strong> Pilot completed • Available for custom cohorts
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+          
 
             <!-- Card 2: Current State -->
             <div class="a3-card current-card">
@@ -236,6 +312,8 @@ import BaseLayout from '../layouts/BaseLayout.astro';
   </section>
 </BaseLayout>
 
+<script type="module" src={Astro.resolve("../scripts/embla-init.ts")}></script>
+
 <style>
   .project-container {
     margin-bottom: 4rem;
@@ -297,7 +375,58 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       grid-template-columns: repeat(4, 1fr);
     }
   }
+/* --- A3 Carousel (replaces grid when you want 1 card at a time) --- */
+.a3-carousel__controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
 
+.embla__viewport {
+  overflow: hidden;
+}
+
+/* IMPORTANT: your .card-number is top:-12px; give slide a bit of top padding
+   so it doesn't get clipped by overflow:hidden */
+.embla__slide {
+  flex: 0 0 100%;
+  padding: 16px 0; /* top padding prevents badge clipping */
+  display: flex;
+  justify-content: center; /* centers the card */
+}
+
+.embla__container {
+  display: flex;
+}
+
+.embla__slide .a3-card {
+  width: 100%;
+  max-width: 760px; /* keeps it readable on desktop */
+}
+
+/* dots */
+.embla__dots {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.embla__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  border: 1px solid var(--text-light);
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.embla__dot.is-active {
+  background: var(--primary-green);
+  border-color: var(--primary-green);
+}
   /* A3 Cards */
   .a3-card {
     background: white;
