@@ -15,24 +15,22 @@ const FEEDS = [
 ];
 
 async function loadFeed(feed: { label: string; type: string; url: string }) {
-  let items: any[] = [];
   try {
-    const res = await fetch(feed.url);
+    const res = await fetch(feed.url, { headers: { "user-agent": "platypusandfox.com (Astro build)" } });
     const xml = await res.text();
     const parsed = await parser.parseString(xml);
-    items = parsed.items ?? [];
-  } catch (e) {
-    items = []; // swallow errors so build doesn’t fail
-  }
 
-  return items.map((item: any) => ({
-    source: feed.label,
-    type: feed.type,
-    title: item.title ?? "(untitled)",
-    link: item.link ?? "",
-    date: item.isoDate ?? item.pubDate ?? "",
-    excerpt: item.contentSnippet ?? item.summary ?? "",
-  }));
+    return (parsed.items ?? []).map((item: any) => ({
+      source: feed.label,
+      type: feed.type,
+      title: item.title ?? "(untitled)",
+      link: item.link ?? "",
+      date: item.isoDate ?? item.pubDate ?? "",
+      excerpt: item.contentSnippet ?? item.summary ?? "",
+    }));
+  } catch {
+    return [];
+  }
 }
 
 const results = await Promise.all(FEEDS.map(loadFeed));
@@ -44,59 +42,41 @@ const posts = all
   .slice(0, 12);
 ---
 
----
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Parser from "rss-parser";
+<BaseLayout title="Writing" description="Recent posts and publications">
+  <section class="hero" style="min-height: 40vh;">
+    <div class="hero-content">
+      <h1>Writing</h1>
+      <p class="tagline">Recent posts and publications</p>
+    </div>
+  </section>
 
-const parser = new Parser();
+  <section class="section">
+    <div class="container">
+      <div class="feed-grid">
+        {posts.map((p) => (
+          <article class="feed-card">
+            <div class="feed-meta">
+              <span class="feed-source">{p.source}</span>
+              <span class="feed-type">{p.type}</span>
+            </div>
 
-const FEEDS = [
-  ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Parser from "rss-parser";
+            <h3 class="feed-title">
+              <a href={p.link} target="_blank" rel="noopener noreferrer">{p.title}</a>
+            </h3>
 
-const parser = new Parser();
+            {p.date && (
+              <time class="feed-date" datetime={p.date}>
+                {new Date(p.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+              </time>
+            )}
 
-const FEEDS = [
-  { label: "Rekideling Project Turning Data into Wisdom", type: "Substack", url: "https://healthspanlab.substack.com/feed" },
-  { label: "By Campfire and Candlelight", type: "Substack", url: "https://kbe716ths.substack.com/feed" },
-  // If you also want your other Substack, add it here too:
-  // { label: "Your Other Substack", type: "Substack", url: "https://YOUR.substack.com/feed" },
-  {
-    label: "Publications (PubMed RSS)",
-    type: "PubMed",
-    url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1RwSy84-6Ztr-eeqbigUAL6oO8zFVead0wPzCxnfyBMdA7aAVM/?limit=10&utm_campaign=pubmed-2&fc=20260102170310",
-  },
-];
-
-async function loadFeed(feed) {
-  try {
-    const res = await fetch(feed.url, { headers: { "user-agent": "platypusandfox.com (Astro build)" } });
-    const xml = await res.text();
-    const parsed = await parser.parseString(xml);
-
-    return (parsed.items ?? []).map((item) => ({
-      source: feed.label,
-      type: feed.type,
-      title: item.title ?? "(untitled)",
-      link: item.link ?? "",
-      date: item.isoDate ?? item.pubDate ?? "",
-      excerpt: item.contentSnippet ?? item.summary ?? "",
-    }));
-  } catch (e) {
-    return [];
-  }
-}
-
-const results = await Promise.allSettled(FEEDS.map(loadFeed));
-const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-
-const posts = all
-  .filter((p) => p.link)
-  .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
-  .slice(0, 12);
----
-
+            {p.excerpt && <p class="feed-excerpt">{p.excerpt}</p>}
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
 
 <style>
   .feed-grid {
