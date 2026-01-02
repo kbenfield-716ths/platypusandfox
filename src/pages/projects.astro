@@ -515,4 +515,50 @@ import BaseLayout from '../layouts/BaseLayout.astro';
       min-height: auto;
     }
   }
+/* Mobile: reduce height / increase readability */
+@media (max-width: 767px) {
+  .a3-card {
+    min-height: 0;     /* overrides 280px */
+    padding: 1rem;     /* less vertical bulk */
+  }
+
+  .a3-card h3 {
+    font-size: 1.25rem;
+  }
+
+  .a3-card p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  /* Outcomes card is the tall one—tame it on mobile */
+  .outcomes-visual { margin: 1rem 0; }
+  .outcomes-visual img {
+    max-height: 180px;
+    width: 100%;
+    object-fit: contain;
+  }
+
+  .participant-quote {
+    padding: 1rem;
+    margin: 1rem 0;
+    font-size: 1rem;
+
+    /* keeps it from taking over the whole screen */
+    max-height: 10rem;
+    overflow: auto;
+  }
+}
+<style>
+  /* …your existing styles… */
+
+  @media (max-width: 767px) {
+    .a3-carousel__controls .btn {
+      width: auto;
+      max-width: none;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.85rem;
+    }
+  }
+</style>
 </style>
