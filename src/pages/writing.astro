@@ -69,6 +69,13 @@ async function loadFeed(feed: { label: string; type: string; url: string }) {
     return [];
   }
 }
+const results = await Promise.allSettled(FEEDS.map(loadFeed));
+const all = results.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+
+const posts = all
+  .filter((p) => p.title)
+  .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+  .slice(0, 12);
 ---
 
 <BaseLayout title="Writing" description="Recent posts and publications">
