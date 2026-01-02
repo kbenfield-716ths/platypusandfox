@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout 
+  title="Writing" 
+  description="Essays and reflections on medicine, technology, and meaning"
+>
+  <section class="hero" style="min-height: 50vh;">
+    <div class="hero-content">
+      <h1>Writing</h1>
+      <p class="tagline">Reflections on Medicine, Wilderness, and Meaning</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Recent Posts</h2>
+        <p>
+          I write about the intersection of healthcare, technology, wilderness wisdom, and the search 
+          for balance in professional life. Subscribe on Substack to receive new posts.
+        </p>
+      </div>
+      
+      <div style="max-width: 900px; margin: 2rem auto;">
+        <div id="substack-feed" style="margin-top: 2rem;">
+          <p style="text-align: center; color: var(--text-light);">Loading recent posts...</p>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 3rem;">
+        <a href="https://bycampfireandcandlelight.substack.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+          Visit My Substack
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Writing Themes</h2>
+      </div>
+      
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon">🏕️</div>
+          <h3>Wilderness Wisdom</h3>
+          <p>
+            Drawing lessons from outdoor experiences, Scouting leadership, and wilderness medicine 
+            that apply to navigating complexity in professional life.
+          </p>
+        </div>
+        
+        <div class="card">
+          <div class="card-icon">⚕️</div>
+          <h3>Healthcare Reflections</h3>
+          <p>
+            Exploring the challenges and opportunities in modern medicine, from quality improvement 
+            to sustainable practice and patient safety.
+          </p>
+        </div>
+        
+        <div class="card">
+          <div class="card-icon">🔥</div>
+          <h3>The Rekindling Project</h3>
+          <p>
+            Essays on overcoming burnout, finding balance (lagom), and rediscovering joy and 
+            purpose in work and life.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Substack RSS Feed Integration
+  // Note: You'll need to replace 'YOUR_SUBSTACK_USERNAME' with your actual Substack username
+  const SUBSTACK_USERNAME = 'bycampfireandcandlelight';
+  const RSS_URL = `https://${SUBSTACK_USERNAME}.substack.com/feed`;
+  
+  async function loadSubstackPosts() {
+    const feedContainer = document.getElementById('substack-feed');
+    
+    try {
+      // Using RSS2JSON service to convert RSS to JSON
+      const response = await fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(RSS_URL)}`);
+      const data = await response.json();
+      
+      if (data.status === 'ok' && data.items && data.items.length > 0) {
+        const posts = data.items.slice(0, 5); // Show only the 5 most recent posts
+        
+        feedContainer.innerHTML = posts.map(post => `
+          <div class="project-card" style="margin-bottom: 2rem;">
+            <div class="project-content">
+              <h3>${post.title}</h3>
+              <p style="color: var(--text-light); font-size: 0.9rem; margin-bottom: 0.75rem;">
+                ${new Date(post.pubDate).toLocaleDateString('en-US', { 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+              <p>${post.description.replace(/<[^>]*>/g, '').substring(0, 200)}...</p>
+              <div class="project-links" style="margin-top: 1rem;">
+                <a href="${post.link}" target="_blank" rel="noopener noreferrer">Read Full Post →</a>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        throw new Error('No posts found');
+      }
+    } catch (error) {
+      console.error('Error loading Substack feed:', error);
+      feedContainer.innerHTML = `
+        <div class="card" style="text-align: center;">
+          <p>Unable to load recent posts. Please visit 
+            <a href="https://${SUBSTACK_USERNAME}.substack.com" target="_blank" rel="noopener noreferrer">
+              my Substack
+            </a> 
+            to read my latest writing.
+          </p>
+        </div>
+      `;
+    }
+  }
+  
+  // Load posts when the page loads
+  if (typeof window !== 'undefined') {
+    loadSubstackPosts();
+  }
+</script>

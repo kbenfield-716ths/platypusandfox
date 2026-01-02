@@ -1,0 +1,138 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout 
+  title="Contact" 
+  description="Get in touch with Kyle Knox"
+>
+  <section class="hero" style="min-height: 50vh;">
+    <div class="hero-content">
+      <h1>Let's Connect</h1>
+      <p class="tagline">Start a Conversation</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div style="max-width: 800px; margin: 0 auto;">
+        <div class="section-header">
+          <h2>Get in Touch</h2>
+          <p>
+            Whether you're interested in consulting, collaboration, speaking engagements, or just want 
+            to discuss an idea, I'd love to hear from you.
+          </p>
+        </div>
+
+        <div class="contact-form">
+          <form id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+            <div class="form-group">
+              <label for="name">Name *</label>
+              <input type="text" id="name" name="name" required />
+            </div>
+
+            <div class="form-group">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" required />
+            </div>
+
+            <div class="form-group">
+              <label for="subject">Subject *</label>
+              <input type="text" id="subject" name="subject" required />
+            </div>
+
+            <div class="form-group">
+              <label for="message">Message *</label>
+              <textarea id="message" name="message" required></textarea>
+            </div>
+
+            <button type="submit" class="form-submit">Send Message</button>
+          </form>
+
+          <div id="form-success" style="display: none; text-align: center; padding: 2rem; color: var(--primary-green);">
+            <p style="font-size: 1.2rem; font-weight: 600;">Thank you for your message!</p>
+            <p>I'll get back to you as soon as possible.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Other Ways to Connect</h2>
+      </div>
+      
+      <div class="card-grid">
+        <div class="card" style="text-align: center;">
+          <div class="card-icon">💼</div>
+          <h3>LinkedIn</h3>
+          <p>Connect professionally and see my work history and recommendations.</p>
+          <a href="https://www.linkedin.com/in/kyle-knox-md" target="_blank" rel="noopener noreferrer" 
+             style="font-weight: 600; margin-top: 1rem; display: inline-block;">
+            View Profile →
+          </a>
+        </div>
+        
+        <div class="card" style="text-align: center;">
+          <div class="card-icon">✍️</div>
+          <h3>Substack</h3>
+          <p>Subscribe to receive my latest writing and reflections.</p>
+          <a href="https://bycampfireandcandlelight.substack.com" target="_blank" rel="noopener noreferrer" 
+             style="font-weight: 600; margin-top: 1rem; display: inline-block;">
+            Subscribe →
+          </a>
+        </div>
+        
+        <div class="card" style="text-align: center;">
+          <div class="card-icon">💻</div>
+          <h3>GitHub</h3>
+          <p>Explore my open-source projects and code repositories.</p>
+          <a href="#" target="_blank" rel="noopener noreferrer" 
+             style="font-weight: 600; margin-top: 1rem; display: inline-block;">
+            Coming Soon
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Form submission handling
+  const form = document.getElementById('contact-form');
+  const formSuccess = document.getElementById('form-success');
+  
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(form);
+      
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          body: formData,
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (response.ok) {
+          form.style.display = 'none';
+          formSuccess.style.display = 'block';
+        } else {
+          alert('There was a problem submitting your message. Please try again or contact me directly via LinkedIn.');
+        }
+      } catch (error) {
+        console.error('Form submission error:', error);
+        alert('There was a problem submitting your message. Please try again or contact me directly via LinkedIn.');
+      }
+    });
+  }
+</script>
+
+<style>
+  /* Additional form-specific styles if needed */
+</style>
