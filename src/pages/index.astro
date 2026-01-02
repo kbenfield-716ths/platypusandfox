@@ -21,6 +21,66 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 
   <section class="section">
     <div class="container">
+      <div class="flip-card-grid">
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front card-leaders">
+              <h3>Developing Leaders</h3>
+              <p class="tap-hint">Click to learn more</p>
+            </div>
+            <div class="flip-card-back">
+              <h3>Developing Leaders</h3>
+              <p>
+                Stronger Together: A physician leadership program using rowing as a metaphor for 
+                teamwork. This 2.5-day immersive experience empowers healthcare professionals to 
+                balance performance with learning and create environments where teams thrive.
+              </p>
+              <a href="/projects#stronger-together" class="card-link">Learn More →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front card-teaching">
+              <h3>Teaching Skills</h3>
+              <p class="tap-hint">Click to learn more</p>
+            </div>
+            <div class="flip-card-back">
+              <h3>Teaching Skills</h3>
+              <p>
+                Wilderness First Aid and medicine instruction drawing from years of Scouting 
+                leadership and clinical experience. Practical, hands-on training that prepares 
+                people to handle emergencies in remote settings with confidence.
+              </p>
+              <a href="/services#training" class="card-link">Learn More →</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="flip-card">
+          <div class="flip-card-inner">
+            <div class="flip-card-front card-solving">
+              <h3>Solving Problems</h3>
+              <p class="tap-hint">Click to learn more</p>
+            </div>
+            <div class="flip-card-back">
+              <h3>Solving Problems</h3>
+              <p>
+                Building practical software solutions like JamboHub for Scout event coordination 
+                and FacultyHub for academic medical scheduling. Custom tools that solve real 
+                operational challenges with elegant, user-focused design.
+              </p>
+              <a href="/projects#apps" class="card-link">Learn More →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
       <div class="section-header">
         <h2>Ready to Work Together?</h2>
         <p>
@@ -34,3 +94,188 @@ import BaseLayout from '../layouts/BaseLayout.astro';
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .flip-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+
+  .flip-card {
+    background-color: transparent;
+    height: 320px;
+    perspective: 1000px;
+    cursor: pointer;
+    /* Prevent layout shift */
+    position: relative;
+  }
+
+  .flip-card-inner {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+  }
+
+  .flip-card:hover .flip-card-inner,
+  .flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-front,
+  .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .flip-card-front {
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Card-specific backgrounds */
+  .card-leaders {
+    background: linear-gradient(135deg, rgba(45, 122, 77, 0.85) 0%, rgba(26, 89, 64, 0.9) 100%),
+                url('/images/stronger-together.png') center/cover;
+    background-blend-mode: multiply;
+  }
+
+  .card-leaders::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 50%, transparent 30%, rgba(0,0,0,0.3) 100%);
+  }
+
+  .card-teaching {
+    background: linear-gradient(135deg, #7fb069 0%, #2d7a4d 100%);
+  }
+
+  .card-teaching::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      linear-gradient(30deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)),
+      linear-gradient(150deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)),
+      linear-gradient(30deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1)),
+      linear-gradient(150deg, rgba(255,255,255,0.1) 12%, transparent 12.5%, transparent 87%, rgba(255,255,255,0.1) 87.5%, rgba(255,255,255,0.1));
+    background-size: 80px 140px;
+  }
+
+  .card-solving {
+    background: linear-gradient(135deg, #ff6b35 0%, #e85d2d 100%);
+  }
+
+  .card-solving::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+      repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px),
+      repeating-linear-gradient(-45deg, transparent, transparent 10px, rgba(255,255,255,0.05) 10px, rgba(255,255,255,0.05) 20px);
+  }
+
+  .flip-card-back {
+    background: white;
+    color: var(--text-dark);
+    transform: rotateY(180deg);
+    border: 2px solid var(--primary-green);
+    justify-content: space-between;
+  }
+
+  .flip-card-front h3 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: white;
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .tap-hint {
+    font-size: 0.95rem;
+    opacity: 0.95;
+    font-style: italic;
+    position: relative;
+    z-index: 1;
+  }
+
+  .flip-card-back h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: var(--primary-green);
+  }
+
+  .flip-card-back p {
+    line-height: 1.6;
+    color: var(--text-light);
+    flex-grow: 1;
+    font-size: 0.95rem;
+  }
+
+  .card-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: var(--primary-orange);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .card-link:hover {
+    color: var(--primary-green);
+    transform: translateX(5px);
+  }
+
+  /* Mobile: tap to flip instead of hover */
+  @media (max-width: 768px) {
+    .flip-card:hover .flip-card-inner {
+      transform: none;
+    }
+    
+    .flip-card {
+      height: 300px;
+    }
+
+    .flip-card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  // Mobile tap to flip functionality
+  document.addEventListener('DOMContentLoaded', () => {
+    const cards = document.querySelectorAll('.flip-card');
+    
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        card.classList.toggle('flipped');
+      });
+    });
+  });
+</script>
