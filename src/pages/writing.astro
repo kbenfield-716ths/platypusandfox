@@ -2,57 +2,84 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Parser from 'rss-parser';
 
-const parser = new Parser({
-  customFields: {
-    item: ['content:encoded', 'contentSnippet'],
-  },
-});
+const parser = new Parser();
 
-// Your Substack feeds
+// Substack feeds via RSS2JSON proxy (handles 403 errors)
 const SUBSTACKS = [
   {
     label: "Healthspan Lab",
-    url: "https://healthspanlab.substack.com/feed",
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://healthspanlab.substack.com/feed",
   },
   {
     label: "By Campfire and Candlelight",
-    url: "https://kbe716ths.substack.com/feed",
+    url: "https://api.rss2json.com/v1/api.json?rss_url=https://kbe716ths.substack.com/feed",
   },
 ];
 
-// PubMed RSS
+// PubMed - can use direct RSS
 const PUBMED = {
   label: "Publications (PubMed)",
   url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1RwSy84-6Ztr-eeqbigUAL6oO8zFVead0wPzCxnfyBMdA7aAVM/?limit=10&utm_campaign=pubmed-2&fc=20260102170310",
 };
 
-// Load a single RSS feed
-async function loadFeed(feedConfig: { label: string; url: string }, type = "Substack") {
+// Load Substack feed via RSS2JSON
+async function loadSubstackFeed(config: { label: string; url: string }) {
   try {
-    const feed = await parser.parseURL(feedConfig.url);
+    const response = await fetch(config.url);
+    
+    if (!response.ok) {
+      console.warn(`[RSS2JSON] ${config.label} -> HTTP ${response.status}`);
+      return [];
+    }
+    
+    const data = await response.json();
+    
+    if (data.status !== 'ok') {
+      console.warn(`[RSS2JSON] ${config.label} -> ${data.status}`);
+      return [];
+    }
+    
+    return (data.items || []).slice(0, 10).map((item: any) => ({
+      source: config.label,
+      type: "Substack",
+      title: item.title || "(untitled)",
+      link: item.link || item.guid || "",
+      date: item.pubDate || "",
+      excerpt: item.description ? item.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : "",
+    }));
+  } catch (e: any) {
+    console.warn(`[RSS2JSON] ${config.label} failed:`, e?.message ?? e);
+    return [];
+  }
+}
+
+// Load PubMed RSS (works directly)
+async function loadPubMedFeed() {
+  try {
+    const feed = await parser.parseURL(PUBMED.url);
     
     return (feed.items || []).slice(0, 10).map((item: any) => ({
-      source: feedConfig.label,
-      type: type,
+      source: PUBMED.label,
+      type: "PubMed",
       title: item.title || "(untitled)",
       link: item.link || "",
       date: item.isoDate || item.pubDate || "",
       excerpt: item.contentSnippet || item.summary || "",
     }));
   } catch (e: any) {
-    console.warn(`[RSS] ${feedConfig.label} failed:`, e?.message ?? e);
+    console.warn(`[PubMed] failed:`, e?.message ?? e);
     return [];
   }
 }
 
 // Load all feeds
 const substackResults = (await Promise.all(
-  SUBSTACKS.map(config => loadFeed(config, "Substack"))
+  SUBSTACKS.map(loadSubstackFeed)
 )).flat();
 
-const pubmedResults = await loadFeed(PUBMED, "PubMed");
+const pubmedResults = await loadPubMedFeed();
 
-// Combine and sort
+// Combine and sort by date
 const posts = [...substackResults, ...pubmedResults]
   .filter((p) => p.link)
   .sort((a, b) => {
@@ -61,6 +88,8 @@ const posts = [...substackResults, ...pubmedResults]
     return dateB - dateA;
   })
   .slice(0, 12);
+
+console.log(`[RSS] Loaded ${posts.length} posts (${substackResults.length} Substack, ${pubmedResults.length} PubMed)`);
 ---
 
 <BaseLayout title="Writing" description="Recent posts and publications">
@@ -73,38 +102,40 @@ const posts = [...substackResults, ...pubmedResults]
 
   <section class="section">
     <div class="container">
-      {posts.length === 0 && (
-        <p style="text-align: center; color: var(--text-light); padding: 3rem 0;">
-          Loading posts...
-        </p>
+      {posts.length === 0 ? (
+        <div style="text-align: center; padding: 3rem 0;">
+          <p style="color: var(--text-light); font-size: 1.1rem;">
+            No posts found. Check build logs for errors.
+          </p>
+        </div>
+      ) : (
+        <div class="feed-grid">
+          {posts.map((p) => (
+            <article class="feed-card">
+              <div class="feed-meta">
+                <span class="feed-source">{p.source}</span>
+                <span class="feed-type">{p.type}</span>
+              </div>
+
+              <h3 class="feed-title">
+                <a href={p.link} target="_blank" rel="noopener noreferrer">{p.title}</a>
+              </h3>
+
+              {p.date && (
+                <time class="feed-date" datetime={p.date}>
+                  {new Date(p.date).toLocaleDateString("en-US", { 
+                    year: "numeric", 
+                    month: "short", 
+                    day: "numeric" 
+                  })}
+                </time>
+              )}
+
+              {p.excerpt && <p class="feed-excerpt">{p.excerpt}</p>}
+            </article>
+          ))}
+        </div>
       )}
-      
-      <div class="feed-grid">
-        {posts.map((p) => (
-          <article class="feed-card">
-            <div class="feed-meta">
-              <span class="feed-source">{p.source}</span>
-              <span class="feed-type">{p.type}</span>
-            </div>
-
-            <h3 class="feed-title">
-              <a href={p.link} target="_blank" rel="noopener noreferrer">{p.title}</a>
-            </h3>
-
-            {p.date && (
-              <time class="feed-date" datetime={p.date}>
-                {new Date(p.date).toLocaleDateString("en-US", { 
-                  year: "numeric", 
-                  month: "short", 
-                  day: "numeric" 
-                })}
-              </time>
-            )}
-
-            {p.excerpt && <p class="feed-excerpt">{p.excerpt}</p>}
-          </article>
-        ))}
-      </div>
     </div>
   </section>
 
