@@ -22,6 +22,44 @@ const PUBMED = {
   url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1RwSy84-6Ztr-eeqbigUAL6oO8zFVead0wPzCxnfyBMdA7aAVM/?limit=10&utm_campaign=pubmed-2&fc=20260102170310",
 };
 
+// Configuration for balancing sources
+const MAX_PUBMED = 4;        // Limit PubMed articles
+const MAX_PER_SUBSTACK = 10; // Max per Substack feed
+const TOTAL_POSTS = 12;      // Total posts to display
+const EXCERPT_LENGTH = 300;  // Characters for Substack excerpts
+
+// Helper to strip HTML and get clean excerpt
+function getExcerpt(html: string, maxLength: number = EXCERPT_LENGTH): string {
+  if (!html) return "";
+  
+  // Strip HTML tags
+  let text = html.replace(/<[^>]*>/g, ' ');
+  
+  // Decode common HTML entities
+  text = text
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+  
+  // Collapse whitespace
+  text = text.replace(/\s+/g, ' ').trim();
+  
+  // Truncate to max length at word boundary
+  if (text.length > maxLength) {
+    text = text.substring(0, maxLength);
+    const lastSpace = text.lastIndexOf(' ');
+    if (lastSpace > 0) {
+      text = text.substring(0, lastSpace);
+    }
+    text += '...';
+  }
+  
+  return text;
+}
+
 // Load Substack feed via RSS2JSON
 async function loadSubstackFeed(config: { label: string; url: string }) {
   try {
@@ -39,13 +77,13 @@ async function loadSubstackFeed(config: { label: string; url: string }) {
       return [];
     }
     
-    return (data.items || []).slice(0, 10).map((item: any) => ({
+    return (data.items || []).slice(0, MAX_PER_SUBSTACK).map((item: any) => ({
       source: config.label,
       type: "Substack",
       title: item.title || "(untitled)",
       link: item.link || item.guid || "",
       date: item.pubDate || "",
-      excerpt: item.description ? item.description.replace(/<[^>]*>/g, '').substring(0, 150) + '...' : "",
+      excerpt: getExcerpt(item.description || item.content, EXCERPT_LENGTH),
     }));
   } catch (e: any) {
     console.warn(`[RSS2JSON] ${config.label} failed:`, e?.message ?? e);
@@ -58,7 +96,7 @@ async function loadPubMedFeed() {
   try {
     const feed = await parser.parseURL(PUBMED.url);
     
-    return (feed.items || []).slice(0, 10).map((item: any) => ({
+    return (feed.items || []).slice(0, MAX_PUBMED).map((item: any) => ({
       source: PUBMED.label,
       type: "PubMed",
       title: item.title || "(untitled)",
@@ -79,17 +117,23 @@ const substackResults = (await Promise.all(
 
 const pubmedResults = await loadPubMedFeed();
 
-// Combine and sort by date
-const posts = [...substackResults, ...pubmedResults]
+// Combine and sort by date, then limit total
+const allPosts = [...substackResults, ...pubmedResults]
   .filter((p) => p.link)
   .sort((a, b) => {
     const dateA = new Date(a.date || 0).getTime();
     const dateB = new Date(b.date || 0).getTime();
     return dateB - dateA;
-  })
-  .slice(0, 12);
+  });
 
-console.log(`[RSS] Loaded ${posts.length} posts (${substackResults.length} Substack, ${pubmedResults.length} PubMed)`);
+// Take the most recent posts up to TOTAL_POSTS
+const posts = allPosts.slice(0, TOTAL_POSTS);
+
+// Count posts by type
+const substackCount = posts.filter(p => p.type === "Substack").length;
+const pubmedCount = posts.filter(p => p.type === "PubMed").length;
+
+console.log(`[RSS] Loaded ${posts.length} posts (${substackCount} Substack, ${pubmedCount} PubMed)`);
 ---
 
 <BaseLayout title="Writing" description="Recent posts and publications">
@@ -111,7 +155,7 @@ console.log(`[RSS] Loaded ${posts.length} posts (${substackResults.length} Subst
       ) : (
         <div class="feed-grid">
           {posts.map((p) => (
-            <article class="feed-card">
+            <article class={`feed-card ${p.type === 'Substack' ? 'substack-card' : 'pubmed-card'}`}>
               <div class="feed-meta">
                 <span class="feed-source">{p.source}</span>
                 <span class="feed-type">{p.type}</span>
@@ -170,11 +214,22 @@ console.log(`[RSS] Loaded ${posts.length} posts (${substackResults.length} Subst
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(0, 0, 0, 0.06);
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
   }
 
   .feed-card:hover {
     transform: translateY(-3px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Different styling for Substack vs PubMed */
+  .substack-card {
+    border-left: 4px solid var(--primary-green);
+  }
+
+  .pubmed-card {
+    border-left: 4px solid var(--primary-orange);
   }
 
   .feed-meta {
@@ -219,14 +274,21 @@ console.log(`[RSS] Loaded ${posts.length} posts (${substackResults.length} Subst
     display: block;
     font-size: 0.9rem;
     color: var(--text-light);
-    margin: 0.5rem 0;
+    margin: 0.5rem 0 1rem;
   }
 
   .feed-excerpt {
-    margin-top: 0.75rem;
+    margin-top: auto;
     color: var(--text-light);
-    line-height: 1.6;
+    line-height: 1.7;
     font-size: 0.95rem;
+    flex-grow: 1;
+  }
+
+  /* Substack excerpts are longer, give them more space */
+  .substack-card .feed-excerpt {
+    font-size: 1rem;
+    line-height: 1.8;
   }
 
   @media (max-width: 768px) {
