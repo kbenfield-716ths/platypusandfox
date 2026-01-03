@@ -1,107 +1,65 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import Parser from "rss-parser";
-import { XMLParser } from "fast-xml-parser";
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Parser from 'rss-parser';
 
-const parser = new Parser();
-const xmlParser = new XMLParser({ ignoreAttributes: false });
+const parser = new Parser({
+  customFields: {
+    item: ['content:encoded', 'contentSnippet'],
+  },
+});
 
+// Your Substack feeds
 const SUBSTACKS = [
-  { label: "Healthspan Lab", base: "https://healthspanlab.substack.com" },
-  { label: "By Campfire and Candlelight", base: "https://kbe716ths.substack.com" },
+  {
+    label: "Healthspan Lab",
+    url: "https://healthspanlab.substack.com/feed",
+  },
+  {
+    label: "By Campfire and Candlelight",
+    url: "https://kbe716ths.substack.com/feed",
+  },
 ];
 
+// PubMed RSS
 const PUBMED = {
-  label: "Publications (PubMed RSS)",
-  type: "PubMed",
+  label: "Publications (PubMed)",
   url: "https://pubmed.ncbi.nlm.nih.gov/rss/search/1RwSy84-6Ztr-eeqbigUAL6oO8zFVead0wPzCxnfyBMdA7aAVM/?limit=10&utm_campaign=pubmed-2&fc=20260102170310",
 };
 
-function prettyFromSlug(url: string) {
-  const slug = url.split("/p/")[1]?.split(/[?#]/)[0] ?? "";
-  return slug
-    .replace(/-/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase()) || "(untitled)";
-}
-
-async function loadSubstackFromSitemap(pub: { label: string; base: string }) {
-  const sitemapUrl = `${pub.base}/sitemap.xml`;
-
+// Load a single RSS feed
+async function loadFeed(feedConfig: { label: string; url: string }, type = "Substack") {
   try {
-    const res = await fetch(sitemapUrl, {
-      headers: {
-        "user-agent": "Mozilla/5.0 (Astro build; platypusandfox.com)",
-        "accept": "application/xml,text/xml;q=0.9,*/*;q=0.8",
-      },
-    });
-
-    if (!res.ok) {
-      console.warn(`[substack-sitemap] ${pub.label} -> HTTP ${res.status}`);
-      return [];
-    }
-
-    const xml = await res.text();
-    const parsed = xmlParser.parse(xml);
-
-    const urlsRaw = parsed?.urlset?.url ?? [];
-    const urls = Array.isArray(urlsRaw) ? urlsRaw : [urlsRaw];
-
-    // Substack post URLs are typically /p/<slug>
-    const posts = urls
-      .map((u: any) => ({
-        loc: u.loc,
-        lastmod: u.lastmod,
-      }))
-      .filter((u: any) => typeof u.loc === "string" && u.loc.includes("/p/"))
-      .slice(0, 10)
-      .map((u: any) => ({
-        source: pub.label,
-        type: "Substack",
-        title: prettyFromSlug(u.loc),
-        link: u.loc,
-        date: u.lastmod ?? "",
-        excerpt: "",
-      }));
-
-    return posts;
-  } catch (e: any) {
-    console.warn(`[substack-sitemap] ${pub.label} failed:`, e?.message ?? e);
-    return [];
-  }
-}
-
-async function loadPubMedRss() {
-  try {
-    const res = await fetch(PUBMED.url, {
-      headers: { "user-agent": "Mozilla/5.0 (Astro build; platypusandfox.com)" },
-    });
-    if (!res.ok) {
-      console.warn(`[pubmed] -> HTTP ${res.status}`);
-      return [];
-    }
-    const xml = await res.text();
-    const parsed = await parser.parseString(xml);
-
-    return (parsed.items ?? []).map((item: any) => ({
-      source: PUBMED.label,
-      type: PUBMED.type,
-      title: item.title ?? "(untitled)",
-      link: item.link ?? "",
-      date: item.isoDate ?? item.pubDate ?? "",
-      excerpt: item.contentSnippet ?? item.summary ?? "",
+    const feed = await parser.parseURL(feedConfig.url);
+    
+    return (feed.items || []).slice(0, 10).map((item: any) => ({
+      source: feedConfig.label,
+      type: type,
+      title: item.title || "(untitled)",
+      link: item.link || "",
+      date: item.isoDate || item.pubDate || "",
+      excerpt: item.contentSnippet || item.summary || "",
     }));
   } catch (e: any) {
-    console.warn(`[pubmed] failed:`, e?.message ?? e);
+    console.warn(`[RSS] ${feedConfig.label} failed:`, e?.message ?? e);
     return [];
   }
 }
 
-const substackResults = (await Promise.all(SUBSTACKS.map(loadSubstackFromSitemap))).flat();
-const pubmedResults = await loadPubMedRss();
+// Load all feeds
+const substackResults = (await Promise.all(
+  SUBSTACKS.map(config => loadFeed(config, "Substack"))
+)).flat();
 
+const pubmedResults = await loadFeed(PUBMED, "PubMed");
+
+// Combine and sort
 const posts = [...substackResults, ...pubmedResults]
   .filter((p) => p.link)
-  .sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime())
+  .sort((a, b) => {
+    const dateA = new Date(a.date || 0).getTime();
+    const dateB = new Date(b.date || 0).getTime();
+    return dateB - dateA;
+  })
   .slice(0, 12);
 ---
 
@@ -115,6 +73,12 @@ const posts = [...substackResults, ...pubmedResults]
 
   <section class="section">
     <div class="container">
+      {posts.length === 0 && (
+        <p style="text-align: center; color: var(--text-light); padding: 3rem 0;">
+          Loading posts...
+        </p>
+      )}
+      
       <div class="feed-grid">
         {posts.map((p) => (
           <article class="feed-card">
@@ -129,7 +93,11 @@ const posts = [...substackResults, ...pubmedResults]
 
             {p.date && (
               <time class="feed-date" datetime={p.date}>
-                {new Date(p.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                {new Date(p.date).toLocaleDateString("en-US", { 
+                  year: "numeric", 
+                  month: "short", 
+                  day: "numeric" 
+                })}
               </time>
             )}
 
@@ -139,39 +107,100 @@ const posts = [...substackResults, ...pubmedResults]
       </div>
     </div>
   </section>
+
+  <section class="section" style="background-color: var(--light-gray);">
+    <div class="container">
+      <div style="max-width: 700px; margin: 0 auto; text-align: center;">
+        <h2 style="margin-bottom: 1rem; color: var(--primary-green); font-size: 1.5rem;">Subscribe</h2>
+        <p style="color: var(--text-light); margin-bottom: 2rem;">
+          Get my latest writing delivered directly to your inbox.
+        </p>
+        <div class="cta-buttons">
+          <a href="https://healthspanlab.substack.com" target="_blank" rel="noopener noreferrer" class="btn btn-primary">Healthspan Lab</a>
+          <a href="https://kbe716ths.substack.com" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">By Campfire and Candlelight</a>
+        </div>
+      </div>
+    </div>
+  </section>
 </BaseLayout>
 
 <style>
   .feed-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.25rem;
-    margin-top: 1.25rem;
+    gap: 1.5rem;
+    margin-top: 1.5rem;
   }
+
   .feed-card {
     background: white;
     border-radius: 12px;
-    padding: 1.25rem;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    border: 1px solid rgba(0,0,0,0.06);
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
   }
+
+  .feed-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
   .feed-meta {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.75rem;
     flex-wrap: wrap;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
     font-size: 0.85rem;
-    color: var(--text-light);
   }
-  .feed-source { font-weight: 700; color: var(--primary-green); }
+
+  .feed-source {
+    font-weight: 700;
+    color: var(--primary-green);
+  }
+
   .feed-type {
-    padding: 0.1rem 0.5rem;
+    padding: 0.2rem 0.6rem;
     border-radius: 999px;
-    border: 1px solid rgba(0,0,0,0.12);
+    border: 1px solid rgba(0, 0, 0, 0.12);
     background: var(--light-gray);
     color: var(--text-dark);
+    font-size: 0.8rem;
   }
-  .feed-title { margin: 0.35rem 0 0.4rem; font-size: 1.1rem; line-height: 1.3; }
-  .feed-date { display: block; font-size: 0.9rem; color: var(--text-light); }
-  .feed-excerpt { margin-top: 0.75rem; color: var(--text-light); line-height: 1.6; font-size: 0.95rem; }
+
+  .feed-title {
+    margin: 0.5rem 0;
+    font-size: 1.15rem;
+    line-height: 1.4;
+  }
+
+  .feed-title a {
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: color 0.3s ease;
+  }
+
+  .feed-title a:hover {
+    color: var(--primary-orange);
+  }
+
+  .feed-date {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin: 0.5rem 0;
+  }
+
+  .feed-excerpt {
+    margin-top: 0.75rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    font-size: 0.95rem;
+  }
+
+  @media (max-width: 768px) {
+    .feed-grid {
+      grid-template-columns: 1fr;
+    }
+  }
 </style>
