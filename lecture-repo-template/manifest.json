@@ -1,0 +1,20 @@
+{
+  "updated": "2026-03-05",
+  "series": [
+    {
+      "id": "example-series",
+      "title": "Example Series Title",
+      "description": "Brief description of what this series covers.",
+      "lectures": [
+        {
+          "id": "example-01",
+          "title": "Lecture 01 — Title Here",
+          "description": "What this lecture covers. One or two sentences.",
+          "date": "2026-03-05",
+          "filename": "lectures/example-series/lecture-01-title-here.pptx",
+          "version": "1.0"
+        }
+      ]
+    }
+  ]
+}

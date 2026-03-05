@@ -1,0 +1,88 @@
+name: Publish Lectures
+
+# Runs automatically when you push to main.
+# You can also trigger it manually from the Actions tab on GitHub.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout private repo (master files)
+        uses: actions/checkout@v4
+        with:
+          path: private
+
+      - name: Checkout public distribution repo
+        uses: actions/checkout@v4
+        with:
+          # ── EDIT THIS LINE ─────────────────────────────────────────────
+          repository: YOUR_GITHUB_USERNAME/platypusandfox-lectures-public
+          # ───────────────────────────────────────────────────────────────
+          token: ${{ secrets.PUBLISH_TOKEN }}
+          path: public
+
+      - name: Copy published files from manifest
+        run: |
+          cd private
+          python3 << 'EOF'
+          import json, shutil, os, sys
+
+          # Read manifest
+          try:
+              with open('manifest.json') as f:
+                  manifest = json.load(f)
+          except Exception as e:
+              print(f"ERROR: Could not read manifest.json: {e}")
+              sys.exit(1)
+
+          # Collect all filenames listed in the manifest
+          files_to_publish = []
+          for series in manifest.get('series', []):
+              for lecture in series.get('lectures', []):
+                  files_to_publish.append(lecture['filename'])
+
+          print(f"Manifest lists {len(files_to_publish)} file(s) to publish.")
+
+          published = 0
+          missing = 0
+
+          for filepath in files_to_publish:
+              src = filepath
+              dst = f'../public/{filepath}'
+              os.makedirs(os.path.dirname(dst), exist_ok=True)
+              if os.path.exists(src):
+                  shutil.copy2(src, dst)
+                  print(f"  ✓ Published: {filepath}")
+                  published += 1
+              else:
+                  print(f"  ✗ MISSING:   {filepath}")
+                  missing += 1
+
+          # Always copy the manifest itself
+          shutil.copy2('manifest.json', '../public/manifest.json')
+          print(f"  ✓ Published: manifest.json")
+
+          print(f"\nDone. {published} file(s) published, {missing} file(s) missing.")
+          if missing > 0:
+              print("WARNING: Some files listed in manifest.json were not found.")
+          EOF
+
+      - name: Commit and push to public repo
+        run: |
+          cd public
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A
+          # Only commit if there are actual changes
+          if git diff --staged --quiet; then
+            echo "No changes to publish."
+          else
+            git commit -m "Publish lectures [$(date +'%Y-%m-%d %H:%M UTC')]"
+            git push
+            echo "Published successfully."
+          fi

@@ -1,0 +1,605 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// ─── CONFIGURATION ──────────────────────────────────────────────────────────
+//
+// 1. Set your password hash below.
+//    Generate it by running this in your browser console:
+//
+//    const e = new TextEncoder();
+//    const d = e.encode('your-password-here');
+//    const h = await crypto.subtle.digest('SHA-256', d);
+//    console.log(Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join(''));
+//
+// 2. Replace YOUR_GITHUB_USERNAME with your GitHub username.
+//
+const PASSWORD_HASH = '91809bfa636786fff758022ae6944e31220bf58731082576ee1be21b2b17f5be';
+const GITHUB_USERNAME = 'kbenfield-716ths';
+const PUBLIC_REPO = 'platypusandfox-lectures-public';
+const MANIFEST_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${PUBLIC_REPO}/main/manifest.json`;
+const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${PUBLIC_REPO}/main/`;
+// ────────────────────────────────────────────────────────────────────────────
+---
+
+<BaseLayout
+  title="Lecture Library"
+  description="Password-protected access to Platypus & Fox educational lecture materials."
+>
+  <!-- PASSWORD GATE -->
+  <section class="auth-gate" id="auth-gate">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <img src="/images/logo-simple.jpg" alt="Platypus & Fox" />
+      </div>
+      <h1>Lecture Library</h1>
+      <p class="auth-subtitle">Enter the access password to view lecture materials.</p>
+      <form class="auth-form" id="auth-form">
+        <div class="input-group">
+          <input
+            type="password"
+            id="password-input"
+            placeholder="Access password"
+            autocomplete="current-password"
+            autofocus
+          />
+          <button type="submit" class="btn-primary">Access Library</button>
+        </div>
+        <p class="auth-error" id="auth-error">Incorrect password. Please try again.</p>
+      </form>
+      <p class="auth-note">
+        Need access? <a href="/contact">Contact Kyle</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- LECTURE LIBRARY (shown after auth) -->
+  <section class="lectures-page" id="lectures-page" style="display:none">
+    <div class="lectures-hero">
+      <div class="container">
+        <h1>Lecture Library</h1>
+        <p>Educational materials from Platypus & Fox presentations and workshops.</p>
+      </div>
+    </div>
+
+    <div class="container lectures-body">
+      <!-- Loading state -->
+      <div id="loading-state" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading lecture materials…</p>
+      </div>
+
+      <!-- Error state -->
+      <div id="error-state" class="error-state" style="display:none">
+        <p>⚠️ Could not load lecture materials. Please try refreshing the page.</p>
+      </div>
+
+      <!-- Lecture content -->
+      <div id="lecture-content" style="display:none"></div>
+
+      <!-- Sign out -->
+      <div class="signout-row">
+        <button class="btn-ghost" id="signout-btn">Sign out of library</button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script define:vars={{ PASSWORD_HASH, MANIFEST_URL, FILES_BASE_URL }}>
+  const AUTH_KEY = 'pf_lectures_auth';
+
+  // ── Utilities ──────────────────────────────────────────────────────────────
+
+  async function hashPassword(password) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function getFilename(filepath) {
+    return filepath.split('/').pop();
+  }
+
+  // ── Auth ───────────────────────────────────────────────────────────────────
+
+  function isAuthenticated() {
+    return sessionStorage.getItem(AUTH_KEY) === 'true';
+  }
+
+  function setAuthenticated() {
+    sessionStorage.setItem(AUTH_KEY, 'true');
+  }
+
+  function clearAuthenticated() {
+    sessionStorage.removeItem(AUTH_KEY);
+  }
+
+  function showLibrary() {
+    document.getElementById('auth-gate').style.display = 'none';
+    document.getElementById('lectures-page').style.display = 'block';
+    loadLectures();
+  }
+
+  function showGate() {
+    document.getElementById('auth-gate').style.display = 'flex';
+    document.getElementById('lectures-page').style.display = 'none';
+  }
+
+  // ── Password Form ──────────────────────────────────────────────────────────
+
+  const form = document.getElementById('auth-form');
+  const input = document.getElementById('password-input');
+  const errorEl = document.getElementById('auth-error');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const entered = input.value.trim();
+    if (!entered) return;
+
+    const hash = await hashPassword(entered);
+
+    if (hash === PASSWORD_HASH) {
+      errorEl.style.display = 'none';
+      input.value = '';
+      setAuthenticated();
+      showLibrary();
+    } else {
+      errorEl.style.display = 'block';
+      input.value = '';
+      input.focus();
+      // Shake animation
+      const card = document.querySelector('.auth-card');
+      card.classList.add('shake');
+      setTimeout(() => card.classList.remove('shake'), 600);
+    }
+  });
+
+  // ── Sign out ───────────────────────────────────────────────────────────────
+
+  document.getElementById('signout-btn').addEventListener('click', () => {
+    clearAuthenticated();
+    showGate();
+  });
+
+  // ── Load Lectures ──────────────────────────────────────────────────────────
+
+  async function loadLectures() {
+    const loadingEl = document.getElementById('loading-state');
+    const errorEl = document.getElementById('error-state');
+    const contentEl = document.getElementById('lecture-content');
+
+    try {
+      const res = await fetch(MANIFEST_URL + '?t=' + Date.now());
+      if (!res.ok) throw new Error('Failed to fetch manifest');
+      const manifest = await res.json();
+
+      loadingEl.style.display = 'none';
+      contentEl.style.display = 'block';
+      contentEl.innerHTML = renderLibrary(manifest);
+    } catch (err) {
+      console.error('Lecture load error:', err);
+      loadingEl.style.display = 'none';
+      errorEl.style.display = 'block';
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  function renderLibrary(manifest) {
+    const updated = manifest.updated ? `<p class="library-updated">Last updated: ${formatDate(manifest.updated)}</p>` : '';
+    const series = (manifest.series || []).map(renderSeries).join('');
+    return `${updated}${series}`;
+  }
+
+  function renderSeries(series) {
+    const lectures = (series.lectures || []).map(renderLectureCard).join('');
+    return `
+      <div class="series-block">
+        <div class="series-header">
+          <h2>${escapeHtml(series.title)}</h2>
+          ${series.description ? `<p>${escapeHtml(series.description)}</p>` : ''}
+        </div>
+        <div class="lecture-grid">
+          ${lectures}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderLectureCard(lecture) {
+    const downloadUrl = FILES_BASE_URL + lecture.filename;
+    const filename = getFilename(lecture.filename);
+    const versionBadge = lecture.version ? `<span class="version-badge">v${escapeHtml(lecture.version)}</span>` : '';
+    const dateStr = lecture.date ? `<span class="lecture-date">${formatDate(lecture.date)}</span>` : '';
+
+    return `
+      <div class="lecture-card">
+        <div class="lecture-card-header">
+          <div class="pptx-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <div class="lecture-meta">
+            ${dateStr}
+            ${versionBadge}
+          </div>
+        </div>
+        <h3 class="lecture-title">${escapeHtml(lecture.title)}</h3>
+        ${lecture.description ? `<p class="lecture-description">${escapeHtml(lecture.description)}</p>` : ''}
+        <a href="${encodeURI(downloadUrl)}" download="${escapeHtml(filename)}" class="download-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download Slides
+        </a>
+      </div>
+    `;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+
+  if (isAuthenticated()) {
+    showLibrary();
+  } else {
+    showGate();
+  }
+</script>
+
+<style>
+  /* ── Auth Gate ──────────────────────────────────────────────────────────── */
+  .auth-gate {
+    min-height: calc(100vh - 80px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: var(--light-gray);
+  }
+
+  .auth-card {
+    background: var(--white);
+    border-radius: 16px;
+    padding: 3rem;
+    max-width: 440px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .auth-logo img {
+    width: 72px;
+    height: 72px;
+    border-radius: 12px;
+    margin-bottom: 1.5rem;
+    object-fit: cover;
+  }
+
+  .auth-card h1 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 0.5rem;
+  }
+
+  .auth-subtitle {
+    color: var(--text-light);
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+  }
+
+  .auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .input-group input {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: var(--font-sans);
+    color: var(--text-dark);
+    transition: var(--transition);
+    outline: none;
+  }
+
+  .input-group input:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(45, 122, 77, 0.15);
+  }
+
+  .btn-primary {
+    width: 100%;
+    padding: 0.875rem;
+    background: var(--primary-green);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: var(--font-sans);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .btn-primary:hover {
+    background: var(--dark-teal);
+    transform: translateY(-1px);
+  }
+
+  .auth-error {
+    display: none;
+    color: #c0392b;
+    font-size: 0.875rem;
+    background: #fdf0ed;
+    padding: 0.75rem;
+    border-radius: 6px;
+    border-left: 3px solid #c0392b;
+  }
+
+  .auth-note {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+
+  .shake {
+    animation: shake 0.5s ease-in-out;
+  }
+
+  /* ── Lectures Hero ──────────────────────────────────────────────────────── */
+  .lectures-hero {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-teal) 100%);
+    color: var(--white);
+    padding: 4rem 0 3rem;
+    text-align: center;
+  }
+
+  .lectures-hero h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .lectures-hero p {
+    font-size: 1.15rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ── Lectures Body ──────────────────────────────────────────────────────── */
+  .lectures-body {
+    padding: 3rem 2rem 5rem;
+  }
+
+  .library-updated {
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+  }
+
+  /* ── Loading / Error ────────────────────────────────────────────────────── */
+  .loading-state,
+  .error-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-light);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top-color: var(--primary-green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── Series Block ───────────────────────────────────────────────────────── */
+  .series-block {
+    margin-bottom: 3.5rem;
+  }
+
+  .series-header {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--light-gray);
+  }
+
+  .series-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-green);
+    margin-bottom: 0.4rem;
+  }
+
+  .series-header p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+  }
+
+  /* ── Lecture Grid ───────────────────────────────────────────────────────── */
+  .lecture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  /* ── Lecture Card ───────────────────────────────────────────────────────── */
+  .lecture-card {
+    background: var(--white);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: var(--transition);
+  }
+
+  .lecture-card:hover {
+    border-color: var(--primary-green);
+    box-shadow: 0 4px 20px rgba(45, 122, 77, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .lecture-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .pptx-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, #d14524 0%, #e87152 100%);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .pptx-icon svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .lecture-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+  }
+
+  .lecture-date {
+    font-size: 0.78rem;
+    color: var(--text-light);
+  }
+
+  .version-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: var(--cream);
+    color: var(--primary-green);
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--light-green);
+  }
+
+  .lecture-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.4;
+    flex-grow: 1;
+  }
+
+  .lecture-description {
+    font-size: 0.875rem;
+    color: var(--text-light);
+    line-height: 1.5;
+    flex-grow: 1;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.1rem;
+    background: var(--primary-green);
+    color: var(--white);
+    border-radius: 7px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    margin-top: auto;
+  }
+
+  .download-btn:hover {
+    background: var(--dark-teal);
+    color: var(--white);
+    transform: none;
+  }
+
+  /* ── Sign out ───────────────────────────────────────────────────────────── */
+  .signout-row {
+    text-align: center;
+    padding-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 2rem;
+  }
+
+  .btn-ghost {
+    background: none;
+    border: 1px solid #e2e8f0;
+    border-radius: 7px;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    cursor: pointer;
+    font-family: var(--font-sans);
+    transition: var(--transition);
+  }
+
+  .btn-ghost:hover {
+    border-color: #c0392b;
+    color: #c0392b;
+  }
+
+  /* ── Responsive ─────────────────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .auth-card {
+      padding: 2rem 1.5rem;
+    }
+
+    .lecture-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
