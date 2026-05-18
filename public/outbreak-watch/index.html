@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Outbreak Watch | Platypus & Fox</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --pf-green: #2d7a4d;
+    --pf-green-light: #7fb069;
+    --pf-orange: #ff6b35;
+    --pf-dark-teal: #1a5940;
+    --bg: #F7F4ED;
+    --bg-card: #FFFDF8;
+    --ink: #161412;
+    --ink-soft: #4A4540;
+    --ink-faint: #8A847C;
+    --rule: #DDD6C8;
+    --rule-soft: #ECE6D8;
+    --alert-high: #9B1E1E;
+    --alert-high-bg: #F2D9D9;
+    --alert-moderate: #B5740C;
+    --alert-moderate-bg: #F5E5C6;
+    --alert-watch: #4A6B7C;
+    --alert-watch-bg: #DCE5EB;
+    --alert-stable: #2d7a4d;
+    --alert-stable-bg: #d0e8d9;
+    --serif: "IBM Plex Serif", Georgia, serif;
+    --sans: "IBM Plex Sans", system-ui, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  a { color: var(--pf-green); }
+  a:hover { color: var(--pf-orange); }
+  html, body {
+    background: var(--bg); color: var(--ink); font-family: var(--sans);
+    font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image: radial-gradient(circle at 1px 1px, rgba(22,20,18,0.04) 1px, transparent 0);
+    background-size: 24px 24px; min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 32px 24px 80px; }
+
+  .masthead { border-bottom: 3px solid var(--pf-green); padding-bottom: 20px; margin-bottom: 32px; }
+  .masthead-top {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 12px; font-family: var(--mono); font-size: 11px;
+    text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-soft);
+    border-bottom: 1px solid var(--rule); padding-bottom: 10px;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .masthead-top .left { display: flex; gap: 16px; flex-wrap: wrap; }
+  h1.title {
+    font-family: var(--serif); font-weight: 700;
+    font-size: clamp(40px, 7vw, 72px); line-height: 0.95;
+    letter-spacing: -0.02em; margin-bottom: 8px;
+  }
+  h1.title em { font-style: italic; font-weight: 400; color: var(--ink-soft); }
+  .subtitle {
+    font-family: var(--serif); font-style: italic; font-size: 17px;
+    color: var(--ink-soft); max-width: 700px;
+  }
+
+  .breaking {
+    margin-top: 16px; background: var(--alert-high); color: #FFFDF8;
+    padding: 12px 18px; display: flex; align-items: center; gap: 14px;
+    font-family: var(--sans); font-size: 14px;
+  }
+  .breaking-label {
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 0.15em; text-transform: uppercase; padding: 3px 8px;
+    background: rgba(255,255,255,0.18); white-space: nowrap;
+  }
+  .breaking a {
+    color: #FFFDF8; text-decoration: underline;
+    text-decoration-thickness: 1px; text-underline-offset: 3px;
+  }
+
+  .section { margin-top: 56px; }
+  .section-label {
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.15em; color: var(--pf-green);
+    margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+  }
+  .section-label::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  h2.section-title {
+    font-family: var(--serif); font-weight: 600;
+    font-size: clamp(28px, 4vw, 38px); line-height: 1.1;
+    letter-spacing: -0.01em; margin-bottom: 24px;
+  }
+
+  .ticker {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 0; margin-top: 24px;
+    border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+  }
+  .ticker-item { padding: 16px 20px; border-right: 1px solid var(--rule-soft); }
+  .ticker-item:last-child { border-right: none; }
+  .ticker-label {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-faint); margin-bottom: 4px;
+  }
+  .ticker-value { font-family: var(--serif); font-weight: 600; font-size: 26px; line-height: 1; }
+  .ticker-sub { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+
+  .va-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; }
+  @media (max-width: 820px) { .va-layout { grid-template-columns: 1fr; } }
+
+  .map-card { background: var(--bg-card); border: 1px solid var(--rule); padding: 16px; position: relative; }
+  .map-card-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--rule-soft);
+  }
+  .map-card-header h3 { font-family: var(--serif); font-weight: 600; font-size: 18px; }
+  .map-card-header .count { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); }
+
+  .map-wrap { position: relative; background: #ECE6D8; }
+  svg.va-map { display: block; width: 100%; height: auto; }
+
+  /* COUNTY POLYGONS */
+  .county {
+    cursor: pointer;
+    stroke: #FFFDF8; stroke-width: 0.4;
+    transition: stroke-width 0.12s, stroke 0.12s;
+  }
+  .county[data-region="northwest"] { fill: rgba(74, 107, 124, 0.32); }
+  .county[data-region="northern"]  { fill: rgba(74, 107, 124, 0.32); }
+  .county[data-region="central"]   { fill: rgba(155, 30, 30, 0.48); }
+  .county[data-region="eastern"]   { fill: rgba(74, 107, 124, 0.32); }
+  .county[data-region="southwest"] { fill: rgba(78, 107, 74, 0.28); }
+  .county:hover {
+    stroke: var(--ink); stroke-width: 1.5;
+  }
+
+  .region-boundary { fill: none; stroke: var(--ink); stroke-width: 1.6; opacity: 0.85; pointer-events: none; }
+  .state-outline { fill: none; stroke: var(--ink); stroke-width: 2.4; pointer-events: none; }
+
+  .region-label { pointer-events: none; }
+  .region-label-bg { fill: rgba(255, 253, 248, 0.92); stroke: var(--ink); stroke-width: 1; }
+  .region-label-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    fill: var(--ink);
+    text-anchor: middle;
+    dominant-baseline: middle;
+  }
+
+  .marker { cursor: pointer; }
+  .marker-high .pulse-ring {
+    fill: rgba(155, 30, 30, 0.4);
+    animation: ring-pulse 2s infinite;
+  }
+  @keyframes ring-pulse {
+    0%   { r: 6; opacity: 0.7; }
+    100% { r: 18; opacity: 0; }
+  }
+
+  /* Tooltip + popup */
+  .map-tooltip {
+    position: absolute; pointer-events: none;
+    background: var(--ink); color: var(--bg);
+    font-family: var(--mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 3px 8px; border-radius: 2px;
+    white-space: nowrap; opacity: 0;
+    transition: opacity 0.12s;
+    z-index: 10;
+  }
+  .map-popup {
+    position: absolute;
+    background: var(--bg-card);
+    border: 1px solid var(--rule);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+    padding: 12px 14px;
+    max-width: 260px;
+    font-family: var(--sans); font-size: 13px;
+    z-index: 20;
+    display: none;
+  }
+  .map-popup.show { display: block; }
+  .map-popup .pop-title {
+    font-family: var(--serif); font-weight: 600; font-size: 14px; margin-bottom: 4px;
+  }
+  .map-popup .pop-detail { color: var(--ink-soft); font-size: 13px; line-height: 1.4; }
+  .map-popup .pop-meta {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--ink-faint); margin-top: 6px;
+  }
+  .map-popup .pop-meta a { color: var(--ink-soft); text-decoration: underline; }
+  .map-popup .pop-close {
+    position: absolute; top: 4px; right: 8px;
+    background: none; border: none; font-size: 16px; line-height: 1;
+    color: var(--ink-faint); cursor: pointer;
+  }
+
+  .region-detail {
+    background: var(--bg-card); border: 1px solid var(--rule);
+    padding: 24px; min-height: 480px;
+  }
+  @media (max-width: 820px) { .region-detail { min-height: 0; } }
+  .region-detail h3 { font-family: var(--serif); font-weight: 600; font-size: 20px; margin-bottom: 4px; }
+  .region-detail .region-meta {
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-faint); margin-bottom: 16px;
+  }
+  .region-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .region-btn {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 5px 9px;
+    background: transparent; border: 1px solid var(--rule);
+    color: var(--ink-soft); cursor: pointer; transition: all 0.15s;
+  }
+  .region-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .region-btn.active { background: var(--pf-green); color: #fff; border-color: var(--pf-green); }
+
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    padding: 3px 8px; border-radius: 2px; font-weight: 500;
+  }
+  .badge.high { background: var(--alert-high-bg); color: var(--alert-high); }
+  .badge.moderate { background: var(--alert-moderate-bg); color: var(--alert-moderate); }
+  .badge.watch { background: var(--alert-watch-bg); color: var(--alert-watch); }
+  .badge.stable { background: var(--alert-stable-bg); color: var(--alert-stable); }
+
+  .event-list { list-style: none; }
+  .event-item { padding: 12px 0; border-bottom: 1px solid var(--rule-soft); }
+  .event-item:last-child { border-bottom: none; }
+  .event-disease { font-family: var(--serif); font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .event-detail { font-size: 13px; color: var(--ink-soft); line-height: 1.45; }
+  .event-meta {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--ink-faint); margin-top: 6px;
+  }
+  .event-meta a { color: var(--ink-soft); text-decoration: underline; text-underline-offset: 2px; }
+  .empty-state { font-family: var(--serif); font-style: italic; color: var(--ink-faint); font-size: 14px; padding: 16px 0; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin-top: 12px; padding: 10px 4px;
+    font-family: var(--mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-soft);
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.15); }
+
+  .table-wrapper { background: var(--bg-card); border: 1px solid var(--rule); overflow-x: auto; }
+  table.global-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .global-table thead th {
+    text-align: left; font-family: var(--mono); font-size: 10px;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-faint); padding: 14px 16px;
+    border-bottom: 2px solid var(--ink); background: var(--bg-card);
+    white-space: nowrap; cursor: pointer; user-select: none;
+  }
+  .global-table thead th:hover { color: var(--ink); }
+  .global-table thead th .sort-arrow { margin-left: 4px; opacity: 0.4; }
+  .global-table tbody td { padding: 14px 16px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; }
+  .global-table tbody tr:hover { background: rgba(0,0,0,0.015); }
+  .global-table tbody tr:last-child td { border-bottom: none; }
+  .td-disease { font-family: var(--serif); font-weight: 600; font-size: 14px; min-width: 180px; }
+  .td-pathogen { font-style: italic; color: var(--ink-soft); font-size: 12px; font-weight: 400; }
+  .td-location { min-width: 140px; color: var(--ink-soft); }
+  .td-cases, .td-deaths { font-family: var(--mono); font-size: 13px; text-align: right; white-space: nowrap; }
+  .td-status { min-width: 100px; }
+  .td-source { font-size: 12px; color: var(--ink-faint); }
+  .td-source a { color: var(--ink-soft); text-decoration: underline; text-underline-offset: 2px; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+  .filter-btn {
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.08em; padding: 6px 12px;
+    background: transparent; border: 1px solid var(--rule);
+    color: var(--ink-soft); cursor: pointer; transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--ink); color: var(--ink); }
+  .filter-btn.active { background: var(--pf-green); color: #fff; border-color: var(--pf-green); }
+
+  .news-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0; border: 1px solid var(--rule); background: var(--bg-card);
+  }
+  .news-card {
+    padding: 20px; border-right: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+    text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: background 0.15s;
+  }
+  .news-card:hover { background: rgba(0,0,0,0.02); }
+  .news-source {
+    font-family: var(--mono); font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.12em; color: var(--ink-faint);
+    display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  }
+  .news-source .src-name { font-weight: 600; color: var(--ink-soft); }
+  .news-title { font-family: var(--serif); font-weight: 600; font-size: 16px; line-height: 1.25; color: var(--ink); }
+  .news-dek { font-size: 13px; color: var(--ink-soft); line-height: 1.45; flex: 1; }
+  .news-arrow { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 4px; }
+
+  .footer {
+    margin-top: 80px; padding-top: 24px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--ink-faint);
+    display: flex; justify-content: space-between; flex-wrap: wrap; gap: 16px;
+  }
+  .footer a { color: var(--ink-soft); text-decoration: underline; }
+</style>
+</head>
+<body>
+<div id="pf-topbar" style="
+  background: #2d7a4d;
+  color: white;
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+">
+  <a href="/" style="
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.95;
+  ">
+    <img src="/images/logo-simple.jpg" alt="" style="width:28px;height:28px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);" />
+    Platypus &amp; Fox
+  </a>
+  <nav style="display:flex;gap:20px;align-items:center;">
+    <a href="/" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:500;">Home</a>
+    <a href="/about" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:500;">About</a>
+    <a href="/projects" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:500;">Projects</a>
+    <a href="/writing" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:500;">Writing</a>
+    <a href="/contact" style="color:rgba(255,255,255,0.85);text-decoration:none;font-weight:500;">Contact</a>
+    <span style="color:rgba(255,255,255,0.5);">|</span>
+    <a href="/outbreak-watch/" style="color:#ffb38a;text-decoration:none;font-weight:700;">Outbreak Watch</a>
+  </nav>
+</div>
+
+<div class="container">
+
+  <header class="masthead">
+    <div class="masthead-top">
+      <div class="left">
+        <span>Vol. I · No. <span id="issue-no">20</span></span>
+        <span>Updated <span id="last-updated">May 17, 2026</span></span>
+      </div>
+      <div class="right">Public Health Surveillance Digest</div>
+    </div>
+    <h1 class="title">Outbreak <em>Watch</em></h1>
+    <p class="subtitle">A weekly digest of communicable disease activity in the Commonwealth of Virginia and notable outbreaks worldwide. Curated for clinicians.</p>
+
+    <div class="breaking">
+      <span class="breaking-label">PHEIC</span>
+      <span>WHO declared the Bundibugyo Ebola outbreak in DRC &amp; Uganda a Public Health Emergency of International Concern (May 16, 2026). <a href="https://www.who.int/news/item/17-05-2026-epidemic-of-ebola-disease-in-the-democratic-republic-of-the-congo-and-uganda-determined-a-public-health-emergency-of-international-concern" target="_blank" rel="noopener">Read WHO declaration →</a></span>
+    </div>
+
+    <div class="ticker">
+      <div class="ticker-item"><div class="ticker-label">VA Measles 2026</div><div class="ticker-value" id="t-va-measles">—</div><div class="ticker-sub">cases statewide</div></div>
+      <div class="ticker-item"><div class="ticker-label">US Measles 2026</div><div class="ticker-value" id="t-us-measles">—</div><div class="ticker-sub">across 27 outbreaks</div></div>
+      <div class="ticker-item"><div class="ticker-label">Active Global Events</div><div class="ticker-value" id="t-global-events">—</div><div class="ticker-sub">tracked this week</div></div>
+      <div class="ticker-item"><div class="ticker-label">VA GI Activity</div><div class="ticker-value">Elevated</div><div class="ticker-sub">above seasonal threshold</div></div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="section-label">Part I — The Commonwealth</div>
+    <h2 class="section-title">Virginia by health region</h2>
+    <div class="va-layout">
+      <div class="map-card">
+        <div class="map-card-header">
+          <h3>Activity map</h3>
+          <span class="count">Click a county or marker</span>
+        </div>
+        <div class="map-wrap" id="map-wrap">
+          <svg class="va-map" id="va-map" viewBox="0 0 1000 452" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+            <g id="counties-layer"><path class="county" data-fips="51820" data-region="northwest" data-name="Waynesboro" d="M559.2,216.0L564.2,211.4L568.8,212.0L568.0,220.1L562.1,221.5L559.2,216.0Z"/><path class="county" data-fips="51595" data-region="central" data-name="Emporia" d="M721.0,415.8L725.2,416.0L726.4,420.4L721.0,421.5L721.0,415.8Z"/><path class="county" data-fips="51530" data-region="northwest" data-name="Buena Vista" d="M508.8,264.2L514.6,261.6L515.4,264.0L510.0,271.1L508.8,264.2Z"/><path class="county" data-fips="51590" data-region="southwest" data-name="Danville" d="M513.3,441.3L498.7,441.3L500.0,436.0L492.9,432.1L495.0,429.9L504.2,432.4L507.1,426.1L510.8,431.4L514.6,432.3L517.9,437.0L514.2,436.7L513.3,441.3Z"/><path class="county" data-fips="51640" data-region="southwest" data-name="Galax" d="M328.6,422.0L330.3,418.8L334.9,418.9L330.7,425.2L328.6,422.0Z"/><path class="county" data-fips="51660" data-region="northwest" data-name="Harrisonburg" d="M563.0,161.6L568.4,155.4L572.6,159.3L573.4,164.2L567.1,165.4L563.4,168.6L563.0,161.6Z"/><path class="county" data-fips="51690" data-region="southwest" data-name="Martinsville" d="M448.3,420.1L450.8,416.1L455.8,417.2L456.6,425.7L453.3,425.2L448.3,420.1Z"/><path class="county" data-fips="51540" data-region="northwest" data-name="Charlottesville" d="M608.8,222.3L613.0,216.0L617.2,217.5L616.8,222.9L609.3,224.6L608.8,222.3Z"/><path class="county" data-fips="51099" data-region="northern" data-name="King George" d="M752.3,174.7L757.7,177.2L766.9,175.2L769.4,171.9L775.7,171.9L780.7,167.1L784.4,170.9L781.9,180.2L786.1,185.2L780.2,187.7L780.2,196.6L778.6,202.3L772.3,204.1L763.6,200.4L760.6,197.1L756.1,198.2L756.5,192.3L759.4,190.5L747.7,190.0L745.6,187.6L748.1,175.2L752.3,174.7Z"/><path class="county" data-fips="51159" data-region="eastern" data-name="Richmond" d="M792.7,214.8L799.8,207.9L806.1,216.6L813.6,221.4L812.8,226.0L825.7,228.8L828.2,231.0L837.4,236.2L838.2,245.5L842.8,249.9L836.1,250.2L833.6,254.0L827.4,256.7L822.8,251.8L817.8,250.3L809.0,237.2L804.4,235.8L802.8,230.1L796.5,226.3L792.7,214.8Z"/><path class="county" data-fips="51169" data-region="southwest" data-name="Scott" d="M115.1,403.0L117.6,398.2L123.4,400.6L128.4,396.5L130.9,391.5L158.0,390.6L157.6,391.8L163.5,406.1L166.0,416.5L170.6,433.2L133.9,433.4L108.0,433.4L90.1,433.4L94.7,421.4L108.8,412.9L108.4,410.9L115.1,403.0Z"/><path class="county" data-fips="51023" data-region="southwest" data-name="Botetourt" d="M428.3,311.3L431.6,308.3L435.8,298.3L440.8,293.4L433.7,281.6L434.5,278.2L446.6,270.2L458.3,255.5L475.0,261.1L473.3,265.2L475.4,274.2L473.7,276.0L486.7,285.8L486.2,288.0L495.4,295.0L487.5,301.7L485.0,307.3L479.6,306.3L476.6,302.1L472.9,303.4L465.4,310.8L458.7,314.1L462.9,317.3L461.6,321.9L455.0,327.9L452.5,325.1L429.9,313.4L428.3,311.3Z"/><path class="county" data-fips="51199" data-region="eastern" data-name="York" d="M825.3,317.5L831.9,327.3L844.0,338.1L847.0,341.7L856.1,340.3L855.7,349.3L853.6,350.6L855.7,357.8L851.1,359.6L848.2,358.5L842.0,347.3L836.1,341.1L833.2,342.1L831.9,338.4L824.9,336.5L822.8,330.5L819.4,332.7L817.4,328.4L814.0,321.3L815.7,319.1L823.6,319.4L825.3,317.5Z"/><path class="county" data-fips="51157" data-region="northwest" data-name="Rappahannock" d="M636.4,114.2L640.1,114.5L648.0,109.3L651.8,100.2L654.3,98.7L663.5,108.3L666.4,108.8L667.6,118.9L676.8,123.5L658.9,138.1L648.9,149.3L642.6,147.7L630.1,133.6L633.0,125.5L630.9,122.6L632.2,117.4L636.4,114.2Z"/><path class="county" data-fips="51079" data-region="northwest" data-name="Greene" d="M613.0,164.0L616.8,156.0L618.9,159.8L618.0,165.7L619.7,172.0L628.9,185.3L635.9,185.9L626.8,199.0L592.6,185.2L605.1,176.8L606.3,172.4L613.0,164.0Z"/><path class="county" data-fips="51750" data-region="southwest" data-name="Radford" d="M375.3,353.9L369.5,360.4L368.2,354.8L372.8,352.0L375.3,353.9ZM376.6,354.2L376.6,354.2L376.6,354.2L376.6,354.2Z"/><path class="county" data-fips="51109" data-region="northwest" data-name="Louisa" d="M633.9,225.2L640.1,216.8L645.1,206.8L649.7,207.1L657.6,203.7L663.9,206.1L669.3,205.8L674.7,208.7L678.9,208.7L694.3,214.9L699.8,221.3L705.6,225.0L693.1,266.1L688.9,262.6L682.2,261.4L675.6,248.6L670.6,247.1L667.6,242.1L662.2,240.2L642.6,229.3L633.9,225.2Z"/><path class="county" data-fips="51775" data-region="southwest" data-name="Salem" d="M434.5,328.2L433.3,334.9L428.3,335.7L423.3,331.2L433.3,325.8L434.5,328.2Z"/><path class="county" data-fips="51670" data-region="central" data-name="Hopewell" d="M746.9,327.6L752.7,327.4L756.1,330.3L750.2,335.0L747.7,334.3L746.9,327.6Z"/><path class="county" data-fips="51610" data-region="northern" data-name="Falls Church" d="M765.6,94.5L768.1,97.0L765.6,94.5L765.6,94.5Z"/><path class="county" data-fips="51678" data-region="northwest" data-name="Lexington" d="M499.6,257.6L505.0,257.4L500.4,260.8L499.6,257.6Z"/><path class="county" data-fips="51049" data-region="central" data-name="Cumberland" d="M615.5,323.5L640.5,279.9L641.4,271.8L648.5,263.7L651.0,263.2L657.6,268.0L656.8,273.3L661.0,276.6L659.3,280.9L653.9,306.5L648.0,308.0L642.2,319.3L632.2,328.1L629.7,326.5L623.4,328.6L615.5,323.5Z"/><path class="county" data-fips="51155" data-region="southwest" data-name="Pulaski" d="M337.8,351.9L344.0,347.1L366.6,337.6L365.7,342.5L368.6,346.6L375.7,343.1L371.6,347.9L375.3,353.9L372.8,352.0L368.2,354.8L369.5,360.4L374.1,366.4L371.1,366.6L374.1,375.8L367.8,382.0L363.2,383.7L357.8,389.1L351.1,391.4L336.9,373.0L333.2,369.6L331.1,362.8L329.0,356.7L337.8,351.9Z"/><path class="county" data-fips="51107" data-region="northern" data-name="Loudoun" d="M689.3,59.1L698.1,37.0L701.8,31.3L706.8,30.9L713.9,34.1L720.2,33.9L722.7,39.6L728.1,41.7L732.3,46.2L725.6,53.6L725.2,60.9L729.4,62.6L731.9,67.5L747.3,70.2L723.5,101.2L721.4,95.4L716.9,93.9L713.5,88.8L709.3,87.1L673.9,76.6L685.6,66.7L689.3,59.1Z"/><path class="county" data-fips="51011" data-region="central" data-name="Appomattox" d="M568.4,293.7L573.4,292.1L587.6,306.4L590.1,310.3L595.5,312.2L596.3,316.9L600.5,314.9L600.5,322.7L596.7,326.2L590.1,336.9L584.2,341.1L579.2,339.8L573.8,343.4L570.1,342.4L569.2,338.2L562.6,337.4L561.7,332.7L550.9,310.3L555.9,304.5L565.5,297.9L568.4,293.7Z"/><path class="county" data-fips="51720" data-region="southwest" data-name="Norton" d="M127.6,385.3L130.9,380.6L135.1,379.7L133.4,387.6L127.6,385.3Z"/><path class="county" data-fips="51087" data-region="central" data-name="Henrico" d="M709.3,290.4L713.9,288.4L709.8,279.2L712.3,269.5L720.6,273.1L728.1,270.2L733.5,272.7L738.5,284.4L757.7,294.2L764.8,301.2L759.8,313.6L756.5,317.3L753.1,321.7L749.4,318.6L740.6,316.5L736.9,307.7L737.3,297.4L739.8,299.2L739.8,292.5L734.8,285.4L730.6,288.3L722.7,287.9L723.9,291.2L716.4,291.7L709.3,290.4Z"/><path class="county" data-fips="51620" data-region="eastern" data-name="Franklin" d="M794.4,416.7L794.0,417.7L794.0,417.9L794.0,417.7L794.0,417.9L794.4,417.9L794.4,417.9L794.8,417.9L794.8,417.9L795.3,417.9L795.3,417.7L795.3,417.9L795.3,417.7L795.3,417.9L795.3,417.7L795.3,418.6L795.3,418.6L794.4,420.4L794.4,420.3L794.4,420.4L794.4,420.3L796.1,425.5L789.8,422.7L789.4,417.5L794.4,416.7Z"/><path class="county" data-fips="51089" data-region="southwest" data-name="Henry" d="M432.4,403.9L434.9,405.8L437.0,398.6L460.0,404.3L465.0,404.8L467.1,402.0L475.4,399.0L478.7,394.8L470.4,441.2L433.7,441.0L430.8,441.0L430.4,424.2L426.2,414.2L426.2,406.1L432.4,403.9ZM448.3,420.1L453.3,425.2L456.6,425.7L455.8,417.2L450.8,416.1L448.3,420.1Z"/><path class="county" data-fips="51650" data-region="eastern" data-name="Hampton" d="M851.1,359.6L855.7,357.8L866.6,358.3L868.2,356.3L870.3,361.1L866.6,373.4L864.9,371.5L856.6,375.2L849.5,368.1L851.1,359.6Z"/><path class="county" data-fips="51091" data-region="northwest" data-name="Highland" d="M477.9,138.9L490.8,144.9L497.9,158.7L517.1,165.4L515.4,170.0L505.8,185.2L505.8,190.4L502.5,194.3L497.5,194.3L493.7,199.5L487.9,196.8L471.2,193.5L460.8,186.8L459.1,181.1L468.3,170.1L473.3,162.5L472.1,154.3L477.9,138.9Z"/><path class="county" data-fips="51101" data-region="eastern" data-name="King William" d="M745.6,257.3L756.9,244.5L757.7,239.5L764.4,242.2L768.1,243.6L773.6,257.8L776.9,259.5L781.9,267.3L795.3,271.3L796.5,277.0L799.4,276.8L811.5,291.8L809.8,297.3L806.9,292.5L799.8,295.3L802.8,289.2L792.3,291.1L789.4,287.1L787.7,290.2L775.2,282.5L771.1,281.2L772.7,276.0L764.0,276.6L764.4,272.8L757.7,272.5L759.0,268.4L751.5,268.3L751.5,264.5L745.6,257.3Z"/><path class="county" data-fips="51121" data-region="southwest" data-name="Montgomery" d="M376.6,354.2L376.6,354.2L376.6,354.2L376.6,354.2ZM366.6,337.6L381.6,331.6L387.0,326.9L399.5,319.2L406.6,323.2L407.0,328.1L414.9,339.2L416.2,356.9L404.1,362.0L396.6,370.4L389.1,373.2L386.6,371.1L382.4,374.5L377.0,372.0L374.1,375.8L371.1,366.6L374.1,366.4L369.5,360.4L375.3,353.9L371.6,347.9L375.7,343.1L368.6,346.6L365.7,342.5L366.6,337.6Z"/><path class="county" data-fips="51760" data-region="central" data-name="Richmond" d="M716.4,291.7L723.9,291.2L722.7,287.9L730.6,288.3L734.8,285.4L739.8,292.5L739.8,299.2L737.3,297.4L736.9,307.7L726.9,304.6L724.4,295.1L716.4,294.7L716.4,291.7Z"/><path class="county" data-fips="51009" data-region="central" data-name="Amherst" d="M502.5,282.6L512.9,276.3L522.5,256.4L526.3,253.7L528.8,257.3L533.4,255.2L537.1,253.6L540.5,257.9L545.0,258.9L545.5,267.4L555.0,271.1L565.1,293.4L568.4,293.7L565.5,297.9L555.9,304.5L550.9,310.3L545.0,311.5L543.4,315.4L539.2,314.9L531.7,304.9L527.1,298.9L518.8,299.7L514.2,297.7L510.4,292.3L509.2,286.5L502.5,282.6Z"/><path class="county" data-fips="51115" data-region="eastern" data-name="Mathews" d="M851.1,297.8L854.9,294.6L860.7,295.9L863.6,300.6L867.8,297.4L871.1,302.6L873.2,316.5L869.9,327.9L862.4,320.0L854.9,314.6L849.9,311.7L849.5,302.1L851.1,297.8Z"/><path class="county" data-fips="51730" data-region="central" data-name="Petersburg" d="M733.5,340.7L737.3,339.2L738.5,338.6L741.9,337.6L747.3,344.7L745.6,347.9L739.4,348.5L732.7,345.9L733.5,340.7Z"/><path class="county" data-fips="51075" data-region="central" data-name="Goochland" d="M662.2,240.2L667.6,242.1L670.6,247.1L675.6,248.6L682.2,261.4L688.9,262.6L693.1,266.1L703.1,269.4L712.3,269.5L709.8,279.2L713.9,288.4L709.3,290.4L697.3,283.5L690.2,283.9L688.9,280.2L679.7,271.9L675.6,273.6L676.0,278.7L671.4,281.6L661.0,276.6L656.8,273.3L657.6,268.0L651.0,263.2L651.4,261.1L662.2,240.2Z"/><path class="county" data-fips="51003" data-region="northwest" data-name="Albemarle" d="M572.1,219.1L578.8,214.2L578.0,207.5L582.6,195.7L586.7,190.8L593.4,187.7L592.6,185.2L626.8,199.0L645.1,206.8L640.1,216.8L633.9,225.2L612.2,256.1L611.3,261.3L598.0,262.2L594.7,265.5L589.7,264.9L591.7,261.7L572.1,219.1ZM608.8,222.3L609.3,224.6L616.8,222.9L617.2,217.5L613.0,216.0L608.8,222.3Z"/><path class="county" data-fips="51147" data-region="central" data-name="Prince Edward" d="M590.1,336.9L596.7,326.2L600.5,322.7L600.5,314.9L605.5,322.5L610.1,325.0L615.5,323.5L623.4,328.6L629.7,326.5L632.2,328.1L642.2,319.3L642.6,330.0L641.8,355.9L637.6,358.3L627.6,358.0L618.0,361.9L613.4,361.0L609.7,354.0L605.9,351.4L601.8,352.9L595.5,348.6L594.7,344.9L588.8,343.5L590.1,336.9Z"/><path class="county" data-fips="51033" data-region="northern" data-name="Caroline" d="M711.0,227.5L725.6,210.6L742.7,189.7L747.7,190.0L759.4,190.5L756.5,192.3L756.1,198.2L760.6,197.1L763.6,200.4L772.3,204.1L773.1,207.6L769.0,208.4L766.1,214.4L775.2,224.2L777.3,231.4L768.1,230.3L764.4,233.6L764.4,242.2L757.7,239.5L756.9,244.5L745.6,257.3L739.4,259.0L739.8,255.2L736.0,251.3L736.5,246.1L733.9,241.7L729.4,243.3L724.4,237.9L722.3,238.5L718.5,232.3L714.8,232.9L711.0,227.5Z"/><path class="county" data-fips="51065" data-region="northwest" data-name="Fluvanna" d="M612.2,256.1L633.9,225.2L642.6,229.3L662.2,240.2L651.4,261.1L651.0,263.2L648.5,263.7L641.4,271.8L620.5,264.5L615.5,261.6L612.2,256.1Z"/><path class="county" data-fips="51133" data-region="eastern" data-name="Northumberland" d="M841.5,221.0L847.4,224.2L853.6,231.0L862.0,233.9L874.5,242.6L872.4,250.8L866.1,253.8L864.5,273.2L858.2,268.7L859.5,260.3L855.3,258.5L852.0,251.4L847.4,252.3L842.8,249.9L838.2,245.5L837.4,236.2L828.2,231.0L830.3,226.0L835.3,222.2L841.5,221.0Z"/><path class="county" data-fips="51093" data-region="eastern" data-name="Isle of Wight" d="M794.4,416.7L796.9,409.4L801.1,404.8L802.8,395.4L806.9,391.3L806.9,387.5L801.9,380.1L803.2,374.2L820.7,364.9L823.6,352.6L825.7,367.8L834.9,370.2L845.3,380.6L845.7,384.0L840.3,385.9L814.9,410.1L797.3,426.1L796.1,425.5L794.4,420.3L794.4,420.4L794.4,420.3L794.4,420.4L795.3,418.6L795.3,418.6L795.3,417.7L795.3,417.9L795.3,417.7L795.3,417.9L795.3,417.7L795.3,417.9L794.8,417.9L794.8,417.9L794.4,417.9L794.4,417.9L794.0,417.9L794.0,417.7L794.0,417.9L794.0,417.7L794.4,416.7Z"/><path class="county" data-fips="51685" data-region="northern" data-name="Manassas Park" d="M735.2,111.2L732.3,112.2L730.2,111.0L735.2,111.2Z"/><path class="county" data-fips="51097" data-region="eastern" data-name="King and Queen" d="M777.3,231.4L781.9,237.1L783.2,243.1L780.7,245.5L785.2,250.3L791.9,251.6L792.3,258.1L796.5,256.2L800.3,258.1L808.2,256.4L814.4,266.1L818.2,276.6L825.7,284.6L824.0,295.5L826.5,300.4L824.4,306.4L819.0,309.9L815.7,304.8L809.8,297.3L811.5,291.8L799.4,276.8L796.5,277.0L795.3,271.3L781.9,267.3L776.9,259.5L773.6,257.8L768.1,243.6L764.4,242.2L764.4,233.6L768.1,230.3L777.3,231.4Z"/><path class="county" data-fips="51520" data-region="southwest" data-name="Bristol" d="M176.4,433.2L183.9,428.6L191.4,426.9L187.7,433.3L176.4,433.2Z"/><path class="county" data-fips="51570" data-region="central" data-name="Colonial Heights" d="M738.5,338.6L737.3,339.2L735.6,332.9L742.7,329.6L741.0,337.8L738.5,338.6Z"/><path class="county" data-fips="51185" data-region="southwest" data-name="Tazewell" d="M216.0,352.6L221.4,347.9L232.3,343.9L235.2,338.4L242.3,343.9L256.5,343.0L261.9,339.3L262.7,335.5L272.3,333.4L275.6,326.4L279.0,323.8L283.6,329.5L294.8,339.0L287.7,341.7L290.2,348.1L284.4,350.1L282.7,353.1L289.4,354.8L289.4,359.9L279.4,365.0L274.4,365.0L267.3,368.3L270.2,372.1L265.2,375.7L265.6,370.9L254.0,375.2L241.4,383.5L238.5,377.0L230.2,379.7L224.8,365.7L217.3,356.9L216.0,352.6Z"/><path class="county" data-fips="51043" data-region="northwest" data-name="Clarke" d="M665.6,39.6L689.3,59.1L685.6,66.7L673.9,76.6L668.9,81.7L662.6,75.9L658.1,76.8L651.8,73.3L661.0,52.4L660.6,48.5L665.6,39.6Z"/><path class="county" data-fips="51083" data-region="central" data-name="Halifax" d="M527.9,441.2L542.5,364.5L553.0,369.1L556.7,366.2L564.2,370.4L564.6,376.6L574.6,375.9L577.1,380.1L583.4,373.4L585.1,382.8L582.2,385.4L591.3,394.6L589.7,399.5L592.2,408.4L589.2,411.7L594.2,418.1L590.9,419.5L586.7,426.5L586.3,435.3L584.2,441.2L576.7,441.2L537.1,441.2L527.9,441.2Z"/><path class="county" data-fips="51013" data-region="northern" data-name="Arlington" d="M771.9,88.4L781.1,97.7L780.7,102.3L772.7,101.8L768.1,97.0L765.6,94.5L771.9,88.4Z"/><path class="county" data-fips="51181" data-region="central" data-name="Surry" d="M767.7,357.1L777.3,346.4L784.4,342.2L784.0,339.2L789.0,336.9L792.3,339.1L796.1,343.8L801.1,342.8L808.6,344.4L814.9,351.4L818.6,351.6L821.9,344.3L824.9,347.9L823.6,352.6L820.7,364.9L803.2,374.2L791.1,381.8L789.4,373.5L789.8,365.6L781.5,363.3L776.9,363.8L767.7,357.1Z"/><path class="county" data-fips="51187" data-region="northwest" data-name="Warren" d="M623.4,104.9L630.5,96.1L634.7,87.0L630.5,86.1L633.0,77.5L650.5,76.1L651.8,73.3L658.1,76.8L662.6,75.9L668.9,81.7L660.6,91.6L662.2,94.6L654.3,98.7L651.8,100.2L648.0,109.3L640.1,114.5L636.4,114.2L635.5,111.1L623.4,104.9Z"/><path class="county" data-fips="51191" data-region="southwest" data-name="Washington" d="M223.5,384.0L239.8,404.7L249.0,427.6L250.6,427.0L245.6,430.8L224.8,430.5L213.5,430.2L212.3,433.4L187.7,433.3L191.4,426.9L183.9,428.6L176.4,433.2L170.6,433.2L166.0,416.5L178.5,408.6L192.7,403.3L191.0,400.5L196.0,394.8L206.8,391.4L211.0,393.5L218.1,389.9L223.5,384.0Z"/><path class="county" data-fips="51195" data-region="southwest" data-name="Wise" d="M103.8,377.5L108.8,372.6L113.8,372.4L120.5,367.5L120.5,356.6L130.9,350.9L138.9,344.7L140.5,343.6L141.4,355.2L147.2,364.8L148.9,370.2L160.5,376.4L162.6,380.1L166.8,377.8L170.1,387.5L157.6,391.8L158.0,390.6L130.9,391.5L128.4,396.5L123.4,400.6L117.6,398.2L115.1,403.0L107.6,396.1L102.6,389.4L105.1,384.3L103.8,377.5ZM127.6,385.3L133.4,387.6L135.1,379.7L130.9,380.6L127.6,385.3Z"/><path class="county" data-fips="51840" data-region="northwest" data-name="Winchester" d="M647.6,52.9L647.6,48.5L653.5,51.5L648.0,59.4L647.6,52.9Z"/><path class="county" data-fips="51036" data-region="central" data-name="Charles City" d="M756.5,317.3L759.8,313.6L764.8,301.2L771.1,304.1L774.4,308.7L783.2,312.2L792.3,313.1L792.3,317.0L796.9,314.0L796.9,317.9L796.1,322.2L800.3,319.7L800.3,335.2L792.3,339.1L789.0,336.9L784.4,328.6L777.7,333.9L775.7,327.8L771.1,328.9L754.0,326.3L756.5,317.3Z"/><path class="county" data-fips="51139" data-region="northwest" data-name="Page" d="M594.7,137.0L600.9,124.9L605.5,118.4L610.1,119.2L623.4,104.9L635.5,111.1L636.4,114.2L632.2,117.4L630.9,122.6L633.0,125.5L630.1,133.6L624.7,140.2L625.1,143.4L618.9,149.2L616.8,156.0L613.0,164.0L605.9,163.3L604.7,160.2L597.2,157.4L595.9,152.8L589.2,150.7L594.7,137.0Z"/><path class="county" data-fips="51021" data-region="southwest" data-name="Bland" d="M294.8,339.0L307.8,332.5L323.2,329.1L323.2,330.5L319.4,333.0L337.8,351.9L329.0,356.7L331.1,362.8L316.9,366.7L307.8,370.2L301.5,370.0L294.8,366.6L287.7,370.7L276.9,380.6L270.2,372.1L267.3,368.3L274.4,365.0L279.4,365.0L289.4,359.9L289.4,354.8L282.7,353.1L284.4,350.1L290.2,348.1L287.7,341.7L294.8,339.0Z"/><path class="county" data-fips="51183" data-region="central" data-name="Sussex" d="M713.5,391.6L739.4,374.7L767.7,357.1L776.9,363.8L781.5,363.3L789.8,365.6L789.4,373.5L791.1,381.8L771.9,394.4L745.6,410.1L735.6,416.7L728.5,414.7L732.3,393.8L726.4,396.5L718.5,395.4L713.5,391.6Z"/><path class="county" data-fips="51111" data-region="central" data-name="Lunenburg" d="M612.2,389.6L618.0,361.9L627.6,358.0L637.6,358.3L641.8,355.9L642.6,359.3L649.7,365.2L659.7,371.1L668.9,370.2L666.4,406.3L656.4,403.3L641.4,401.9L632.2,395.8L623.4,393.7L620.5,395.4L612.2,389.6Z"/><path class="county" data-fips="51027" data-region="southwest" data-name="Buchanan" d="M208.5,294.4L213.1,298.0L205.6,302.3L206.0,306.5L212.3,309.3L213.1,320.7L218.9,324.6L221.8,331.2L229.4,331.6L234.4,334.8L235.2,338.4L232.3,343.9L221.4,347.9L216.0,352.6L206.0,354.7L200.6,366.1L187.2,367.5L188.9,366.2L186.4,357.3L177.2,342.2L175.6,333.4L170.6,328.4L168.1,330.0L208.5,294.4Z"/><path class="county" data-fips="51117" data-region="central" data-name="Mecklenburg" d="M594.2,418.1L612.2,389.6L620.5,395.4L623.4,393.7L632.2,395.8L641.4,401.9L656.4,403.3L666.4,406.3L663.9,440.8L631.8,440.9L616.3,441.0L584.2,441.2L586.3,435.3L586.7,426.5L590.9,419.5L594.2,418.1Z"/><path class="county" data-fips="51007" data-region="central" data-name="Amelia" d="M642.2,319.3L648.0,308.0L653.9,306.5L661.8,306.9L667.6,304.0L667.6,301.1L681.0,303.5L685.2,306.3L686.4,312.0L683.9,312.1L683.5,319.6L688.5,323.8L693.1,324.4L691.8,328.7L697.3,333.9L703.9,330.0L710.2,334.5L698.9,345.2L693.1,345.2L689.7,343.8L642.6,330.0L642.2,319.3Z"/><path class="county" data-fips="51073" data-region="eastern" data-name="Gloucester" d="M825.7,284.6L832.8,286.9L843.6,294.5L851.1,297.8L849.5,302.1L849.9,311.7L854.9,314.6L849.9,319.6L854.5,324.5L857.4,331.5L861.1,333.3L853.2,334.6L844.0,338.1L831.9,327.3L825.3,317.5L819.0,309.9L824.4,306.4L826.5,300.4L824.0,295.5L825.7,284.6Z"/><path class="county" data-fips="51171" data-region="northwest" data-name="Shenandoah" d="M606.3,70.4L616.8,74.6L617.2,70.4L623.9,63.7L629.3,64.6L629.3,69.9L633.0,77.5L630.5,86.1L634.7,87.0L630.5,96.1L623.4,104.9L610.1,119.2L605.5,118.4L600.9,124.9L594.7,137.0L568.4,113.6L576.7,97.1L586.3,88.2L586.3,92.7L590.5,89.7L596.7,81.3L599.7,84.0L605.5,76.0L603.0,74.0L606.3,70.4Z"/><path class="county" data-fips="51051" data-region="southwest" data-name="Dickenson" d="M140.5,343.6L148.0,339.5L163.5,334.5L168.1,330.0L170.6,328.4L175.6,333.4L177.2,342.2L186.4,357.3L188.9,366.2L187.2,367.5L181.8,369.0L174.3,375.2L171.4,373.8L166.8,377.8L162.6,380.1L160.5,376.4L148.9,370.2L147.2,364.8L141.4,355.2L140.5,343.6Z"/><path class="county" data-fips="51790" data-region="northwest" data-name="Staunton" d="M540.0,203.4L542.5,198.7L549.2,196.8L552.1,199.4L550.9,204.9L547.5,208.1L543.4,207.5L540.0,203.4Z"/><path class="county" data-fips="51063" data-region="southwest" data-name="Floyd" d="M374.1,375.8L377.0,372.0L382.4,374.5L386.6,371.1L389.1,373.2L396.6,370.4L404.1,362.0L416.2,356.9L422.0,355.4L424.5,362.1L422.9,374.9L420.3,381.0L417.0,380.6L414.1,388.1L409.5,392.4L403.3,394.6L397.0,401.1L392.0,403.4L391.2,411.3L385.3,410.8L383.2,416.6L363.2,383.7L367.8,382.0L374.1,375.8Z"/><path class="county" data-fips="51770" data-region="southwest" data-name="Roanoke" d="M433.3,334.9L434.5,328.2L439.9,324.1L446.6,325.1L450.4,327.9L448.7,335.7L442.5,342.4L437.4,336.4L433.3,334.9Z"/><path class="county" data-fips="51005" data-region="southwest" data-name="Alleghany" d="M430.4,233.2L436.6,232.0L444.5,232.9L450.0,241.9L459.5,243.7L466.2,243.1L472.9,249.1L477.9,244.7L482.9,246.5L475.0,261.1L458.3,255.5L446.6,270.2L434.5,278.2L433.3,276.3L420.3,285.6L411.6,281.1L404.5,276.8L402.8,271.6L407.8,266.6L407.0,262.1L415.8,247.9L430.4,233.2ZM436.2,261.4L437.9,263.3L440.8,255.1L438.7,253.6L436.2,261.4Z"/><path class="county" data-fips="51071" data-region="southwest" data-name="Giles" d="M323.2,330.5L330.3,328.4L338.2,322.5L334.4,317.0L337.4,310.3L337.4,310.5L346.1,315.4L347.8,318.7L364.9,309.7L372.8,303.7L377.8,302.6L379.5,309.4L382.0,311.1L387.0,326.9L381.6,331.6L366.6,337.6L344.0,347.1L337.8,351.9L319.4,333.0L323.2,330.5Z"/><path class="county" data-fips="51067" data-region="southwest" data-name="Franklin" d="M422.0,355.4L427.0,349.8L436.2,348.2L441.2,353.4L455.0,340.3L469.1,345.3L471.2,351.2L474.6,350.7L484.2,367.3L478.7,394.8L475.4,399.0L467.1,402.0L465.0,404.8L460.0,404.3L437.0,398.6L434.9,405.8L432.4,403.9L429.5,397.0L409.5,392.4L414.1,388.1L417.0,380.6L420.3,381.0L422.9,374.9L424.5,362.1L422.0,355.4Z"/><path class="county" data-fips="51017" data-region="northwest" data-name="Bath" d="M441.6,216.7L445.8,210.4L443.3,206.7L446.2,199.6L456.6,189.4L460.8,186.8L471.2,193.5L487.9,196.8L493.7,199.5L492.1,203.8L497.5,201.0L502.5,202.2L495.8,212.0L497.1,213.4L491.2,225.7L482.5,235.7L477.9,244.7L472.9,249.1L466.2,243.1L459.5,243.7L450.0,241.9L444.5,232.9L436.6,232.0L430.4,233.2L435.8,228.2L441.6,216.7Z"/><path class="county" data-fips="51143" data-region="southwest" data-name="Pittsylvania" d="M478.7,394.8L484.2,367.3L490.4,366.8L497.5,372.8L499.6,370.4L496.2,365.0L501.7,365.4L506.3,364.2L506.3,360.1L514.6,355.0L518.8,358.2L522.9,354.3L532.1,363.4L538.4,360.4L542.5,364.5L527.9,441.2L513.3,441.3L514.2,436.7L517.9,437.0L514.6,432.3L510.8,431.4L507.1,426.1L504.2,432.4L495.0,429.9L492.9,432.1L500.0,436.0L498.7,441.3L493.7,441.3L470.4,441.2L478.7,394.8Z"/><path class="county" data-fips="51131" data-region="eastern" data-name="Northampton" d="M909.1,292.6L920.8,291.8L926.6,295.6L923.7,303.7L935.0,307.3L939.5,305.3L941.6,307.0L934.1,318.6L929.1,328.6L925.4,330.0L925.8,337.2L921.2,348.1L913.7,356.2L907.0,355.9L908.7,360.4L904.9,361.0L904.5,350.4L900.3,343.4L898.7,335.7L899.5,326.8L903.3,319.3L904.5,308.0L909.1,292.6Z"/><path class="county" data-fips="51047" data-region="northwest" data-name="Culpeper" d="M676.8,123.5L680.2,123.4L684.3,130.6L686.0,143.9L691.0,147.9L700.2,165.3L705.2,163.3L711.8,165.7L713.9,171.9L710.6,170.4L703.9,172.9L696.0,168.2L694.7,172.4L689.3,169.9L680.2,169.9L679.7,171.5L666.0,177.7L665.1,180.1L658.5,180.2L659.7,177.8L655.5,171.8L658.1,169.2L655.5,162.1L642.6,147.7L648.9,149.3L658.9,138.1L676.8,123.5Z"/><path class="county" data-fips="51095" data-region="eastern" data-name="James City" d="M796.9,317.9L798.2,309.8L806.1,307.2L812.3,309.4L815.7,304.8L819.0,309.9L825.3,317.5L823.6,319.4L815.7,319.1L814.0,321.3L817.4,328.4L817.4,336.7L824.9,336.5L831.9,338.4L833.2,342.1L834.5,346.7L830.7,349.0L826.1,341.0L816.9,342.1L813.6,345.3L809.4,339.5L801.9,338.1L800.3,335.2L800.3,319.7L796.1,322.2L796.9,317.9Z"/><path class="county" data-fips="51061" data-region="northwest" data-name="Fauquier" d="M668.9,81.7L673.9,76.6L709.3,87.1L705.2,95.4L703.1,104.7L723.9,144.1L711.8,157.3L711.8,165.7L705.2,163.3L700.2,165.3L691.0,147.9L686.0,143.9L684.3,130.6L680.2,123.4L676.8,123.5L667.6,118.9L666.4,108.8L663.5,108.3L654.3,98.7L662.2,94.6L660.6,91.6L668.9,81.7Z"/><path class="county" data-fips="51137" data-region="northwest" data-name="Orange" d="M626.8,199.0L635.9,185.9L640.1,191.6L648.9,188.6L648.0,186.7L654.7,184.5L658.5,180.2L665.1,180.1L666.0,177.7L679.7,171.5L680.2,169.9L689.3,169.9L694.7,172.4L696.0,168.2L703.9,172.9L702.7,176.7L674.7,208.7L669.3,205.8L663.9,206.1L657.6,203.7L649.7,207.1L645.1,206.8L626.8,199.0Z"/><path class="county" data-fips="51680" data-region="central" data-name="Lynchburg" d="M531.7,304.9L539.2,314.9L543.4,315.4L532.5,323.1L528.4,324.5L523.4,321.1L526.3,315.6L522.1,310.1L528.8,304.5L531.7,304.9Z"/><path class="county" data-fips="51031" data-region="central" data-name="Campbell" d="M501.7,365.4L523.4,321.1L528.4,324.5L532.5,323.1L543.4,315.4L545.0,311.5L550.9,310.3L561.7,332.7L562.6,337.4L569.2,338.2L570.1,342.4L573.8,343.4L564.2,370.4L556.7,366.2L553.0,369.1L542.5,364.5L538.4,360.4L532.1,363.4L522.9,354.3L518.8,358.2L514.6,355.0L506.3,360.1L506.3,364.2L501.7,365.4Z"/><path class="county" data-fips="51710" data-region="eastern" data-name="Norfolk" d="M863.2,390.0L864.9,390.5L863.6,379.6L870.7,378.9L880.3,383.8L879.1,399.0L875.7,397.2L868.2,399.9L863.2,390.0Z"/><path class="county" data-fips="51735" data-region="eastern" data-name="Poquoson" d="M855.7,349.3L861.1,348.5L862.8,352.4L868.2,356.3L866.6,358.3L855.7,357.8L853.6,350.6L855.7,349.3Z"/><path class="county" data-fips="51740" data-region="eastern" data-name="Portsmouth" d="M854.5,388.7L857.0,384.9L860.7,384.9L863.2,390.0L868.2,399.9L867.8,403.3L858.2,405.2L854.9,401.0L857.4,397.6L852.8,393.3L854.5,388.7Z"/><path class="county" data-fips="51041" data-region="central" data-name="Chesterfield" d="M686.4,312.0L691.8,310.7L693.1,305.9L709.3,290.4L716.4,291.7L716.4,294.7L724.4,295.1L726.9,304.6L736.9,307.7L740.6,316.5L749.4,318.6L753.1,321.7L756.5,317.3L754.0,326.3L752.7,327.4L746.9,327.6L744.8,327.6L741.9,337.6L738.5,338.6L741.0,337.8L742.7,329.6L735.6,332.9L737.3,339.2L733.5,340.7L725.2,341.6L720.6,340.3L714.3,333.6L710.2,334.5L703.9,330.0L697.3,333.9L691.8,328.7L693.1,324.4L688.5,323.8L683.5,319.6L683.9,312.1L686.4,312.0Z"/><path class="county" data-fips="51800" data-region="eastern" data-name="Suffolk" d="M797.3,426.1L814.9,410.1L840.3,385.9L845.7,384.0L845.7,388.9L854.5,388.7L852.8,393.3L848.6,400.6L844.9,439.9L839.0,439.9L795.3,439.7L797.3,426.1Z"/><path class="county" data-fips="51045" data-region="southwest" data-name="Craig" d="M411.6,281.1L420.3,285.6L433.3,276.3L434.5,278.2L433.7,281.6L440.8,293.4L435.8,298.3L431.6,308.3L428.3,311.3L419.9,317.2L413.7,317.8L406.6,323.2L399.5,319.2L387.0,326.9L382.0,311.1L402.4,298.7L404.1,295.0L398.7,294.5L399.1,290.4L406.6,286.1L411.6,281.1Z"/><path class="county" data-fips="51069" data-region="northwest" data-name="Frederick" d="M610.5,65.6L615.9,61.9L622.6,54.1L618.4,49.5L623.0,42.7L620.5,40.8L630.1,27.4L627.2,26.0L629.7,21.4L627.6,17.9L629.3,10.0L643.0,21.0L665.6,39.6L660.6,48.5L661.0,52.4L651.8,73.3L650.5,76.1L633.0,77.5L629.3,69.9L629.3,64.6L623.9,63.7L617.2,70.4L616.8,74.6L606.3,70.4L610.5,65.6ZM647.6,52.9L648.0,59.4L653.5,51.5L647.6,48.5L647.6,52.9Z"/><path class="county" data-fips="51550" data-region="eastern" data-name="Chesapeake" d="M852.8,393.3L857.4,397.6L854.9,401.0L858.2,405.2L867.8,403.3L868.2,399.9L875.7,397.2L878.2,407.6L885.3,409.4L892.4,416.0L893.7,421.2L887.8,422.9L887.4,439.9L865.3,439.9L844.9,439.9L848.6,400.6L852.8,393.3Z"/><path class="county" data-fips="51053" data-region="central" data-name="Dinwiddie" d="M693.1,345.2L698.9,345.2L710.2,334.5L714.3,333.6L720.6,340.3L725.2,341.6L733.5,340.7L732.7,345.9L739.4,348.5L739.4,374.7L713.5,391.6L709.3,389.1L702.7,386.3L696.8,377.3L688.1,374.2L682.2,375.3L681.0,352.4L693.1,345.2Z"/><path class="county" data-fips="51145" data-region="central" data-name="Powhatan" d="M653.9,306.5L659.3,280.9L661.0,276.6L671.4,281.6L676.0,278.7L675.6,273.6L679.7,271.9L688.9,280.2L690.2,283.9L697.3,283.5L709.3,290.4L693.1,305.9L691.8,310.7L686.4,312.0L685.2,306.3L681.0,303.5L667.6,301.1L667.6,304.0L661.8,306.9L653.9,306.5Z"/><path class="county" data-fips="51081" data-region="central" data-name="Greensville" d="M696.4,440.7L709.3,415.8L709.3,389.1L713.5,391.6L718.5,395.4L726.4,396.5L732.3,393.8L728.5,414.7L735.6,416.7L727.3,422.2L731.9,424.8L737.3,424.6L741.9,427.7L744.4,439.4L751.0,440.8L696.4,440.7ZM721.0,415.8L721.0,421.5L726.4,420.4L725.2,416.0L721.0,415.8Z"/><path class="county" data-fips="51085" data-region="central" data-name="Hanover" d="M693.1,266.1L705.6,225.0L711.0,227.5L714.8,232.9L718.5,232.3L722.3,238.5L724.4,237.9L729.4,243.3L733.9,241.7L736.5,246.1L736.0,251.3L739.8,255.2L739.4,259.0L745.6,257.3L751.5,264.5L751.5,268.3L759.0,268.4L757.7,272.5L764.4,272.8L764.0,276.6L772.7,276.0L771.1,281.2L769.4,286.3L765.6,285.6L757.7,294.2L738.5,284.4L733.5,272.7L728.1,270.2L720.6,273.1L712.3,269.5L703.1,269.4L693.1,266.1Z"/><path class="county" data-fips="51163" data-region="northwest" data-name="Rockbridge" d="M475.0,261.1L482.9,246.5L477.9,244.7L482.5,235.7L491.2,225.7L497.1,213.4L531.7,238.8L535.0,242.2L536.3,247.4L533.4,255.2L528.8,257.3L526.3,253.7L522.5,256.4L512.9,276.3L502.5,282.6L500.0,284.2L502.9,289.2L495.4,295.0L486.2,288.0L486.7,285.8L473.7,276.0L475.4,274.2L473.3,265.2L475.0,261.1ZM499.6,257.6L500.4,260.8L505.0,257.4L499.6,257.6ZM508.8,264.2L510.0,271.1L515.4,264.0L514.6,261.6L508.8,264.2Z"/><path class="county" data-fips="51177" data-region="northern" data-name="Spotsylvania" d="M674.7,208.7L702.7,176.7L703.9,172.9L710.6,170.4L713.9,171.9L723.9,180.6L726.0,184.9L733.5,184.2L736.9,188.1L742.7,189.7L725.6,210.6L711.0,227.5L705.6,225.0L699.8,221.3L694.3,214.9L678.9,208.7L674.7,208.7Z"/><path class="county" data-fips="51179" data-region="northern" data-name="Stafford" d="M711.8,165.7L711.8,157.3L723.9,144.1L728.9,138.9L736.9,143.0L742.3,149.3L750.6,151.7L747.7,160.0L749.4,168.5L752.3,174.7L748.1,175.2L745.6,187.6L747.7,190.0L742.7,189.7L736.9,188.1L733.5,184.2L731.4,179.2L727.3,178.1L723.9,180.6L713.9,171.9L711.8,165.7Z"/><path class="county" data-fips="51035" data-region="southwest" data-name="Carroll" d="M351.1,391.4L357.8,389.1L363.2,383.7L383.2,416.6L382.8,421.8L376.1,426.1L367.8,423.6L364.9,429.9L366.1,438.8L355.3,438.1L339.9,438.6L330.7,425.2L334.9,418.9L330.3,418.8L328.6,422.0L316.1,402.2L338.2,395.8L351.1,391.4Z"/><path class="county" data-fips="51700" data-region="eastern" data-name="Newport News" d="M830.7,349.0L834.5,346.7L833.2,342.1L836.1,341.1L842.0,347.3L848.2,358.5L851.1,359.6L849.5,368.1L856.6,375.2L852.0,378.1L847.8,369.5L835.7,361.8L829.9,356.1L830.7,349.0Z"/><path class="county" data-fips="51077" data-region="southwest" data-name="Grayson" d="M245.6,430.8L250.6,427.0L259.0,421.3L257.7,417.6L269.8,415.3L276.1,411.9L290.2,408.5L299.4,409.3L310.7,407.9L311.1,404.8L316.1,402.2L328.6,422.0L330.7,425.2L339.9,438.6L332.4,438.3L300.2,436.7L279.8,436.4L242.3,434.3L245.6,430.8Z"/><path class="county" data-fips="51001" data-region="eastern" data-name="Accomack" d="M940.4,233.4L942.9,233.9L945.4,227.0L990.0,222.2L983.3,232.2L977.1,244.6L973.7,248.0L971.7,245.3L965.4,246.2L957.5,256.1L952.5,265.0L947.9,280.9L948.3,289.0L940.0,302.3L939.5,305.3L935.0,307.3L923.7,303.7L926.6,295.6L920.8,291.8L909.1,292.6L910.3,285.1L917.0,275.1L924.5,261.2L922.9,256.9L931.6,254.7L937.9,246.5L938.3,242.9L929.9,240.3L940.4,233.4ZM902.0,248.5L904.9,250.4L902.0,253.8L902.0,248.5ZM902.4,233.1L897.8,238.6L896.6,233.1L902.4,233.1Z"/><path class="county" data-fips="51149" data-region="central" data-name="Prince George" d="M739.4,348.5L745.6,347.9L747.3,344.7L741.9,337.6L744.8,327.6L746.9,327.6L747.7,334.3L750.2,335.0L756.1,330.3L752.7,327.4L754.0,326.3L771.1,328.9L775.7,327.8L777.7,333.9L784.4,328.6L789.0,336.9L784.0,339.2L784.4,342.2L777.3,346.4L767.7,357.1L739.4,374.7L739.4,348.5Z"/><path class="county" data-fips="51127" data-region="central" data-name="New Kent" d="M757.7,294.2L765.6,285.6L769.4,286.3L771.1,281.2L775.2,282.5L787.7,290.2L789.4,287.1L792.3,291.1L802.8,289.2L799.8,295.3L806.9,292.5L809.8,297.3L815.7,304.8L812.3,309.4L806.1,307.2L798.2,309.8L796.9,317.9L796.9,314.0L792.3,317.0L792.3,313.1L783.2,312.2L774.4,308.7L771.1,304.1L764.8,301.2L757.7,294.2Z"/><path class="county" data-fips="51197" data-region="southwest" data-name="Wythe" d="M331.1,362.8L333.2,369.6L336.9,373.0L351.1,391.4L338.2,395.8L316.1,402.2L311.1,404.8L310.7,407.9L299.4,409.3L290.2,408.5L289.4,404.3L282.7,388.4L276.9,380.6L287.7,370.7L294.8,366.6L301.5,370.0L307.8,370.2L316.9,366.7L331.1,362.8Z"/><path class="county" data-fips="51141" data-region="southwest" data-name="Patrick" d="M383.2,416.6L385.3,410.8L391.2,411.3L392.0,403.4L397.0,401.1L403.3,394.6L409.5,392.4L429.5,397.0L432.4,403.9L426.2,406.1L426.2,414.2L430.4,424.2L430.8,441.0L402.8,440.8L385.7,439.9L366.1,438.8L364.9,429.9L367.8,423.6L376.1,426.1L382.8,421.8L383.2,416.6Z"/><path class="county" data-fips="51175" data-region="eastern" data-name="Southampton" d="M735.6,416.7L745.6,410.1L771.9,394.4L791.1,381.8L803.2,374.2L801.9,380.1L806.9,387.5L806.9,391.3L802.8,395.4L801.1,404.8L796.9,409.4L794.4,416.7L789.4,417.5L789.8,422.7L796.1,425.5L797.3,426.1L795.3,439.7L795.3,440.9L766.5,440.5L751.0,440.8L744.4,439.4L741.9,427.7L737.3,424.6L731.9,424.8L727.3,422.2L735.6,416.7Z"/><path class="county" data-fips="51037" data-region="central" data-name="Charlotte" d="M573.8,343.4L579.2,339.8L584.2,341.1L590.1,336.9L588.8,343.5L594.7,344.9L595.5,348.6L601.8,352.9L605.9,351.4L609.7,354.0L613.4,361.0L618.0,361.9L612.2,389.6L594.2,418.1L589.2,411.7L592.2,408.4L589.7,399.5L591.3,394.6L582.2,385.4L585.1,382.8L583.4,373.4L577.1,380.1L574.6,375.9L564.6,376.6L564.2,370.4L573.8,343.4Z"/><path class="county" data-fips="51165" data-region="northwest" data-name="Rockingham" d="M546.7,113.9L553.8,100.8L568.4,113.6L594.7,137.0L589.2,150.7L595.9,152.8L597.2,157.4L604.7,160.2L605.9,163.3L613.0,164.0L606.3,172.4L605.1,176.8L592.6,185.2L593.4,187.7L586.7,190.8L582.6,195.7L565.5,181.0L563.4,181.4L527.1,155.7L539.2,128.8L542.5,128.9L543.0,119.9L546.7,113.9ZM563.0,161.6L563.4,168.6L567.1,165.4L573.4,164.2L572.6,159.3L568.4,155.4L563.0,161.6Z"/><path class="county" data-fips="51830" data-region="eastern" data-name="Williamsburg" d="M817.4,328.4L819.4,332.7L822.8,330.5L824.9,336.5L817.4,336.7L817.4,328.4Z"/><path class="county" data-fips="51173" data-region="southwest" data-name="Smyth" d="M230.2,379.7L238.5,377.0L241.4,383.5L254.0,375.2L265.6,370.9L265.2,375.7L270.2,372.1L276.9,380.6L282.7,388.4L289.4,404.3L290.2,408.5L276.1,411.9L269.8,415.3L257.7,417.6L259.0,421.3L250.6,427.0L249.0,427.6L239.8,404.7L223.5,384.0L230.2,379.7Z"/><path class="county" data-fips="51119" data-region="eastern" data-name="Middlesex" d="M814.4,266.1L822.4,260.0L829.9,263.8L834.0,276.0L838.6,282.7L851.1,283.2L854.1,287.8L867.0,290.8L860.7,295.9L854.9,294.6L851.1,297.8L843.6,294.5L832.8,286.9L825.7,284.6L818.2,276.6L814.4,266.1Z"/><path class="county" data-fips="51510" data-region="northern" data-name="Alexandria" d="M772.7,101.8L780.7,102.3L781.1,109.4L781.1,110.3L774.8,107.8L769.8,108.4L769.0,104.4L772.7,101.8Z"/><path class="county" data-fips="51025" data-region="central" data-name="Brunswick" d="M663.9,440.8L666.4,406.3L668.9,370.2L673.1,375.4L682.2,375.3L688.1,374.2L696.8,377.3L702.7,386.3L709.3,389.1L709.3,415.8L696.4,440.7L681.0,440.8L663.9,440.8Z"/><path class="county" data-fips="51600" data-region="northern" data-name="Fairfax" d="M746.9,99.9L751.5,97.7L754.4,102.2L748.5,103.1L746.9,99.9Z"/><path class="county" data-fips="51683" data-region="northern" data-name="Manassas" d="M730.2,111.0L732.3,112.2L732.7,117.7L724.4,118.0L730.2,111.0ZM729.8,115.4L729.8,115.4L729.8,115.4L729.8,115.4Z"/><path class="county" data-fips="51135" data-region="central" data-name="Nottoway" d="M642.6,330.0L689.7,343.8L693.1,345.2L681.0,352.4L682.2,375.3L673.1,375.4L668.9,370.2L659.7,371.1L649.7,365.2L642.6,359.3L641.8,355.9L642.6,330.0Z"/><path class="county" data-fips="51153" data-region="northern" data-name="Prince William" d="M729.8,115.4L729.8,115.4L729.8,115.4L729.8,115.4ZM709.3,87.1L713.5,88.8L716.9,93.9L721.4,95.4L723.5,101.2L726.4,102.1L728.1,108.4L735.2,111.2L743.5,119.7L753.5,123.7L759.8,132.1L756.9,132.5L756.9,139.1L750.6,151.7L742.3,149.3L736.9,143.0L728.9,138.9L723.9,144.1L703.1,104.7L705.2,95.4L709.3,87.1ZM732.3,112.2L735.2,111.2L730.2,111.0L724.4,118.0L732.7,117.7L732.3,112.2Z"/><path class="county" data-fips="51167" data-region="southwest" data-name="Russell" d="M166.8,377.8L171.4,373.8L174.3,375.2L181.8,369.0L187.2,367.5L200.6,366.1L206.0,354.7L216.0,352.6L217.3,356.9L224.8,365.7L230.2,379.7L223.5,384.0L218.1,389.9L211.0,393.5L206.8,391.4L196.0,394.8L191.0,400.5L192.7,403.3L178.5,408.6L166.0,416.5L163.5,406.1L157.6,391.8L170.1,387.5L166.8,377.8Z"/><path class="county" data-fips="51029" data-region="central" data-name="Buckingham" d="M594.7,265.5L598.0,262.2L611.3,261.3L612.2,256.1L615.5,261.6L620.5,264.5L641.4,271.8L640.5,279.9L615.5,323.5L610.1,325.0L605.5,322.5L600.5,314.9L596.3,316.9L595.5,312.2L590.1,310.3L587.6,306.4L573.4,292.1L576.3,278.9L583.4,280.4L585.9,276.0L595.1,272.5L594.7,265.5Z"/><path class="county" data-fips="51015" data-region="northwest" data-name="Augusta" d="M493.7,199.5L497.5,194.3L502.5,194.3L505.8,190.4L505.8,185.2L515.4,170.0L517.1,165.4L527.1,155.7L563.4,181.4L565.5,181.0L582.6,195.7L578.0,207.5L578.8,214.2L572.1,219.1L568.0,221.9L564.2,234.1L560.1,235.0L552.5,243.6L548.0,242.3L545.9,238.4L535.0,242.2L531.7,238.8L497.1,213.4L495.8,212.0L502.5,202.2L497.5,201.0L492.1,203.8L493.7,199.5ZM540.0,203.4L543.4,207.5L547.5,208.1L550.9,204.9L552.1,199.4L549.2,196.8L542.5,198.7L540.0,203.4ZM559.2,216.0L562.1,221.5L568.0,220.1L568.8,212.0L564.2,211.4L559.2,216.0Z"/><path class="county" data-fips="51113" data-region="northwest" data-name="Madison" d="M630.1,133.6L642.6,147.7L655.5,162.1L658.1,169.2L655.5,171.8L659.7,177.8L658.5,180.2L654.7,184.5L648.0,186.7L648.9,188.6L640.1,191.6L635.9,185.9L628.9,185.3L619.7,172.0L618.0,165.7L618.9,159.8L616.8,156.0L618.9,149.2L625.1,143.4L624.7,140.2L630.1,133.6Z"/><path class="county" data-fips="51059" data-region="northern" data-name="Fairfax" d="M723.5,101.2L747.3,70.2L756.9,74.7L756.5,80.8L759.8,83.0L768.1,83.7L771.9,88.4L765.6,94.5L768.1,97.0L772.7,101.8L769.0,104.4L769.8,108.4L774.8,107.8L781.1,110.3L780.7,120.2L775.7,122.1L770.2,126.8L770.6,132.5L762.3,135.1L759.8,132.1L753.5,123.7L743.5,119.7L735.2,111.2L728.1,108.4L726.4,102.1L723.5,101.2ZM746.9,99.9L748.5,103.1L754.4,102.2L751.5,97.7L746.9,99.9Z"/><path class="county" data-fips="51193" data-region="eastern" data-name="Westmoreland" d="M786.1,185.2L789.8,188.3L789.8,194.6L804.4,202.0L814.9,202.3L817.8,205.8L820.3,203.2L830.3,204.3L831.9,209.9L838.6,214.8L841.5,221.0L835.3,222.2L830.3,226.0L828.2,231.0L825.7,228.8L812.8,226.0L813.6,221.4L806.1,216.6L799.8,207.9L792.7,214.8L785.2,210.1L781.9,212.7L778.6,202.3L780.2,196.6L780.2,187.7L786.1,185.2Z"/><path class="county" data-fips="51103" data-region="eastern" data-name="Lancaster" d="M842.8,249.9L847.4,252.3L852.0,251.4L855.3,258.5L859.5,260.3L858.2,268.7L864.5,273.2L862.4,276.9L867.8,279.8L859.9,283.6L847.0,275.5L842.4,278.9L839.5,275.7L839.5,270.6L834.0,260.3L827.4,256.7L833.6,254.0L836.1,250.2L842.8,249.9Z"/><path class="county" data-fips="51057" data-region="eastern" data-name="Essex" d="M772.3,204.1L778.6,202.3L781.9,212.7L785.2,210.1L792.7,214.8L796.5,226.3L796.5,230.1L808.2,241.4L816.5,255.9L822.4,260.0L814.4,266.1L808.2,256.4L800.3,258.1L796.5,256.2L792.3,258.1L791.9,251.6L785.2,250.3L780.7,245.5L783.2,243.1L781.9,237.1L777.3,231.4L775.2,224.2L766.1,214.4L769.0,208.4L773.1,207.6L772.3,204.1Z"/><path class="county" data-fips="51019" data-region="central" data-name="Bedford" d="M455.0,327.9L461.6,321.9L462.9,317.3L458.7,314.1L465.4,310.8L472.9,303.4L476.6,302.1L479.6,306.3L485.0,307.3L487.5,301.7L495.4,295.0L502.9,289.2L500.0,284.2L502.5,282.6L509.2,286.5L510.4,292.3L514.2,297.7L518.8,299.7L527.1,298.9L531.7,304.9L528.8,304.5L522.1,310.1L526.3,315.6L523.4,321.1L501.7,365.4L496.2,365.0L499.6,370.4L497.5,372.8L490.4,366.8L484.2,367.3L474.6,350.7L471.2,351.2L469.1,345.3L455.0,340.3L453.7,334.3L455.0,327.9Z"/><path class="county" data-fips="51161" data-region="southwest" data-name="Roanoke" d="M406.6,323.2L413.7,317.8L419.9,317.2L428.3,311.3L429.9,313.4L452.5,325.1L455.0,327.9L453.7,334.3L455.0,340.3L441.2,353.4L436.2,348.2L427.0,349.8L422.0,355.4L416.2,356.9L414.9,339.2L407.0,328.1L406.6,323.2ZM433.3,334.9L437.4,336.4L442.5,342.4L448.7,335.7L450.4,327.9L446.6,325.1L439.9,324.1L434.5,328.2L433.3,325.8L423.3,331.2L428.3,335.7L433.3,334.9Z"/><path class="county" data-fips="51630" data-region="northern" data-name="Fredericksburg" d="M733.5,184.2L726.0,184.9L723.9,180.6L727.3,178.1L731.4,179.2L733.5,184.2Z"/><path class="county" data-fips="51810" data-region="eastern" data-name="Virginia Beach" d="M875.7,397.2L879.1,399.0L880.3,383.8L890.7,387.1L897.8,383.7L902.4,385.1L905.8,401.3L910.8,419.0L914.5,428.0L917.4,439.9L887.4,439.9L887.8,422.9L893.7,421.2L892.4,416.0L885.3,409.4L878.2,407.6L875.7,397.2Z"/><path class="county" data-fips="51125" data-region="northwest" data-name="Nelson" d="M535.0,242.2L545.9,238.4L548.0,242.3L552.5,243.6L560.1,235.0L564.2,234.1L568.0,221.9L572.1,219.1L591.7,261.7L589.7,264.9L594.7,265.5L595.1,272.5L585.9,276.0L583.4,280.4L576.3,278.9L573.4,292.1L568.4,293.7L565.1,293.4L555.0,271.1L545.5,267.4L545.0,258.9L540.5,257.9L537.1,253.6L533.4,255.2L536.3,247.4L535.0,242.2Z"/><path class="county" data-fips="51580" data-region="southwest" data-name="Covington" d="M436.2,261.4L438.7,253.6L440.8,255.1L437.9,263.3L436.2,261.4Z"/><path class="county" data-fips="51105" data-region="southwest" data-name="Lee" d="M35.0,423.1L38.4,422.8L52.1,416.5L65.9,412.0L72.6,411.5L73.4,405.2L80.1,395.1L92.2,394.6L102.6,389.4L107.6,396.1L115.1,403.0L108.4,410.9L108.8,412.9L94.7,421.4L90.1,433.4L58.4,433.4L56.3,432.8L33.8,432.9L10.0,432.4L13.3,429.0L27.1,422.8L35.0,423.1Z"/></g>
+            <path class="region-boundary" d="M455.0,340.3L453.7,334.3L455.0,327.9M709.3,87.1L705.2,95.4L703.1,104.7L723.9,144.1L711.8,157.3L711.8,165.7L713.9,171.9L710.6,170.4L703.9,172.9L702.7,176.7L674.7,208.7L678.9,208.7L694.3,214.9L699.8,221.3L705.6,225.0L693.1,266.1L688.9,262.6L682.2,261.4L675.6,248.6L670.6,247.1L667.6,242.1L662.2,240.2M709.3,87.1L673.9,76.6L685.6,66.7L689.3,59.1M796.9,317.9L798.2,309.8L806.1,307.2L812.3,309.4L815.7,304.8L809.8,297.3L806.9,292.5L799.8,295.3L802.8,289.2L792.3,291.1L789.4,287.1L787.7,290.2L775.2,282.5L771.1,281.2L772.7,276.0L764.0,276.6L764.4,272.8L757.7,272.5L759.0,268.4L751.5,268.3L751.5,264.5L745.6,257.3L756.9,244.5L757.7,239.5L764.4,242.2M502.5,282.6L512.9,276.3L522.5,256.4L526.3,253.7L528.8,257.3L533.4,255.2L537.1,253.6L540.5,257.9L545.0,258.9L545.5,267.4L555.0,271.1L565.1,293.4L568.4,293.7L573.4,292.1L576.3,278.9L583.4,280.4L585.9,276.0L595.1,272.5L594.7,265.5M705.6,225.0L711.0,227.5M803.2,374.2L820.7,364.9L823.6,352.6M455.0,340.3L469.1,345.3L471.2,351.2L474.6,350.7L484.2,367.3L490.4,366.8L497.5,372.8L499.6,370.4L496.2,365.0L501.7,365.4L506.3,364.2L506.3,360.1L514.6,355.0L518.8,358.2L522.9,354.3L532.1,363.4L538.4,360.4L542.5,364.5M796.9,317.9L796.1,322.2L800.3,319.7L800.3,335.2M803.2,374.2L791.1,381.8L771.9,394.4L745.6,410.1L735.6,416.7L727.3,422.2L731.9,424.8L737.3,424.6L741.9,427.7L744.4,439.4L751.0,440.8M502.5,282.6L500.0,284.2L502.9,289.2L495.4,295.0M786.1,185.2L780.2,187.7L780.2,196.6L778.6,202.3L772.3,204.1L773.1,207.6L769.0,208.4L766.1,214.4L775.2,224.2L777.3,231.4L768.1,230.3L764.4,233.6L764.4,242.2M641.4,271.8L620.5,264.5L615.5,261.6L612.2,256.1L611.3,261.3L598.0,262.2L594.7,265.5M745.6,257.3L739.4,259.0L739.8,255.2L736.0,251.3L736.5,246.1L733.9,241.7L729.4,243.3L724.4,237.9L722.3,238.5L718.5,232.3L714.8,232.9L711.0,227.5M527.9,441.2L542.5,364.5M430.4,233.2L436.6,232.0L444.5,232.9L450.0,241.9L459.5,243.7L466.2,243.1L472.9,249.1L477.9,244.7L482.9,246.5L475.0,261.1L473.3,265.2L475.4,274.2L473.7,276.0L486.7,285.8L486.2,288.0L495.4,295.0L487.5,301.7L485.0,307.3L479.6,306.3L476.6,302.1L472.9,303.4L465.4,310.8L458.7,314.1L462.9,317.3L461.6,321.9L455.0,327.9M641.4,271.8L648.5,263.7L651.0,263.2M651.0,263.2L651.4,261.1L662.2,240.2"/>
+            <path class="state-outline" d="M629.3,10.0L643.0,21.0L665.6,39.6L689.3,59.1L698.1,37.0L701.8,31.3M224.8,430.5L245.6,430.8L242.3,434.3L279.8,436.4L300.2,436.7L332.4,438.3L339.9,438.6L355.3,438.1L366.1,438.8L385.7,439.9L402.8,440.8L430.8,441.0L433.7,441.0L470.4,441.2L493.7,441.3M103.8,377.5L105.1,384.3L102.6,389.4L92.2,394.6L80.1,395.1L73.4,405.2L72.6,411.5L65.9,412.0L52.1,416.5L38.4,422.8L35.0,423.1L27.1,422.8L13.3,429.0L10.0,432.4L33.8,432.9L56.3,432.8L58.4,433.4L90.1,433.4M208.5,294.4L213.1,298.0M616.3,441.0L584.2,441.2L576.7,441.2M771.9,88.4L768.1,83.7L759.8,83.0L756.5,80.8L756.9,74.7L747.3,70.2M663.9,440.8L631.8,440.9M337.4,310.5L346.1,315.4L347.8,318.7L364.9,309.7L372.8,303.7L377.8,302.6L379.5,309.4L382.0,311.1L402.4,298.7L404.1,295.0L398.7,294.5L399.1,290.4L406.6,286.1L411.6,281.1L404.5,276.8L402.8,271.6M546.7,113.9L543.0,119.9L542.5,128.9L539.2,128.8L527.1,155.7L517.1,165.4M865.3,439.9L887.4,439.9L917.4,439.9M103.8,377.5L108.8,372.6L113.8,372.4L120.5,367.5L120.5,356.6L130.9,350.9L138.9,344.7M781.1,109.4L780.7,102.3M546.7,113.9L553.8,100.8L568.4,113.6L576.7,97.1L586.3,88.2L586.3,92.7L590.5,89.7L596.7,81.3L599.7,84.0L605.5,76.0L603.0,74.0L606.3,70.4L610.5,65.6M663.9,440.8L681.0,440.8L696.4,440.7L751.0,440.8L766.5,440.5L795.3,440.9L795.3,439.7L839.0,439.9M940.4,233.4L942.9,233.9L945.4,227.0L990.0,222.2M896.6,233.1L902.4,233.1M781.1,109.4L781.1,110.3L780.7,120.2L775.7,122.1M706.8,30.9L713.9,34.1L720.2,33.9L722.7,39.6L728.1,41.7L732.3,46.2L725.6,53.6L725.2,60.9L729.4,62.6L731.9,67.5L747.3,70.2M477.9,138.9L490.8,144.9L497.9,158.7L517.1,165.4M537.1,441.2L527.9,441.2L513.3,441.3L498.7,441.3L493.7,441.3M770.6,132.5L770.2,126.8L775.7,122.1M706.8,30.9L701.8,31.3M170.6,433.2L133.9,433.4M133.9,433.4L108.0,433.4M108.0,433.4L90.1,433.4M477.9,138.9L472.1,154.3L473.3,162.5L468.3,170.1L459.1,181.1L460.8,186.8M460.8,186.8L456.6,189.4L446.2,199.6L443.3,206.7L445.8,210.4L441.6,216.7M279.0,323.8L275.6,326.4L272.3,333.4L262.7,335.5L261.9,339.3L256.5,343.0L242.3,343.9L235.2,338.4M235.2,338.4L234.4,334.8L229.4,331.6L221.8,331.2L218.9,324.6L213.1,320.7L212.3,309.3L206.0,306.5L205.6,302.3L213.1,298.0M537.1,441.2L576.7,441.2M616.3,441.0L631.8,440.9M441.6,216.7L435.8,228.2L430.4,233.2M430.4,233.2L415.8,247.9L407.0,262.1L407.8,266.6L402.8,271.6M337.4,310.3L334.4,317.0L338.2,322.5L330.3,328.4L323.2,330.5M323.2,330.5L323.2,329.1L307.8,332.5L294.8,339.0M294.8,339.0L283.6,329.5L279.0,323.8M337.4,310.5L337.4,310.3M208.5,294.4L168.1,330.0M168.1,330.0L163.5,334.5L148.0,339.5L140.5,343.6M140.5,343.6L138.9,344.7M187.7,433.3L176.4,433.2M771.9,88.4L781.1,97.7L780.7,102.3M224.8,430.5L213.5,430.2L212.3,433.4L187.7,433.3M176.4,433.2L170.6,433.2M629.3,10.0L627.6,17.9L629.7,21.4L627.2,26.0L630.1,27.4L620.5,40.8L623.0,42.7L618.4,49.5L622.6,54.1L615.9,61.9L610.5,65.6M844.9,439.9L839.0,439.9M865.3,439.9L844.9,439.9"/>
+            <g id="region-labels"><g class="region-label" data-region="northwest" transform="translate(577.1,152.5)"><rect class="region-label-bg" x="-32" y="-9" width="64" height="18" rx="1"/><text class="region-label-text">Northwest</text></g><g class="region-label" data-region="central" transform="translate(639.3,333.1)"><rect class="region-label-bg" x="-32" y="-9" width="64" height="18" rx="1"/><text class="region-label-text">Central</text></g><g class="region-label" data-region="southwest" transform="translate(276.3,336.6)"><rect class="region-label-bg" x="-32" y="-9" width="64" height="18" rx="1"/><text class="region-label-text">Southwest</text></g><g class="region-label" data-region="northern" transform="translate(730.0,144.9)"><rect class="region-label-bg" x="-32" y="-9" width="64" height="18" rx="1"/><text class="region-label-text">Northern</text></g><g class="region-label" data-region="eastern" transform="translate(858.6,313.0)"><rect class="region-label-bg" x="-32" y="-9" width="64" height="18" rx="1"/><text class="region-label-text">Eastern</text></g></g>
+            <g id="markers-layer"><g class="marker marker-high" data-idx="0" transform="translate(604.9,292.5)"><circle r="6" class="pulse-ring"/><circle r="6" class="marker-dot" fill="#9B1E1E" stroke="#fff" stroke-width="2"/></g><g class="marker marker-uva" data-idx="1" transform="translate(610.4,221.2)"><circle r="4" fill="#161412" stroke="#fff" stroke-width="2"/></g><g class="marker marker-watch" data-idx="2" transform="translate(750.0,101.4)"><circle r="5" fill="#4A6B7C" stroke="#fff" stroke-width="2"/></g><g class="marker marker-watch" data-idx="3" transform="translate(861.1,381.0)"><circle r="5" fill="#4A6B7C" stroke="#fff" stroke-width="2"/></g></g>
+          </svg>
+          <div class="map-tooltip" id="map-tooltip"></div>
+          <div class="map-popup" id="map-popup">
+            <button class="pop-close" id="pop-close">×</button>
+            <div id="popup-content"></div>
+          </div>
+        </div>
+        <div class="legend">
+          <div class="legend-item"><span class="legend-dot" style="background:var(--alert-high)"></span>Outbreak</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--alert-moderate)"></span>Elevated</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--alert-watch)"></span>Watch</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--alert-stable)"></span>Stable</div>
+          <div class="legend-item"><span class="legend-dot" style="background:var(--ink)"></span>UVA</div>
+        </div>
+      </div>
+      <div class="region-detail">
+        <div class="region-selector" id="region-selector"></div>
+        <div id="region-content"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Part II — The world</div>
+    <h2 class="section-title">Notable outbreaks worldwide</h2>
+    <div class="filters" id="global-filters">
+      <button class="filter-btn active" data-filter="all">All</button>
+      <button class="filter-btn" data-filter="respiratory">Respiratory</button>
+      <button class="filter-btn" data-filter="viral-hemorrhagic">Viral hemorrhagic</button>
+      <button class="filter-btn" data-filter="vaccine-preventable">Vaccine-preventable</button>
+      <button class="filter-btn" data-filter="zoonotic">Zoonotic</button>
+      <button class="filter-btn" data-filter="enteric">Enteric</button>
+    </div>
+    <div class="table-wrapper">
+      <table class="global-table" id="global-table">
+        <thead><tr>
+          <th data-sort="disease">Disease <span class="sort-arrow">↕</span></th>
+          <th data-sort="location">Location <span class="sort-arrow">↕</span></th>
+          <th data-sort="cases" style="text-align:right">Cases <span class="sort-arrow">↕</span></th>
+          <th data-sort="deaths" style="text-align:right">Deaths <span class="sort-arrow">↕</span></th>
+          <th data-sort="status">Status <span class="sort-arrow">↕</span></th>
+          <th data-sort="updated">Updated <span class="sort-arrow">↕</span></th>
+          <th>Source</th>
+        </tr></thead>
+        <tbody id="global-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-label">Part III — In the press</div>
+    <h2 class="section-title">From the wires</h2>
+    <div class="news-grid" id="news-grid"></div>
+  </section>
+
+  <footer class="footer">
+    <div>Outbreak Watch · CDC · VDH · WHO · Africa CDC · NPR · BBC</div>
+    <div>Not for clinical decision-making. Cross-reference primary sources.</div>
+  </footer>
+</div>
+
+<script>
+/* =============== MARKERS data =============== */
+const MARKERS = [{"type":"high","lng":-78.555,"lat":37.55,"title":"Buckingham County — Measles Outbreak","detail":"12 outbreak-associated cases as of May 13. Local transmission confirmed.","updated":"2026-05-13","link":"https://www.vdh.virginia.gov/clinicians/measles-outbreak-in-buckingham-county/","x":"604.9","y":"292.5"},{"type":"uva","lng":-78.508,"lat":38.0336,"title":"UVA Health","detail":"Charlottesville. Thomas Jefferson Health District. Reference point.","updated":null,"link":null,"x":"610.4","y":"221.2"},{"type":"watch","lng":-77.3064,"lat":38.8462,"title":"Northern Region — Travel-associated Measles","detail":"5 travel-associated measles cases reported earlier in 2026.","updated":"2026-02-09","link":"https://www.vdh.virginia.gov/measles/","x":"750.0","y":"101.4"},{"type":"watch","lng":-76.35,"lat":36.95,"title":"Hampton Roads — Elevated GI Activity","detail":"Norovirus-like outbreaks; GI ED visits above seasonal threshold (MMWR Wk 17).","updated":"2026-05-02","link":"https://www.vdh.virginia.gov/environmental-health/food-safety-in-virginia/foodborne-diseases-and-outbreaks/foodborne-disease-data/gi-report/","x":"861.1","y":"381.0"}];
+
+/* =============== DATA — edit weekly =============== */
+const DATA = {
+  meta: { lastUpdated: "2026-05-17", issueNo: 20 },
+
+  virginia: {
+    totals: { measlesYTD: 35 },
+    regions: {
+      northwest: {
+        name: "Northwest",
+        status: "watch",
+        notes: "Thomas Jefferson Health District includes Charlottesville/UVA. No active outbreaks, but elevated awareness given proximity to Buckingham measles cluster (~30 mi south).",
+        events: [{
+          disease: "Measles surveillance",
+          detail: "Heightened clinician awareness across TJHD. No cases in region. Buckingham outbreak ~30 miles south.",
+          updated: "2026-05-13", source: "VDH",
+          sourceUrl: "https://www.vdh.virginia.gov/measles/"
+        }]
+      },
+      northern: {
+        name: "Northern",
+        status: "watch",
+        notes: "Five travel-associated measles cases earlier in 2026. Heavy international travel keeps importation risk persistent.",
+        events: [{
+          disease: "Measles — historical 2026 cases",
+          detail: "Five travel-associated cases in Northern region earlier in 2026.",
+          updated: "2026-02-09", source: "VDH",
+          sourceUrl: "https://www.vdh.virginia.gov/measles/"
+        }]
+      },
+      central: {
+        name: "Central",
+        status: "high",
+        notes: "Active measles outbreak in Buckingham County (Piedmont Health District). Local transmission confirmed. Of 35 statewide cases in 2026, ~65% in children ≤12.",
+        events: [
+          {
+            disease: "Measles outbreak — Buckingham County",
+            detail: "12 outbreak-associated cases as of May 13. No recent travel; local transmission confirmed.",
+            updated: "2026-05-13", source: "VDH Clinician Letter",
+            sourceUrl: "https://www.vdh.virginia.gov/clinicians/clinician-letters/measles-outbreak-in-buckingham-county/"
+          },
+          {
+            disease: "Andes virus exposure monitoring",
+            detail: "One Virginia resident exposed via MV Hondius cruise; asymptomatic, under monitoring.",
+            updated: "2026-05-07", source: "VDH",
+            sourceUrl: "https://www.vdh.virginia.gov/hantavirus/"
+          }
+        ]
+      },
+      eastern: {
+        name: "Eastern",
+        status: "watch",
+        notes: "GI illness ED visits above seasonal threshold in multiple districts. Norovirus-like outbreaks reported.",
+        events: [{
+          disease: "Norovirus / GI illness",
+          detail: "GI ED visits above seasonal threshold for MMWR Week 17 in multiple Eastern districts.",
+          updated: "2026-05-02", source: "VDH GI Report",
+          sourceUrl: "https://www.vdh.virginia.gov/environmental-health/food-safety-in-virginia/foodborne-diseases-and-outbreaks/foodborne-disease-data/gi-report/"
+        }]
+      },
+      southwest: {
+        name: "Southwest",
+        status: "stable",
+        notes: "No active outbreaks. Tick-borne disease activity ramping seasonally — Lyme, RMSF, ehrlichiosis.",
+        events: []
+      }
+    }
+  },
+
+  global: [
+    { disease:"Ebola virus disease", pathogen:"Orthoebolavirus, Bundibugyo sp.", category:"viral-hemorrhagic", location:"DRC & Uganda", cases:336, deaths:88, status:"high", statusLabel:"PHEIC", updated:"2026-05-17", source:"WHO", sourceUrl:"https://www.who.int/news/item/17-05-2026-epidemic-of-ebola-disease-in-the-democratic-republic-of-the-congo-and-uganda-determined-a-public-health-emergency-of-international-concern", notes:"WHO declared PHEIC May 16. No vaccine/therapeutics for Bundibugyo." },
+    { disease:"Measles", pathogen:"Morbillivirus", category:"vaccine-preventable", location:"United States", cases:1893, deaths:null, status:"high", statusLabel:"Active", updated:"2026-05-14", source:"CDC", sourceUrl:"https://www.cdc.gov/measles/data-research/index.html", notes:"27 outbreaks; 93% outbreak-associated." },
+    { disease:"Andes virus (hantavirus)", pathogen:"Orthohantavirus andesense", category:"zoonotic", location:"Multi-country (cruise)", cases:null, deaths:2, status:"high", statusLabel:"Active", updated:"2026-05-08", source:"CDC / WHO", sourceUrl:"https://www.cdc.gov/hantavirus/situation-summary/index.html", notes:"MV Hondius cluster." },
+    { disease:"Avian influenza A(H5N1)", pathogen:"Influenza A, H5N1 clade 2.3.4.4b", category:"zoonotic", location:"United States", cases:71, deaths:2, status:"moderate", statusLabel:"Ongoing", updated:"2026-04-25", source:"CDC", sourceUrl:"https://www.cdc.gov/bird-flu/situation-summary/index.html", notes:"Widespread in poultry & dairy cattle." },
+    { disease:"Multistate foodborne", pathogen:"Campylobacter, E. coli, Listeria, Salmonella", category:"enteric", location:"United States", cases:null, deaths:null, status:"moderate", statusLabel:"Ongoing", updated:"2026-05-13", source:"CDC", sourceUrl:"https://www.cdc.gov/foodborne-outbreaks/outbreaks/index.html", notes:"17–36 multistate investigations active weekly." },
+    { disease:"Mpox (clade I)", pathogen:"Monkeypox virus, clade I", category:"viral-hemorrhagic", location:"United States", cases:14, deaths:0, status:"watch", statusLabel:"Sporadic", updated:"2026-03-27", source:"CDC", sourceUrl:"https://www.cdc.gov/mpox/", notes:"All travel-associated." },
+    { disease:"Avian influenza A(H9N2)", pathogen:"Influenza A, H9N2", category:"zoonotic", location:"Italy", cases:1, deaths:0, status:"watch", statusLabel:"Sporadic", updated:"2026-03-27", source:"WHO", sourceUrl:"https://www.who.int/emergencies/disease-outbreak-news", notes:"First human H9N2 case in Italy; LPAI." },
+    { disease:"COVID-19 / Flu / RSV", pathogen:"SARS-CoV-2, IAV, RSV", category:"respiratory", location:"United States", cases:null, deaths:null, status:"stable", statusLabel:"Declining", updated:"2026-05-12", source:"CDC", sourceUrl:"https://www.cdc.gov/respiratory-viruses/data/index.html", notes:"Peak hospitalizations wk ending Jan 3, 2026." }
+  ],
+
+  news: [
+    { source:"WHO", date:"2026-05-17", title:"Ebola disease in DRC & Uganda declared a PHEIC", dek:"Director-General determines the Bundibugyo virus outbreak meets criteria for a Public Health Emergency of International Concern.", url:"https://www.who.int/news/item/17-05-2026-epidemic-of-ebola-disease-in-the-democratic-republic-of-the-congo-and-uganda-determined-a-public-health-emergency-of-international-concern" },
+    { source:"WHO DON", date:"2026-05-17", title:"Ebola disease caused by Bundibugyo virus — DRC & Uganda", dek:"Disease Outbreak News: epidemiology, response measures, and risk assessment for the Ituri Province outbreak.", url:"https://www.who.int/emergencies/disease-outbreak-news/item/2026-DON602" },
+    { source:"CDC HAN", date:"2026-05-08", title:"Multi-country Hantavirus Cluster Linked to Cruise Ship", dek:"Health Advisory: Andes virus identified as cause of MV Hondius cluster. Clinical guidance for suspected cases.", url:"https://www.cdc.gov/han/php/notices/han00528.html" },
+    { source:"CDC", date:"2026-05-14", title:"Measles Cases and Outbreaks — 2026 surveillance", dek:"1,893 confirmed cases in 2026 across 27 outbreaks; 93% outbreak-associated.", url:"https://www.cdc.gov/measles/data-research/index.html" },
+    { source:"NPR", date:"2026-02-20", title:"Spartanburg measles outbreak: How did we get here?", dek:"Maria Godoy reports from the epicenter of the largest US measles outbreak in decades.", url:"https://www.npr.org/2026/02/20/nx-s1-5718384/spartanburg-measles-outbreak-how-did-we-get-here" },
+    { source:"NPR", date:"2026-02-06", title:"CDC issues fewer health alerts during second Trump term", dek:"Number of HANs has dropped sharply; concerns over reduced communications and database updates.", url:"https://www.npr.org/2026/02/06/nx-s1-5689923/drop-in-cdc-health-alerts-hans" },
+    { source:"NPR", date:"2026-04-08", title:"A measles outbreak that began in rural Utah continues to spread", dek:"Utah has 583 cases since last summer. Started rural, now moving into the urban corridor.", url:"https://www.npr.org/2026/04/08/nx-s1-5771566/a-measles-outbreak-that-began-in-rural-utah-continues-to-spread" },
+    { source:"BBC News", date:"2026-05-17", title:"BBC Health — latest outbreak coverage", dek:"BBC Health desk: ongoing coverage of DRC Ebola PHEIC, US measles, and hantavirus cluster.", url:"https://www.bbc.com/news/health" },
+    { source:"VDH", date:"2026-05-13", title:"Measles Outbreak in Buckingham County — Letter to Clinicians", dek:"Twelve outbreak-associated cases. Vaccination, isolation, testing, and reporting guidance for VA clinicians.", url:"https://www.vdh.virginia.gov/clinicians/clinician-letters/measles-outbreak-in-buckingham-county/" },
+    { source:"CIDRAP", date:"2026-05-16", title:"New Ebola outbreak hits Democratic Republic of Congo", dek:"Africa CDC confirms Bundibugyo strain; outbreak centered in Ituri Province.", url:"https://www.cidrap.umn.edu/ebola/new-ebola-outbreak-hits-democratic-republic-congo" },
+    { source:"Imperial College", date:"2026-05-16", title:"Ebola outbreak 2026: Q&A with experts", dek:"Bundibugyo strain explained — why this outbreak is significant and what containment looks like.", url:"https://www.imperial.ac.uk/news/articles/2026/ebola-outbreak-2026-qa-with-experts/" },
+    { source:"CDC", date:"2026-03-06", title:"A(H5) Bird Flu — Current Situation", dek:"Widespread in wild birds, poultry, and US dairy cattle. Sporadic human cases in workers.", url:"https://www.cdc.gov/bird-flu/situation-summary/index.html" }
+  ]
+};
+
+/* =============== Color sync for county fills =============== */
+// Set county fills dynamically based on each region's current status
+function applyRegionColors() {
+  const styleMap = {
+    high:     "rgba(155, 30, 30, 0.45)",
+    moderate: "rgba(181, 116, 12, 0.40)",
+    watch:    "rgba(74, 107, 124, 0.32)",
+    stable:   "rgba(78, 107, 74, 0.25)"
+  };
+  for (const [key, region] of Object.entries(DATA.virginia.regions)) {
+    const fill = styleMap[region.status] || styleMap.stable;
+    document.querySelectorAll('.county[data-region="' + key + '"]').forEach(el => {
+      el.style.fill = fill;
+    });
+    // Also set region label border color
+    const lbl = document.querySelector('.region-label[data-region="' + key + '"] .region-label-bg');
+    if (lbl) {
+      const borderMap = {
+        high: "#9B1E1E", moderate: "#B5740C", watch: "#4A6B7C", stable: "#4E6B4A"
+      };
+      lbl.style.stroke = borderMap[region.status] || "#161412";
+      lbl.style.strokeWidth = "1.5";
+    }
+  }
+}
+
+/* =============== Region detail panel =============== */
+let currentRegion = "central";
+
+function renderRegionSelector() {
+  const sel = document.getElementById("region-selector");
+  sel.innerHTML = "";
+  for (const [key, region] of Object.entries(DATA.virginia.regions)) {
+    const btn = document.createElement("button");
+    btn.className = "region-btn" + (key === currentRegion ? " active" : "");
+    btn.textContent = region.name;
+    btn.dataset.key = key;
+    btn.addEventListener("click", () => selectRegion(key));
+    sel.appendChild(btn);
+  }
+}
+
+function selectRegion(key) {
+  currentRegion = key;
+  document.querySelectorAll(".region-btn").forEach(b =>
+    b.classList.toggle("active", b.dataset.key === key)
+  );
+  const region = DATA.virginia.regions[key];
+  const labels = { high: "Outbreak", moderate: "Elevated", watch: "Watch", stable: "Stable" };
+
+  let html =
+    '<h3>' + region.name + ' region</h3>' +
+    '<div class="region-meta"><span class="badge ' + region.status + '">' + labels[region.status] + '</span></div>' +
+    '<p style="font-size:13px;color:var(--ink-soft);margin-bottom:18px;line-height:1.5">' + region.notes + '</p>';
+
+  if (region.events && region.events.length > 0) {
+    html += '<ul class="event-list">';
+    for (const ev of region.events) {
+      html +=
+        '<li class="event-item">' +
+        '<div class="event-disease">' + ev.disease + '</div>' +
+        '<div class="event-detail">' + ev.detail + '</div>' +
+        '<div class="event-meta">' + formatDate(ev.updated) + ' · ' +
+        '<a href="' + ev.sourceUrl + '" target="_blank" rel="noopener">' + ev.source + '</a></div>' +
+        '</li>';
+    }
+    html += '</ul>';
+  } else {
+    html += '<div class="empty-state">No active outbreak events this week.</div>';
+  }
+  document.getElementById("region-content").innerHTML = html;
+
+  // Highlight all counties in this region briefly
+  document.querySelectorAll('.county').forEach(el => {
+    el.style.opacity = (el.dataset.region === key) ? "1" : "0.55";
+  });
+  setTimeout(() => {
+    document.querySelectorAll('.county').forEach(el => { el.style.opacity = "1"; });
+  }, 1200);
+}
+
+/* =============== Map interactions =============== */
+function setupMapInteractions() {
+  const tooltip = document.getElementById("map-tooltip");
+  const popup = document.getElementById("map-popup");
+  const popupContent = document.getElementById("popup-content");
+  const wrap = document.getElementById("map-wrap");
+
+  function showTooltip(text, evt) {
+    tooltip.textContent = text;
+    tooltip.style.opacity = "1";
+    const rect = wrap.getBoundingClientRect();
+    const x = evt.clientX - rect.left;
+    const y = evt.clientY - rect.top;
+    tooltip.style.left = (x + 10) + "px";
+    tooltip.style.top = (y - 28) + "px";
+  }
+  function hideTooltip() { tooltip.style.opacity = "0"; }
+
+  // County interactions
+  document.querySelectorAll('.county').forEach(el => {
+    el.addEventListener('mousemove', (e) => {
+      const name = el.dataset.name;
+      const region = el.dataset.region;
+      const regionName = region ? DATA.virginia.regions[region].name : "—";
+      showTooltip(name + " · " + regionName, e);
+    });
+    el.addEventListener('mouseleave', hideTooltip);
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const region = el.dataset.region;
+      if (region) selectRegion(region);
+    });
+  });
+
+  // Region label clicks
+  document.querySelectorAll('.region-label').forEach(el => {
+    el.style.pointerEvents = "auto";
+    el.style.cursor = "pointer";
+    el.addEventListener('click', () => {
+      const region = el.dataset.region;
+      if (region) selectRegion(region);
+    });
+  });
+
+  // Marker interactions
+  document.querySelectorAll('.marker').forEach(el => {
+    const idx = +el.dataset.idx;
+    const m = MARKERS[idx];
+    el.addEventListener('mousemove', (e) => showTooltip(m.title, e));
+    el.addEventListener('mouseleave', hideTooltip);
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      hideTooltip();
+      let html = '<div class="pop-title">' + m.title + '</div>' +
+                 '<div class="pop-detail">' + m.detail + '</div>';
+      if (m.updated) {
+        html += '<div class="pop-meta">' + formatDate(m.updated);
+        if (m.link) html += ' · <a href="' + m.link + '" target="_blank" rel="noopener">Source →</a>';
+        html += '</div>';
+      }
+      popupContent.innerHTML = html;
+      popup.classList.add('show');
+      const rect = wrap.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+      popup.style.left = Math.min(cx + 12, rect.width - 280) + "px";
+      popup.style.top = Math.max(cy - 40, 8) + "px";
+    });
+  });
+
+  // Close popup
+  document.getElementById('pop-close').addEventListener('click', () => {
+    popup.classList.remove('show');
+  });
+  document.getElementById('va-map').addEventListener('click', (e) => {
+    if (e.target.id === 'va-map' || e.target.tagName === 'svg') {
+      popup.classList.remove('show');
+    }
+  });
+}
+
+/* =============== Global table =============== */
+let currentSort = { key: "status", dir: "asc" };
+let currentFilter = "all";
+const statusOrder = { high: 1, moderate: 2, watch: 3, stable: 4 };
+
+function renderTable() {
+  let rows = DATA.global.slice();
+  if (currentFilter !== "all") rows = rows.filter(r => r.category === currentFilter);
+  rows.sort((a, b) => {
+    let av = a[currentSort.key], bv = b[currentSort.key];
+    if (currentSort.key === "status") { av = statusOrder[av] || 99; bv = statusOrder[bv] || 99; }
+    if (av == null) av = currentSort.dir === "asc" ? Infinity : -Infinity;
+    if (bv == null) bv = currentSort.dir === "asc" ? Infinity : -Infinity;
+    if (typeof av === "string") return currentSort.dir === "asc" ? av.localeCompare(bv) : bv.localeCompare(av);
+    return currentSort.dir === "asc" ? av - bv : bv - av;
+  });
+  document.getElementById("global-tbody").innerHTML = rows.map(r =>
+    '<tr>' +
+    '<td class="td-disease">' + r.disease + '<div class="td-pathogen">' + r.pathogen + '</div></td>' +
+    '<td class="td-location">' + r.location + '</td>' +
+    '<td class="td-cases">' + (r.cases != null ? r.cases.toLocaleString() : "—") + '</td>' +
+    '<td class="td-deaths">' + (r.deaths != null ? r.deaths.toLocaleString() : "—") + '</td>' +
+    '<td class="td-status"><span class="badge ' + r.status + '">' + r.statusLabel + '</span></td>' +
+    '<td class="td-source">' + formatDate(r.updated) + '</td>' +
+    '<td class="td-source"><a href="' + r.sourceUrl + '" target="_blank" rel="noopener">' + r.source + '</a></td>' +
+    '</tr>'
+  ).join("");
+}
+
+function setupTableSort() {
+  document.querySelectorAll("#global-table thead th[data-sort]").forEach(th => {
+    th.addEventListener("click", () => {
+      const k = th.dataset.sort;
+      if (currentSort.key === k) currentSort.dir = currentSort.dir === "asc" ? "desc" : "asc";
+      else { currentSort.key = k; currentSort.dir = "asc"; }
+      renderTable();
+    });
+  });
+}
+
+function setupFilters() {
+  document.querySelectorAll(".filter-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFilter = btn.dataset.filter;
+      renderTable();
+    });
+  });
+}
+
+/* =============== News =============== */
+function renderNews() {
+  const sorted = DATA.news.slice().sort((a, b) => b.date.localeCompare(a.date));
+  document.getElementById("news-grid").innerHTML = sorted.map(n =>
+    '<a class="news-card" href="' + n.url + '" target="_blank" rel="noopener">' +
+    '<div class="news-source"><span class="src-name">' + n.source + '</span>' +
+    '<span>' + formatDate(n.date) + '</span></div>' +
+    '<div class="news-title">' + n.title + '</div>' +
+    '<div class="news-dek">' + n.dek + '</div>' +
+    '<div class="news-arrow">Read →</div>' +
+    '</a>'
+  ).join("");
+}
+
+/* =============== Helpers =============== */
+function formatDate(iso) {
+  if (!iso) return "—";
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function renderMeta() {
+  document.getElementById("last-updated").textContent = formatDate(DATA.meta.lastUpdated);
+  document.getElementById("issue-no").textContent = DATA.meta.issueNo;
+  document.getElementById("t-va-measles").textContent = DATA.virginia.totals.measlesYTD;
+  const usM = DATA.global.find(e => e.disease === "Measles" && e.location === "United States");
+  document.getElementById("t-us-measles").textContent = usM ? usM.cases.toLocaleString() : "—";
+  document.getElementById("t-global-events").textContent =
+    DATA.global.filter(e => e.status === "high" || e.status === "moderate").length;
+}
+
+/* =============== Init =============== */
+renderMeta();
+applyRegionColors();
+setupMapInteractions();
+renderRegionSelector();
+selectRegion("central");
+renderTable();
+setupTableSort();
+setupFilters();
+renderNews();
+</script>
+</body>
+</html>
