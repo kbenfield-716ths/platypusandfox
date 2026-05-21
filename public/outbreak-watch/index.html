@@ -462,7 +462,7 @@ const MARKERS = [{"type":"high","lng":-78.555,"lat":37.55,"title":"Buckingham Co
 
 /* =============== DATA — edit weekly =============== */
 const DATA = {
-  meta: { lastUpdated: "2026-05-19", issueNo: 20 },
+  meta: { lastUpdated: "2026-05-21", issueNo: 20 },
 
   virginia: {
     totals: { measlesYTD: 35 },
@@ -481,13 +481,21 @@ const DATA = {
       northern: {
         name: "Northern",
         status: "watch",
-        notes: "Five travel-associated measles cases earlier in 2026. Heavy international travel keeps importation risk persistent.",
-        events: [{
-          disease: "Measles — historical 2026 cases",
-          detail: "Five travel-associated cases in Northern region earlier in 2026.",
-          updated: "2026-02-09", source: "VDH",
-          sourceUrl: "https://www.vdh.virginia.gov/measles/"
-        }]
+        notes: "Five travel-associated measles cases earlier in 2026. Heavy international travel keeps importation risk persistent. Dulles Airport (IAD) is now the sole US entry point for Ebola-region travelers; CDC public health screening active as of May 21.",
+        events: [
+          {
+            disease: "Ebola entry screening — Dulles Airport (IAD)",
+            detail: "CDC began enhanced public health screening at IAD on May 21 for all travelers from DRC, Uganda, or South Sudan in the past 21 days. Traveler contact info shared with VDH for 21-day follow-up. No cases in Virginia.",
+            updated: "2026-05-21", source: "CDC Newsroom",
+            sourceUrl: "https://www.cdc.gov/media/releases/2026/2026-enhanced-ebola-airport-screening-begins-at-washington-dulles-international-airport.html"
+          },
+          {
+            disease: "Measles — historical 2026 cases",
+            detail: "Five travel-associated cases in Northern region earlier in 2026.",
+            updated: "2026-02-09", source: "VDH",
+            sourceUrl: "https://www.vdh.virginia.gov/measles/"
+          }
+        ]
       },
       central: {
         name: "Central",
@@ -529,9 +537,9 @@ const DATA = {
   },
 
   global: [
-    { disease:"Ebola virus disease", pathogen:"Orthoebolavirus, Bundibugyo sp.", category:"viral-hemorrhagic", location:"DRC & Uganda", cases:336, deaths:88, status:"high", statusLabel:"PHEIC", updated:"2026-05-17", source:"WHO", sourceUrl:"https://www.who.int/news/item/17-05-2026-epidemic-of-ebola-disease-in-the-democratic-republic-of-the-congo-and-uganda-determined-a-public-health-emergency-of-international-concern", notes:"WHO declared PHEIC May 16. No vaccine/therapeutics for Bundibugyo." },
+    { disease:"Ebola virus disease", pathogen:"Orthoebolavirus, Bundibugyo sp.", category:"viral-hemorrhagic", location:"DRC & Uganda", cases:600, deaths:139, status:"high", statusLabel:"PHEIC", updated:"2026-05-20", source:"WHO / Al Jazeera", sourceUrl:"https://www.who.int/news/item/17-05-2026-epidemic-of-ebola-disease-in-the-democratic-republic-of-the-congo-and-uganda-determined-a-public-health-emergency-of-international-concern", notes:"PHEIC declared May 16. US entry ban for DRC/Uganda/S. Sudan nationals in effect; Dulles (IAD) screening active. No vaccine/therapeutics for Bundibugyo." },
     { disease:"Measles", pathogen:"Morbillivirus", category:"vaccine-preventable", location:"United States", cases:1893, deaths:null, status:"high", statusLabel:"Active", updated:"2026-05-14", source:"CDC", sourceUrl:"https://www.cdc.gov/measles/data-research/index.html", notes:"27 outbreaks; 93% outbreak-associated." },
-    { disease:"Andes virus (hantavirus)", pathogen:"Orthohantavirus andesense", category:"zoonotic", location:"Multi-country (cruise)", cases:null, deaths:2, status:"high", statusLabel:"Active", updated:"2026-05-08", source:"CDC / WHO", sourceUrl:"https://www.cdc.gov/hantavirus/situation-summary/index.html", notes:"MV Hondius cluster." },
+    { disease:"Andes virus (hantavirus)", pathogen:"Orthohantavirus andesense", category:"zoonotic", location:"Multi-country (cruise)", cases:10, deaths:3, status:"high", statusLabel:"Active", updated:"2026-05-18", source:"CIDRAP / WHO", sourceUrl:"https://www.cdc.gov/hantavirus/situation-summary/index.html", notes:"MV Hondius cluster; 8 confirmed, 2 probable. None of 41 monitored Americans positive." },
     { disease:"Avian influenza A(H5N1)", pathogen:"Influenza A, H5N1 clade 2.3.4.4b", category:"zoonotic", location:"United States", cases:71, deaths:2, status:"moderate", statusLabel:"Ongoing", updated:"2026-04-25", source:"CDC", sourceUrl:"https://www.cdc.gov/bird-flu/situation-summary/index.html", notes:"Widespread in poultry & dairy cattle." },
     { disease:"Multistate foodborne", pathogen:"Campylobacter, E. coli, Listeria, Salmonella", category:"enteric", location:"United States", cases:null, deaths:null, status:"moderate", statusLabel:"Ongoing", updated:"2026-05-13", source:"CDC", sourceUrl:"https://www.cdc.gov/foodborne-outbreaks/outbreaks/index.html", notes:"17–36 multistate investigations active weekly." },
     { disease:"Mpox (clade I)", pathogen:"Monkeypox virus, clade I", category:"viral-hemorrhagic", location:"United States", cases:14, deaths:0, status:"watch", statusLabel:"Sporadic", updated:"2026-03-27", source:"CDC", sourceUrl:"https://www.cdc.gov/mpox/", notes:"All travel-associated." },
@@ -540,18 +548,18 @@ const DATA = {
   ],
 
   news: [
+    { source:"CDC Newsroom", date:"2026-05-21", title:"Ebola entry screening now operational at Washington-Dulles; DRC/Uganda/South Sudan travelers redirected to IAD", dek:"CDC began enhanced public health screening at Dulles Airport (IAD) on May 21 for travelers from DRC, Uganda, and South Sudan; contact information shared with VDH and state health departments for 21-day follow-up.", url:"https://www.cdc.gov/media/releases/2026/2026-enhanced-ebola-airport-screening-begins-at-washington-dulles-international-airport.html" },
+    { source:"Al Jazeera", date:"2026-05-20", title:"WHO reports 600 suspected Ebola cases and 139 deaths in DRC and Uganda", dek:"The Bundibugyo virus outbreak has grown rapidly across 11 health zones in Ituri Province and into Nord-Kivu; WHO Director-General expressed alarm at the accelerating pace of spread.", url:"https://www.aljazeera.com/news/2026/5/20/who-says-600-cases-139-suspected-deaths-in-growing-ebola-outbreak" },
+    { source:"NPR", date:"2026-05-20", title:"WHO chief concerned over 'scale and speed' of Ebola outbreak", dek:"WHO Director-General Tedros raised alarm over rapid Bundibugyo virus spread across DRC; regional risk is high, global risk low — clinicians should take travel history to DRC/Uganda.", url:"https://www.npr.org/2026/05/20/g-s1-122971/who-chief-concerned-over-scale-and-speed-of-ebola-outbreak" },
+    { source:"CDC HAN", date:"2026-05-20", title:"Health Advisory: Ebola Disease Outbreak in DRC and Uganda (HAN-00530)", dek:"Clinician guidance on case recognition, airborne/contact precautions, testing, and entry screening for travelers arriving from DRC (Level 3 notice) and Uganda (Level 1 notice).", url:"https://www.cdc.gov/han/php/notices/han00530.html" },
+    { source:"Euronews", date:"2026-05-19", title:"US to screen for Ebola at airports as European medics deploy to region", dek:"Enhanced entry screening for travelers from DRC and Uganda is now in place at major US airports; ECDC is also deploying public health experts to the region.", url:"https://www.euronews.com/health/2026/05/19/us-to-screen-for-ebola-at-airports-as-european-medics-deploy-to-region" },
     { source:"NPR", date:"2026-05-18", title:"WHO declares Ebola outbreak in DRC and Uganda a global health emergency", dek:"The WHO declared the Bundibugyo virus outbreak a PHEIC; no approved vaccine or treatment exists and a small number of Americans with possible exposure are being evacuated.", url:"https://www.npr.org/2026/05/18/nx-s1-5824998/who-declares-new-ebola-outbreak-in-africa-a-global-health-emergency" },
     { source:"CDC Newsroom", date:"2026-05-18", title:"CDC Mobilizes International Response Following Ebola Outbreak in DRC and Uganda", dek:"CDC is coordinating the safe withdrawal of a small number of Americans potentially exposed in Ituri Province; risk to the US public is currently low.", url:"https://www.cdc.gov/media/releases/2026/cdc-mobilizes-international-ebola-response.html" },
     { source:"CIDRAP", date:"2026-05-18", title:"Hantavirus outbreak count revised to 10 as MV Hondius passengers disperse globally", dek:"WHO adjusted the case count to 10 (8 confirmed, 2 probable); three deaths confirmed, none of the 41 monitored Americans have tested positive for Andes virus.", url:"https://www.cidrap.umn.edu/misc-emerging-topics/hantavirus-outbreak-reduced-10-cases-ship-passengers-return-home-countries" },
-    { source:"CDC", date:"2026-05-13", title:"Multistate Salmonella Outbreak Linked to Backyard Poultry", dek:"184 confirmed cases across 31 states with 53 hospitalizations and 1 death; more than a quarter of those sickened are children under 5.", url:"https://www.cdc.gov/salmonella/outbreaks/saintpaul-04-26/index.html" },
     { source:"WHO", date:"2026-05-17", title:"Ebola disease in DRC & Uganda declared a PHEIC", dek:"Director-General determines the Bundibugyo virus outbreak meets criteria for a Public Health Emergency of International Concern.", url:"https://www.who.int/news/item/17-05-2026-epidemic-of-ebola-disease-in-the-democratic-republic-of-the-congo-and-uganda-determined-a-public-health-emergency-of-international-concern" },
     { source:"WHO DON", date:"2026-05-17", title:"Ebola disease caused by Bundibugyo virus — DRC & Uganda", dek:"Disease Outbreak News: epidemiology, response measures, and risk assessment for the Ituri Province outbreak.", url:"https://www.who.int/emergencies/disease-outbreak-news/item/2026-DON602" },
-    { source:"CDC HAN", date:"2026-05-08", title:"Multi-country Hantavirus Cluster Linked to Cruise Ship", dek:"Health Advisory: Andes virus identified as cause of MV Hondius cluster. Clinical guidance for suspected cases.", url:"https://www.cdc.gov/han/php/notices/han00528.html" },
     { source:"CDC", date:"2026-05-14", title:"Measles Cases and Outbreaks — 2026 surveillance", dek:"1,893 confirmed cases in 2026 across 27 outbreaks; 93% outbreak-associated.", url:"https://www.cdc.gov/measles/data-research/index.html" },
-    { source:"VDH", date:"2026-05-13", title:"Measles Outbreak in Buckingham County — Letter to Clinicians", dek:"Twelve outbreak-associated cases. Vaccination, isolation, testing, and reporting guidance for VA clinicians.", url:"https://www.vdh.virginia.gov/clinicians/clinician-letters/measles-outbreak-in-buckingham-county/" },
-    { source:"CIDRAP", date:"2026-05-16", title:"New Ebola outbreak hits Democratic Republic of Congo", dek:"Africa CDC confirms Bundibugyo strain; outbreak centered in Ituri Province.", url:"https://www.cidrap.umn.edu/ebola/new-ebola-outbreak-hits-democratic-republic-congo" },
-    { source:"Imperial College", date:"2026-05-16", title:"Ebola outbreak 2026: Q&A with experts", dek:"Bundibugyo strain explained — why this outbreak is significant and what containment looks like.", url:"https://www.imperial.ac.uk/news/articles/2026/ebola-outbreak-2026-qa-with-experts/" },
-    { source:"NPR", date:"2026-04-08", title:"A measles outbreak that began in rural Utah continues to spread", dek:"Utah has 583 cases since last summer. Started rural, now moving into the urban corridor.", url:"https://www.npr.org/2026/04/08/nx-s1-5771566/a-measles-outbreak-that-began-in-rural-utah-continues-to-spread" }
+    { source:"VDH", date:"2026-05-13", title:"Measles Outbreak in Buckingham County — Letter to Clinicians", dek:"Twelve outbreak-associated cases. Vaccination, isolation, testing, and reporting guidance for VA clinicians.", url:"https://www.vdh.virginia.gov/clinicians/clinician-letters/measles-outbreak-in-buckingham-county/" }
   ]
 };
 
