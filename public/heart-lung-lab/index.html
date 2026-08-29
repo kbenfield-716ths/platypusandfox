@@ -1,0 +1,2116 @@
+<title>Heart-Lung Physiology Lab | Platypus & Fox</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  :root{
+    color-scheme: light;
+    --page:      #f9f9f7;
+    --surface:   #fcfcfb;
+    --surface-2: #f1f0ec;
+    --ink:       #0b0b0b;
+    --ink-2:     #52514e;
+    --ink-muted: #898781;
+    --grid:      #e1e0d9;
+    --axis:      #c3c2b7;
+    --border:    rgba(11,11,11,0.10);
+    --accent:    #2a78d6;
+    --accent-ink:#ffffff;
+
+    --c-airway:  #2a78d6; /* blue   */
+    --c-pleural: #eb6834; /* orange */
+    --c-volume:  #1baf7a; /* aqua   */
+    --c-cvp:     #eda100; /* yellow */
+    --c-pa:      #e87ba4; /* magenta */
+    --c-pcwp:    #4a3aa7; /* violet */
+    --c-art:     #e34948; /* red    */
+
+    --good: #0ca30c;
+    --warn: #b8790f;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --page:      #0d0d0d;
+      --surface:   #15171a;
+      --surface-2: #1b1e22;
+      --ink:       #ffffff;
+      --ink-2:     #c3c2b7;
+      --ink-muted: #8b8a85;
+      --grid:      #2a2c2e;
+      --axis:      #3a3d40;
+      --border:    rgba(255,255,255,0.10);
+      --accent:    #3987e5;
+      --accent-ink:#ffffff;
+
+      --c-airway:  #3987e5;
+      --c-pleural: #d95926;
+      --c-volume:  #199e70;
+      --c-cvp:     #c98500;
+      --c-pa:      #d55181;
+      --c-pcwp:    #9085e9;
+      --c-art:     #e66767;
+
+      --good: #23c623;
+      --warn: #e0a838;
+    }
+  }
+  :root[data-theme="dark"]{
+    color-scheme: dark;
+    --page:      #0d0d0d;
+    --surface:   #15171a;
+    --surface-2: #1b1e22;
+    --ink:       #ffffff;
+    --ink-2:     #c3c2b7;
+    --ink-muted: #8b8a85;
+    --grid:      #2a2c2e;
+    --axis:      #3a3d40;
+    --border:    rgba(255,255,255,0.10);
+    --accent:    #3987e5;
+    --accent-ink:#ffffff;
+
+    --c-airway:  #3987e5;
+    --c-pleural: #d95926;
+    --c-volume:  #199e70;
+    --c-cvp:     #c98500;
+    --c-pa:      #d55181;
+    --c-pcwp:    #9085e9;
+    --c-art:     #e66767;
+
+    --good: #23c623;
+    --warn: #e0a838;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--page);
+    color:var(--ink);
+    font-family:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1280px;margin:0 auto;padding:28px 24px 60px;}
+
+  header.top{
+    display:flex; align-items:baseline; justify-content:space-between; gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:18px;
+    padding-bottom:16px;
+    border-bottom:1px solid var(--border);
+  }
+  header.top h1{
+    font-size:22px; font-weight:700; letter-spacing:-0.01em; margin:0;
+    text-wrap:balance;
+  }
+  header.top .sub{
+    font-size:13px; color:var(--ink-muted); font-family:"IBM Plex Mono", monospace;
+  }
+
+  .layout{
+    display:grid;
+    grid-template-columns: 300px 1fr;
+    gap:20px;
+    align-items:start;
+  }
+  @media (max-width: 880px){
+    .layout{grid-template-columns:1fr;}
+  }
+
+  .panel{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:16px 16px 18px;
+  }
+  .panel + .panel{margin-top:16px;}
+  .panel h2{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.08em;
+    color:var(--ink-muted); font-weight:600; margin:0 0 12px;
+  }
+
+  /* ---- mode switch ---- */
+  .mode-switch{
+    display:flex; background:var(--surface-2); border-radius:8px; padding:3px;
+    border:1px solid var(--border);
+  }
+  .mode-switch button{
+    flex:1; border:0; background:transparent; padding:9px 6px; border-radius:6px;
+    font-family:inherit; font-size:12.5px; font-weight:600; cursor:pointer;
+    color:var(--ink-2);
+  }
+  .mode-switch button.active{
+    background:var(--accent); color:var(--accent-ink);
+  }
+
+  /* ---- sliders ---- */
+  .field{margin-top:16px;}
+  .field:first-child{margin-top:0;}
+  .field label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:12.5px; color:var(--ink-2); margin-bottom:6px;
+  }
+  .field label b{
+    font-weight:600; color:var(--ink);
+  }
+  .field label span.val{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  input[type=range]{
+    -webkit-appearance:none; appearance:none; width:100%; height:4px;
+    background:var(--grid); border-radius:2px; outline:none; margin:0;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:var(--accent); cursor:pointer; border:2px solid var(--surface);
+    box-shadow:0 0 0 1px var(--accent);
+  }
+  input[type=range]::-moz-range-thumb{
+    width:14px; height:14px; border-radius:50%; background:var(--accent);
+    cursor:pointer; border:2px solid var(--surface); box-shadow:0 0 0 1px var(--accent);
+  }
+  input[type=range]:disabled{opacity:0.3; filter:grayscale(1);}
+  .field.disabled label b{opacity:0.5;}
+  .field.disabled label span.val{ color:var(--warn); font-weight:600; opacity:1; }
+
+  /* ---- phase stepper ---- */
+  .stepper{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:6px;
+  }
+  .stepper button{
+    border:1px solid var(--border); background:var(--surface-2); color:var(--ink-2);
+    font-family:inherit; font-size:12px; font-weight:600; padding:9px 6px; border-radius:7px;
+    cursor:pointer; text-align:left; line-height:1.25;
+  }
+  .stepper button .n{
+    display:block; font-family:"IBM Plex Mono",monospace; font-size:10px; font-weight:500;
+    color:var(--ink-muted); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:1px;
+  }
+  .stepper button.active{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+  .stepper button.active .n{ color:rgba(255,255,255,0.75); }
+  .play-row{
+    display:flex; align-items:center; gap:8px; margin-bottom:10px;
+  }
+  .play-btn{
+    flex:1; display:flex; align-items:center; justify-content:center; gap:7px;
+    border:1px solid var(--border); background:var(--surface-2); color:var(--ink);
+    font-family:inherit; font-size:12.5px; font-weight:600; padding:9px 6px; border-radius:7px;
+    cursor:pointer;
+  }
+  .play-btn.active{ background:var(--good); border-color:var(--good); color:#fff; }
+  .play-btn .dot{ width:7px; height:7px; border-radius:50%; background:currentColor; }
+
+  /* ---- scenario + pressure-chamber row ---- */
+  .scenario-row{
+    display:grid; grid-template-columns:300px 1fr; gap:16px; align-items:stretch;
+  }
+  .scenario-row .panel{ margin:0; }
+  @media (max-width:900px){
+    .scenario-row{ grid-template-columns:1fr; }
+  }
+  .scenario-panel{ display:flex; flex-direction:column; }
+  .scenario-live{
+    margin-top:12px; padding-top:10px; border-top:1px dashed var(--border);
+    font-family:"IBM Plex Mono", monospace; font-size:11px; color:var(--ink-muted);
+    min-height:14px;
+  }
+
+  /* ---- pressure-chamber diagram ---- */
+  .diagram-wrap svg{ width:100%; height:auto; display:block; }
+  .diagram-caption{
+    font-family:"IBM Plex Mono", monospace; font-size:11px; color:var(--ink-muted);
+    text-align:center; margin-top:8px; min-height:14px;
+  }
+  .diag-num{ font-family:"IBM Plex Mono",monospace; font-weight:600; font-variant-numeric:tabular-nums; }
+  .diag-label{ font-family:"IBM Plex Sans",sans-serif; font-weight:600; letter-spacing:0.01em; }
+  .diag-small{ font-family:"IBM Plex Mono",monospace; font-size:9.5px; }
+
+  /* ---- readouts ---- */
+  .readouts{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(120px,1fr));
+    gap:10px;
+  }
+  .stat{
+    background:var(--surface-2); border-radius:8px; padding:10px 12px;
+    border:1px solid var(--border);
+  }
+  .stat .k{
+    font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em;
+    color:var(--ink-muted); font-weight:600;
+  }
+  .stat .v{
+    font-family:"IBM Plex Mono", monospace; font-size:19px; font-weight:600;
+    margin-top:3px; font-variant-numeric:tabular-nums;
+  }
+  .stat .v small{font-size:12px; font-weight:500; color:var(--ink-2);}
+  .stat.flag .v{color:var(--warn);}
+
+  /* ---- charts ---- */
+  .chart-card{
+    background:var(--surface); border:1px solid var(--border); border-radius:10px;
+    padding:14px 16px 10px; margin-bottom:14px;
+  }
+  .chart-card.hero{padding-top:16px;}
+  .chart-row{
+    display:grid; grid-template-columns:1fr 1fr; gap:14px; align-items:stretch;
+    margin-bottom:14px;
+  }
+  .chart-row .chart-card{ margin-bottom:0; min-width:0; }
+  @media (max-width:760px){
+    .chart-row{ grid-template-columns:1fr; }
+  }
+  .chart-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:6px; flex-wrap:wrap; gap:6px 14px;
+  }
+  .chart-title{
+    font-size:12.5px; font-weight:600; color:var(--ink);
+    display:flex; align-items:center; gap:8px;
+  }
+  .chart-title .unit{font-weight:400; color:var(--ink-muted); font-size:11.5px;}
+  .legend{ display:flex; gap:14px; flex-wrap:wrap; }
+  .legend .item{
+    display:flex; align-items:center; gap:5px; font-size:11.5px; color:var(--ink-2);
+    font-family:"IBM Plex Mono",monospace;
+  }
+  .legend .swatch{width:10px;height:3px;border-radius:2px;display:inline-block;}
+  canvas.wave{display:block; width:100%; }
+
+  .caption{
+    font-size:12px; color:var(--ink-muted); line-height:1.5; margin-top:2px;
+  }
+
+  /* ---- collapsible detail charts ---- */
+  .detail-toggle{
+    width:100%; display:flex; align-items:center; justify-content:center; gap:8px;
+    background:var(--surface); border:1px dashed var(--border); border-radius:10px;
+    color:var(--ink-2); font-family:inherit; font-size:12.5px; font-weight:600;
+    padding:11px 12px; margin-bottom:14px; cursor:pointer;
+  }
+  .detail-toggle:hover{ color:var(--ink); border-color:var(--axis); }
+  .detail-toggle .chev{ font-size:10px; transition:transform 0.15s ease; color:var(--ink-muted); }
+  .detail-toggle[aria-expanded="true"] .chev{ transform:rotate(180deg); }
+  .detail-charts{ display:none; }
+  .detail-charts.open{ display:block; }
+
+  .explainer{
+    font-size:13.5px; line-height:1.65; color:var(--ink-2);
+  }
+  .explainer b{color:var(--ink); font-weight:600;}
+  .explainer p{margin:0 0 12px;}
+  .explainer p:last-child{margin-bottom:0;}
+  .explainer .try{
+    background:var(--surface-2); border:1px dashed var(--border); border-radius:8px;
+    padding:9px 12px; font-size:12.5px; color:var(--ink-2); margin-top:4px;
+  }
+  .explainer .try b{color:var(--accent);}
+
+  .walk-dot{
+    width:8px; height:8px; border-radius:50%; background:var(--grid); border:1px solid var(--border);
+    cursor:pointer;
+  }
+  .walk-dot.active{ background:var(--accent); border-color:var(--accent); }
+
+  /* ---- teach tab ---- */
+  #viewTeach{ grid-template-columns: 540px 1fr; }
+  @media (max-width: 1180px){ #viewTeach{ grid-template-columns:1fr; } }
+  .teach-left{ position:sticky; top:16px; display:flex; flex-direction:column; }
+  .teach-left > .panel{ margin-top:16px; }
+  .teach-left > .panel:first-child{ margin-top:0; }
+  /* Live readouts, inside Teach only, as ONE horizontal scrolling line of compact chips instead of
+     the tall multi-row grid Live monitor uses — same #readouts element/data, just laid out to take
+     minimal vertical space so the (now much larger) diagram stays the dominant visual. */
+  .teach-left .readouts{
+    display:flex; flex-wrap:nowrap; overflow-x:auto; gap:8px; padding-bottom:6px;
+    grid-template-columns:none;
+  }
+  .teach-left .stat{
+    flex:0 0 auto; display:flex; flex-direction:column; align-items:flex-start; gap:1px;
+    padding:6px 11px; white-space:nowrap;
+  }
+  .teach-left .stat .k{ font-size:8px; }
+  .teach-left .stat .v{ font-size:12.5px; }
+  /* Slide content: a noticeably narrower, smaller-type reading column now that the diagram column
+     is much wider. */
+  #viewTeach .main{ max-width:600px; }
+  #viewTeach .explainer{ font-size:12px; line-height:1.55; }
+  #viewTeach #teachTitle{ font-size:16px; }
+  #viewTeach .teach-byline{ font-size:10.5px; }
+  .teach-controls-details{
+    margin-top:16px; border:1px solid var(--border); border-radius:10px; background:var(--surface);
+    padding:0;
+  }
+  .teach-controls-details summary{
+    cursor:pointer; list-style:none; padding:14px 16px; font-size:11px; text-transform:uppercase;
+    letter-spacing:0.08em; color:var(--ink-muted); font-weight:600; display:flex; align-items:center;
+    justify-content:space-between;
+  }
+  .teach-controls-details summary::-webkit-details-marker{ display:none; }
+  .teach-controls-details summary::after{ content:"▸"; font-size:11px; color:var(--ink-muted); }
+  .teach-controls-details[open] summary::after{ content:"▾"; }
+  .teach-controls-details .panel{ border:0; border-top:1px solid var(--border); border-radius:0; margin:0; }
+  .teach-nav{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .teach-jump{
+    flex:1 1 160px; min-width:0; max-width:100%; font-family:inherit; font-size:12.5px; color:var(--ink);
+    background:var(--surface-2); border:1px solid var(--border); border-radius:7px; padding:8px 10px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  }
+  .teach-nav .play-btn{ flex:0 0 auto; }
+  .teach-byline{
+    font-size:11.5px; color:var(--ink-muted); margin:-6px 0 14px; font-family:"IBM Plex Mono", monospace;
+  }
+
+  /* ---- math panel ---- */
+  .math-section{ margin-bottom:22px; }
+  .math-section:last-child{ margin-bottom:0; }
+  .math-section h3{
+    font-size:13px; font-weight:700; color:var(--ink); margin:0 0 8px;
+    padding-bottom:6px; border-bottom:1px solid var(--border);
+  }
+  .eq{
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px;
+    padding:10px 14px; margin:8px 0 10px;
+  }
+  .eq .formula{
+    font-family:"IBM Plex Mono", monospace; font-size:13px; color:var(--ink); font-weight:600;
+    letter-spacing:0.01em;
+  }
+  .eq .live{
+    font-family:"IBM Plex Mono", monospace; font-size:12px; color:var(--accent);
+    margin-top:6px; font-variant-numeric:tabular-nums;
+  }
+  .eq .live b{ color:var(--accent); font-weight:700; }
+  .math-note{ font-size:12.5px; color:var(--ink-muted); line-height:1.55; margin:0 0 4px; }
+  .math-source{ font-size:11px; color:var(--ink-muted); font-style:italic; margin-top:2px; }
+
+  footer{
+    margin-top:26px; padding-top:16px; border-top:1px solid var(--border);
+    font-size:11.5px; color:var(--ink-muted); line-height:1.6;
+  }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Cardiopulmonary Pressure Monitor</h1>
+    <div style="display:flex; align-items:center; gap:14px;">
+      <div class="mode-switch" id="viewSwitch" style="width:auto;">
+        <button id="btn-view-monitor" class="active">Live monitor</button>
+        <button id="btn-view-walk">Physiology walkthrough</button>
+        <button id="btn-view-math">The math</button>
+        <button id="btn-view-teach" style="display:none;">Presentation</button>
+      </div>
+      <div class="sub" id="clock">t = 0.0 s</div>
+    </div>
+  </header>
+
+  <div class="panel" id="walkPanel" style="display:none; margin-bottom:16px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; flex-wrap:wrap;">
+      <h2 style="margin:0;" id="walkStepLabel">Step 1 of 8</h2>
+      <div style="display:flex; gap:6px;" id="walkDots"></div>
+    </div>
+    <h2 id="walkTitle" style="font-size:18px; text-transform:none; letter-spacing:0; color:var(--ink); margin:0 0 10px;"></h2>
+    <div class="explainer" id="walkBody"></div>
+    <div style="display:flex; justify-content:space-between; gap:10px; margin-top:18px;">
+      <button class="play-btn" id="walkPrev" style="flex:0 0 auto; padding:9px 18px;">← Back</button>
+      <button class="play-btn active" id="walkNext" style="flex:0 0 auto; padding:9px 18px;">Next →</button>
+    </div>
+  </div>
+
+  <div class="panel" id="mathPanel" style="display:none; margin-bottom:16px;">
+    <h2 style="margin:0 0 4px;">The math behind the model</h2>
+    <p class="math-note" style="margin-bottom:18px;">Every formula below is exactly what the simulation runs — the "live" line substitutes your current slider/preset values so you can check the model against your own numbers. Values update continuously while this tab is open.</p>
+
+    <div class="math-section">
+      <h3>1 · Respiratory mechanics</h3>
+      <p class="math-note">Respiratory-system compliance, lung and chest wall treated as two compliances in series:</p>
+      <div class="eq">
+        <div class="formula">C<sub>rs</sub> = (C<sub>L</sub> · C<sub>cw</sub>) / (C<sub>L</sub> + C<sub>cw</sub>)</div>
+        <div class="live" id="m-crs"></div>
+      </div>
+      <p class="math-note"><b>Spontaneous mode</b> — Ppl is generated by respiratory effort, not "transmitted": elastic component from lung compliance alone, plus a resistive component present only while flow occurs (zero at end-inspiration/end-expiration). resGain scales resistance only (bronchospasm, e.g. asthma); autoPeep is a constant offset from incomplete exhalation/dynamic hyperinflation (e.g. COPD):</p>
+      <div class="eq">
+        <div class="formula">Ppl = −5 − V/C<sub>L</sub> − resGain·resistive(t) + autoPeep</div>
+        <div class="live" id="m-pplspont"></div>
+      </div>
+      <p class="math-note"><b>Ventilator mode</b> — airway pressure from tidal volume against C<sub>rs</sub>, plus a resGain-scaled resistive bump during flow; Kenny's fraction is applied to the <i>entire</i> Paw signal (not just the swing above PEEP), so PEEP itself — not only the tidal excursion — reaches the pleura:</p>
+      <div class="eq">
+        <div class="formula">Paw(plateau) = PEEP + V<sub>t</sub>/C<sub>rs</sub></div>
+        <div class="formula" style="margin-top:4px;">Ppl = −5 + f<sub>Ppl</sub>·Paw + autoPeep</div>
+        <div class="live" id="m-pplvent"></div>
+      </div>
+    </div>
+
+    <div class="math-section">
+      <h3>2 · Kenny's transmission fraction &amp; transpulmonary pressure</h3>
+      <p class="math-note">Kenny, "An Approach to Mechanical Heart-Lung Interaction," Eq. 12 — the fraction of an applied ΔPaw that reaches the pleural surface. A stiffer chest wall (lower C<sub>cw</sub>) transmits <i>more</i>; a stiffer lung (lower C<sub>L</sub>) transmits <i>less</i>:</p>
+      <div class="eq">
+        <div class="formula">f<sub>Ppl</sub> = C<sub>L</sub> / (C<sub>L</sub> + C<sub>cw</sub>)</div>
+        <div class="live" id="m-fppl"></div>
+      </div>
+      <p class="math-note">Transpulmonary pressure — the lung's own distending pressure, algebraically independent of chest-wall compliance at plateau in a passive patient:</p>
+      <div class="eq">
+        <div class="formula">P<sub>L</sub> = Paw − Ppl</div>
+        <div class="live" id="m-pl"></div>
+      </div>
+    </div>
+
+    <div class="math-section">
+      <h3>3 · Cardiovascular pressure transmission — dynamic vs. chronic</h3>
+      <p class="math-note">Every respiratory pressure now splits into a <b>dynamic</b> term (dPpl/dP<sub>L</sub>, the breath-to-breath swing, deviation from the cycle's own mean — zero on average) and a <b>chronic</b> term (chronicPpl/chronicP<sub>L</sub>, the sustained shift caused specifically by titrating PEEP and/or auto-PEEP — the mean's deviation from what it would be at PEEP=0, autoPeep=0). This is what lets titrating the vent move a <i>baseline</i>, not just a swing:</p>
+      <div class="eq">
+        <div class="formula">chronicPpl = meanPpl(current settings) − meanPpl(PEEP=0, autoPeep=0, otherwise unchanged)</div>
+        <div class="live" id="m-chronic"></div>
+      </div>
+      <p class="math-note">chronicPpl alone is blind to one thing: it's relative to <i>this mode's own</i> zero-PEEP baseline, and spontaneous vs. passive-ventilator breathing don't share the same zero-PEEP baseline — a passive chest at ZEEP has no diaphragmatic effort pulling mean Ppl very negative, so it sits less negative than a spontaneously-breathing one even at the same rate/tidal volume/compliance. <b>itpMode</b> captures that mode-driven offset (spontaneous breathing, at the same rr/Vt/compliance, is the reference — so itpMode is 0 there by construction), and <b>totalChronicPpl</b> is the two summed — the full sustained deviation from a spontaneous-breathing baseline, from PEEP titration <i>and</i> from the mode switch itself:</p>
+      <div class="eq">
+        <div class="formula">itpMode = meanPpl(this mode, PEEP=0, autoPeep=0) − meanPpl(spontaneous, same rr/V<sub>t</sub>/compliance, ZEEP) &nbsp;&nbsp; totalChronicPpl = chronicPpl + itpMode</div>
+        <div class="live" id="m-itpmode"></div>
+      </div>
+      <div class="eq">
+        <div class="formula">CVP = CVP<sub>0</sub> + 0.55·(dPpl + totalChronicPpl) &nbsp; <span style="color:var(--ink-muted); font-weight:400;">(floored at the Starling-resistor collapse pressure, see §4)</span></div>
+        <div class="formula" style="margin-top:4px;">PA = 15 + 0.16·(dPpl+totalChronicPpl) + 0.55·(dP<sub>L</sub>+chronicP<sub>L</sub>) + 3.7·hpvGain</div>
+        <div class="formula" style="margin-top:4px;">PCWP = 9 + 0.65·(dPpl + totalChronicPpl) − 1.0·hpvGain</div>
+        <div class="live" id="m-cvppapcwp"></div>
+      </div>
+      <p class="math-note">Arterial pressure keeps the dynamic term's sign (a positive-pressure breath transiently squeezes pulmonary venous blood into the LV, briefly <i>raising</i> SBP — the SPV mechanism) but the chronic term is <b>negative</b> — sustained elevation of mean intrathoracic pressure (PEEP, auto-PEEP, <i>or</i> the mode switch) impedes venous return over many breaths, <i>lowering</i> mean SBP/pulse pressure ("stroke volume"). preloadGain amplifies both as CVP<sub>0</sub> approaches the Starling floor (hypovolemia); ventricular-interdependence septal shift (§5) subtracts on top when active, and hpvGain adds a flat sympathetic-activation bump (only at high altitude). A second, <b>opposing</b>, smaller term — kAfterloadRelief — is added back on top: the same rise in mean intrathoracic pressure that impedes venous return also lowers true LV <i>transmural</i> pressure (afterload) for a given intraventricular pressure, since transmural = intraventricular − pleural. These are shown as two separate terms, not netted into one, because which one dominates clinically depends on whether the heart is preload-limited (normal heart — the preload term wins here) or afterload-limited (a failing heart, where relief could dominate instead):</p>
+      <div class="eq">
+        <div class="formula">preloadGain = clamp(0.7 + 3.6·e<sup>−(CVP₀−floor)/1.8</sup>, 0.7, 5.5)</div>
+        <div class="formula" style="margin-top:4px;">SBP = 118 + 0.85·preloadGain·dPpl <b>− 0.85·preloadGain·totalChronicPpl</b> <span style="color:var(--accent2, #c0392b);">+ 0.35·totalChronicPpl</span> − septalShift + 4·hpvGain</div>
+        <div class="formula" style="margin-top:2px; color:var(--ink-muted); font-weight:400;">(bold term = preload limitation from impeded venous return; red term = LV transmural-afterload relief — opposing, smaller)</div>
+        <div class="live" id="m-art"></div>
+      </div>
+      <p class="math-note">hpvGain (0 unless the High altitude preset is active) is a categorically different mechanism from every other term on this page: it's <b>hypoxic pulmonary vasoconstriction</b> — global alveolar hypoxia constricting the pulmonary arterioles directly, raising vascular tone rather than being transmitted through pleural/transpulmonary pressure — so it's modeled as a flat offset, not something scaling with dPpl/dP<sub>L</sub>. Magnitudes (PA +3.7, PCWP −1.0, SBP +4/DBP +8 mmHg) are from an echocardiographic cohort of 99 healthy adults measured at 500 m and again ~15 h after ascent to 4100 m. According to PubMed, Yang F, et al. <i>Front Physiol</i> 2021 — <a href="https://doi.org/10.3389/fphys.2021.639761" target="_blank" rel="noopener">DOI: 10.3389/fphys.2021.639761</a>. This model's cardiac output is a preload/afterload (Guyton) crossing, not a heart-rate-driven quantity, so it will <i>not</i> reproduce that cohort's compensatory CO rise — only the pressure and HR readouts are calibrated to it.</p>
+    </div>
+
+    <div class="math-section">
+      <h3>4 · Venous return, cardiac output &amp; the Guyton diagram</h3>
+      <p class="math-note">Classic Guyton venous-return curve: flow driven by the gradient from mean systemic filling pressure (Pmsf) to RA pressure, capped by great-vein (Starling-resistor) collapse near the thoracic inlet — Kenny places this floor "about atmospheric," ≈0–1.5 mmHg:</p>
+      <div class="eq">
+        <div class="formula">Pmsf = CVP<sub>0</sub> + 6 &nbsp;&nbsp; R<sub>vr</sub> = (Pmsf − CVP<sub>0</sub>) / 5</div>
+        <div class="formula" style="margin-top:4px;">VR(RA) = clamp((Pmsf − RA)/R<sub>vr</sub>, 0, plateau) &nbsp; for RA &gt; 0 mmHg floor</div>
+        <div class="live" id="m-vr"></div>
+      </div>
+      <p class="math-note">Frank-Starling cardiac function curve — held fixed in shape; what moves each breath (and chronically, with PEEP titration) is its position along the RA axis. Both dynamic and chronic Ppl elevation shift it the SAME direction here — elevated surrounding pressure, however sustained, always reduces the heart's true transmural filling pressure. Ventricular interdependence (§5) is different: a fixed pericardial/thoracic volume restricts diastolic filling itself, so it depresses the curve's whole plateau rather than sliding it:</p>
+      <div class="eq">
+        <div class="formula">shiftAmt = −0.65·(dPpl + totalChronicPpl) &nbsp;&nbsp; dynSeptalFrac = clamp(0.12·interdep·rvFillProxy, 0, 0.85)</div>
+        <div class="formula" style="margin-top:4px;">CO<sub>max</sub> = 6.66·(1 − 0.45·interdep)·(1 − dynSeptalFrac) &nbsp;&nbsp; CO<sub>plotted</sub>(RA) = max(0, CO<sub>max</sub>·(1 − e<sup>−(RA+shiftAmt+4)/7.2</sup>))</div>
+        <div class="live" id="m-co"></div>
+      </div>
+      <p class="math-note">dynSeptalFrac (§5, rvFillProxy defined there) is a direct, momentary CUT to the ceiling itself, not a further RA-axis shift — a deliberate choice, because at the high CVP tamponade runs, RA already sits deep in the curve's saturated region where a shift barely moves CO. Septal encroachment is mechanically a direct volume theft from the LV, so it should cut achievable output regardless of how "full" venous return already made RA look. It's why tamponade's cardiac output visibly <i>dips</i> during the same inspiration that produces its pulsus paradoxus, rather than only the arterial trace showing it. Repeated, unrelieved, this is the mechanism by which tamponade progresses toward pulseless electrical activity (PEA) arrest — forward flow falls with every breath until it can no longer sustain a perfusing rhythm.</p>
+      <p class="math-note">Venous return and cardiac output are the same flow — the only physically consistent point is the crossing, found numerically since VR(RA) is piecewise. This crossing <i>is</i> the model's cardiac-output readout (Live readouts panel):</p>
+      <div class="eq">
+        <div class="formula">operating point = { RA : VR(RA) = CO<sub>plotted</sub>(RA) } &nbsp; (bisection, 40 iterations)</div>
+        <div class="live" id="m-crossing"></div>
+      </div>
+    </div>
+
+    <div class="math-section">
+      <h3>5 · Ventricular interdependence (septal shift)</h3>
+      <p class="math-note">Only active when a preset sets an interdependence gain &gt; 0 (currently: Tamponade / interdependence). Layers on top of the transmural SBP effect above — a distinct mechanism (RV volume directly stealing LV volume via septal bowing) rather than a loading-pressure effect. It also feeds back into §4's cardiac-function curve (CO<sub>max</sub> depressed at baseline, plus this dynamic shiftAmt term), which is why both mean CO and pulse pressure fall in tamponade — the hemodynamic path toward PEA arrest:</p>
+      <div class="eq">
+        <div class="formula">rvFillProxy = clamp(−dPpl, 0, 30)</div>
+        <div class="formula" style="margin-top:4px;">septalShift = interdep · rvFillProxy · 3.2 &nbsp; <span style="color:var(--ink-muted); font-weight:400;">(mmHg, subtracted from SBP/DBP)</span></div>
+        <div class="live" id="m-septal"></div>
+      </div>
+      <p class="math-source">Kenny ch.5–6, citing Jardin's status-asthmaticus study; also seen in cardiac tamponade and severe gas-trapping/hyperinflation (COPD).</p>
+    </div>
+  </div>
+
+  <div class="layout" id="viewTeach" style="display:none;">
+    <div class="teach-left" id="teachLeft">
+      <!-- diagramPanelWrap, readoutsPanel, cyclePanel, presetsPanelWrap, and (collapsed)
+           breathingModePanel are MOVED here from viewMonitor by JS when this tab is active,
+           and moved back on exit — see relocateForTeach(). No duplicate IDs are created. -->
+    </div>
+    <div class="main">
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="teach-nav">
+          <button class="play-btn" id="teachPrev" style="flex:0 0 auto; padding:9px 16px;">← Back</button>
+          <select class="teach-jump" id="teachJump"></select>
+          <button class="play-btn active" id="teachNext" style="flex:0 0 auto; padding:9px 16px;">Next →</button>
+        </div>
+        <h2 style="margin:0 0 2px;" id="teachStepLabel">Section 1 of 22</h2>
+        <div class="teach-byline">Adapted from "Pulses Paradoxus — An Introduction to Heart-Lung Interactions," Kyle B. Enfield MD, UVA Pulm/CC — after Jon-Emile Kenny, MD (heart-lung.org)</div>
+        <h2 id="teachTitle" style="font-size:19px; text-transform:none; letter-spacing:0; color:var(--ink); margin:0 0 12px;"></h2>
+        <div class="explainer" id="teachBody"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="layout" id="viewMonitor">
+    <!-- ===== LEFT CONTROL RAIL ===== -->
+    <div class="rail" id="railHome">
+      <div class="panel" id="breathingModePanel">
+        <h2>Breathing mode</h2>
+        <div class="mode-switch">
+          <button id="btn-spont" class="active">Spontaneous</button>
+          <button id="btn-vent">Ventilator (VC)</button>
+        </div>
+
+        <div class="field">
+          <label><b>Respiratory rate</b><span class="val" id="v-rr">14 /min</span></label>
+          <input type="range" id="rr" min="8" max="30" step="1" value="14">
+        </div>
+        <div class="field">
+          <label><b>Tidal volume</b><span class="val" id="v-vt">450 mL</span></label>
+          <input type="range" id="vt" min="200" max="800" step="10" value="450">
+        </div>
+        <div class="field" id="field-peep">
+          <label><b>PEEP</b><span class="val" id="v-peep">5 cmH₂O</span></label>
+          <input type="range" id="peep" min="0" max="20" step="1" value="5">
+        </div>
+        <div class="field">
+          <label><b>Lung compliance C<sub>L</sub></b><span class="val" id="v-cl">100 mL/cmH₂O</span></label>
+          <input type="range" id="cl" min="25" max="250" step="5" value="100">
+        </div>
+        <div class="field">
+          <label><b>Chest wall compliance C<sub>cw</sub></b><span class="val" id="v-ccw">100 mL/cmH₂O</span></label>
+          <input type="range" id="ccw" min="15" max="250" step="5" value="100">
+        </div>
+        <div class="field">
+          <label><b>Heart rate</b><span class="val" id="v-hr">75 /min</span></label>
+          <input type="range" id="hr" min="45" max="150" step="1" value="75">
+        </div>
+      </div>
+
+      <div class="panel" id="cyclePanel">
+        <h2>Cycle</h2>
+        <div class="play-row">
+          <button class="play-btn active" id="btn-play"><i class="dot"></i><span id="playLabel">Continuous</span></button>
+        </div>
+        <div class="stepper" id="phaseStepper">
+          <button data-phase="endexp"><span class="n">1</span>End-expiration</button>
+          <button data-phase="insp"><span class="n">2</span>Inspiration</button>
+          <button data-phase="endinsp"><span class="n">3</span>End-inspiration</button>
+          <button data-phase="exp"><span class="n">4</span>Expiration</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT: READOUTS + CHARTS ===== -->
+    <div class="main">
+      <div class="panel" style="margin-bottom:16px;" id="readoutsPanel">
+        <h2>Live readouts</h2>
+        <div class="readouts" id="readouts"><!-- filled by JS --></div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;" id="presetsPanelWrap">
+        <h2>Presets</h2>
+        <div class="stepper" id="presets" style="grid-template-columns:repeat(auto-fill, minmax(190px,1fr));">
+          <button data-preset="normalSpont"><span class="n">Spont.</span>Normal breathing</button>
+          <button data-preset="asthma"><span class="n">Spont.</span>Severe asthma (resistance)</button>
+          <button data-preset="copd"><span class="n">Spont.</span>COPD (compliance/hyperinflation)</button>
+          <button data-preset="normalVent"><span class="n">Vent.</span>Normal ventilation</button>
+          <button data-preset="ards"><span class="n">Vent.</span>ARDS + high PEEP</button>
+          <button data-preset="stiffChest"><span class="n">Vent.</span>Obesity / stiff chest wall</button>
+          <button data-preset="hypoPPV"><span class="n">Vent.</span>Hypovolemia + PPV</button>
+          <button data-preset="tamponade"><span class="n">Spont.</span>Tamponade / interdependence</button>
+          <button data-preset="altitude"><span class="n">Spont.</span>High altitude — acute reversible pulm. HTN</button>
+        </div>
+      </div>
+
+      <div class="scenario-row" style="margin-bottom:16px;">
+        <div class="panel scenario-panel">
+          <h2>Scenario</h2>
+          <div class="explainer" id="scenarioText"></div>
+          <div class="scenario-live" id="scenarioLive"></div>
+        </div>
+        <div class="panel diagram-wrap" id="diagramPanelWrap">
+        <h2>Pressure chambers</h2>
+        <svg id="diagram" viewBox="0 0 810 400" fill="none">
+          <!-- pleural pressure ruler, relative to atmosphere -->
+          <g id="ruler" font-family="IBM Plex Mono, monospace">
+            <line x1="35" y1="45" x2="35" y2="330" stroke="var(--axis)" stroke-width="1.5"/>
+            <g id="rulerTicks"></g>
+            <line id="atmLine" x1="20" y1="0" x2="70" y2="0" stroke="var(--ink-muted)" stroke-width="1.25" stroke-dasharray="3,3"/>
+            <text x="45" y="20" font-size="9.5" fill="var(--ink-muted)" text-anchor="middle">atm</text>
+            <text x="45" y="30" font-size="9.5" fill="var(--ink-muted)" text-anchor="middle">(0)</text>
+            <line id="pplTick" x1="18" y1="0" x2="52" y2="0" stroke="var(--c-pleural)" stroke-width="2.5" stroke-linecap="round"/>
+            <text id="pplTickLabel" x="0" y="0" font-size="10.5" font-weight="600" fill="var(--c-pleural)" text-anchor="start"></text>
+            <text x="35" y="352" font-size="9" fill="var(--ink-muted)" text-anchor="middle">Ppl</text>
+            <text x="35" y="363" font-size="9" fill="var(--ink-muted)" text-anchor="middle">rel. atm</text>
+          </g>
+
+          <rect id="chestWall" x="85" y="15" width="710" height="360" rx="22" fill="none" stroke="var(--axis)" stroke-width="1.5"/>
+
+          <rect id="lungL" x="105" y="45" width="125" height="300" rx="40" fill="var(--c-pa)" fill-opacity="0.10" stroke="var(--c-pa)" stroke-opacity="0.35" stroke-width="1"/>
+          <rect id="lungR" x="615" y="45" width="125" height="300" rx="40" fill="var(--c-pcwp)" fill-opacity="0.10" stroke="var(--c-pcwp)" stroke-opacity="0.35" stroke-width="1"/>
+          <text x="167" y="360" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-muted)" text-anchor="middle">L lung</text>
+          <text x="677" y="360" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--ink-muted)" text-anchor="middle">R lung</text>
+          <text x="167" y="120" font-family="IBM Plex Sans" font-size="11.5" font-weight="600" fill="var(--c-pa)" text-anchor="middle">PA</text>
+          <text id="paNum" x="167" y="138" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" fill="var(--c-pa)" text-anchor="middle">15</text>
+          <text x="677" y="120" font-family="IBM Plex Sans" font-size="11.5" font-weight="600" fill="var(--c-pcwp)" text-anchor="middle">PCWP</text>
+          <text id="pcwpNum" x="677" y="138" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="600" fill="var(--c-pcwp)" text-anchor="middle">9</text>
+
+          <!-- pulmonary capillary bed connector -->
+          <polyline points="167,45 167,25 677,25 677,45" stroke="var(--ink-muted)" stroke-width="1.25" fill="none" opacity="0.55"/>
+          <text x="422" y="18" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-muted)" text-anchor="middle">pulmonary capillary bed (gas exchange)</text>
+
+          <!-- RV -> left lung (PA) -->
+          <polyline points="300,300 230,300" stroke="var(--c-pa)" stroke-width="3" fill="none" id="rvToLung"/>
+          <polygon points="236,295 222,300 236,305" fill="var(--c-pa)"/>
+          <!-- right lung -> LA (pulmonary vein / PCWP) -->
+          <polyline points="615,60 525,60 525,90" stroke="var(--c-pcwp)" stroke-width="3" fill="none" id="lungToLa"/>
+          <polygon points="520,84 525,98 530,84" fill="var(--c-pcwp)"/>
+
+          <!-- SVC / IVC into RA -->
+          <line id="svc2" x1="255" y1="145" x2="300" y2="145" stroke="var(--c-cvp)" stroke-width="3" stroke-linecap="round" stroke-dasharray="7,6"/>
+          <polygon id="svcHead" points="294,140 308,145 294,150" fill="var(--c-cvp)"/>
+          <text x="248" y="137" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--c-cvp)" text-anchor="end">SVC</text>
+          <line id="ivc2" x1="255" y1="205" x2="300" y2="205" stroke="var(--c-cvp)" stroke-width="3" stroke-linecap="round" stroke-dasharray="7,6"/>
+          <polygon id="ivcHead" points="294,200 308,205 294,210" fill="var(--c-cvp)"/>
+          <text x="248" y="220" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="var(--c-cvp)" text-anchor="end">IVC</text>
+          <text id="vrFlowLabel" x="248" y="180" font-family="IBM Plex Mono, monospace" font-size="9" font-weight="600" fill="var(--c-cvp)" text-anchor="end" opacity="0">venous return ↑</text>
+
+          <!-- RA -->
+          <rect id="boxRA" x="300" y="90" width="115" height="80" rx="8" fill="var(--c-cvp)" fill-opacity="0.16" stroke="var(--c-cvp)" stroke-width="1.5"/>
+          <text x="357" y="118" font-family="IBM Plex Sans" font-size="14" font-weight="700" fill="var(--ink)" text-anchor="middle">RA</text>
+          <text id="raNum" x="357" y="142" font-family="IBM Plex Mono, monospace" font-size="17" font-weight="600" fill="var(--c-cvp)" text-anchor="middle">6</text>
+          <text x="357" y="158" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-muted)" text-anchor="middle">mmHg · CVP</text>
+
+          <!-- LA -->
+          <rect id="boxLA" x="470" y="90" width="115" height="80" rx="8" fill="var(--c-pcwp)" fill-opacity="0.14" stroke="var(--c-pcwp)" stroke-width="1.5"/>
+          <text x="527" y="126" font-family="IBM Plex Sans" font-size="14" font-weight="700" fill="var(--ink)" text-anchor="middle">LA</text>
+          <text x="527" y="145" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-muted)" text-anchor="middle">≈ PCWP (pulm. vein)</text>
+
+          <!-- RA -> RV -->
+          <line id="raRv" x1="330" y1="170" x2="330" y2="250" stroke="var(--c-cvp)" stroke-width="3" stroke-dasharray="7,6"/>
+          <polygon points="324,244 330,258 336,244" fill="var(--c-cvp)"/>
+          <!-- LA -> LV -->
+          <line id="laLv" x1="492" y1="170" x2="492" y2="250" stroke="var(--c-pcwp)" stroke-width="3"/>
+          <polygon points="486,244 492,258 498,244" fill="var(--c-pcwp)"/>
+
+          <!-- RV -->
+          <rect id="boxRV" x="300" y="250" width="115" height="100" rx="8" fill="var(--c-art)" fill-opacity="0.08" stroke="var(--axis)" stroke-width="1.5"/>
+          <text id="rvLabel" x="357" y="292" font-family="IBM Plex Sans" font-size="14" font-weight="700" fill="var(--ink)" text-anchor="middle">RV</text>
+          <text id="rvNum" x="357" y="315" font-family="IBM Plex Mono, monospace" font-size="17" font-weight="600" fill="var(--c-pa)" text-anchor="middle">15</text>
+          <text id="rvCaption" x="357" y="331" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--ink-muted)" text-anchor="middle">mmHg · ≈ PA (no PS)</text>
+
+          <!-- LV -->
+          <rect id="boxLV" x="470" y="250" width="115" height="100" rx="8" fill="var(--c-art)" fill-opacity="0.10" stroke="var(--c-art)" stroke-width="1.5"/>
+          <text id="lvLabel" x="527" y="305" font-family="IBM Plex Sans" font-size="14" font-weight="700" fill="var(--ink)" text-anchor="middle">LV</text>
+          <text id="septalLabel" x="442" y="240" font-family="IBM Plex Mono, monospace" font-size="9.5" font-weight="600" fill="var(--warn)" text-anchor="middle" opacity="0">septum bows into LV →</text>
+
+          <!-- LV -> Aorta -> exits chest wall, routed around the right lung -->
+          <polyline points="585,300 615,300 615,362 772,362 772,26" stroke="var(--c-art)" stroke-width="3" fill="none"/>
+          <polygon points="766,32 772,18 778,32" fill="var(--c-art)"/>
+          <text x="772" y="14" font-family="IBM Plex Mono, monospace" font-size="9" fill="var(--c-art)" text-anchor="middle">to body</text>
+          <text x="772" y="108" font-family="IBM Plex Sans" font-size="11" font-weight="600" fill="var(--c-art)" text-anchor="middle">Aorta</text>
+          <text id="aortaNum" x="772" y="128" font-family="IBM Plex Mono, monospace" font-size="15" font-weight="600" fill="var(--c-art)" text-anchor="middle">118</text>
+        </svg>
+        <div class="diagram-caption" id="diagramCaption">Inspiration draws blood into the thorax</div>
+        </div>
+      </div>
+
+      <div class="chart-row">
+        <div class="chart-card hero">
+          <div class="chart-head">
+            <div class="chart-title">Arterial line <span class="unit">mmHg</span></div>
+            <div class="legend"><span class="item"><i class="swatch" style="background:var(--c-art)"></i>ABP</span></div>
+          </div>
+          <canvas class="wave" id="c-art" height="150"></canvas>
+          <div class="caption" id="cap-art"></div>
+        </div>
+
+        <div class="chart-card hero">
+          <div class="chart-head">
+            <div class="chart-title">Venous return <span class="unit">Guyton diagram</span></div>
+          </div>
+          <canvas class="wave" id="c-vr" height="220"></canvas>
+          <div class="caption" id="cap-vr">Venous return and cardiac output are the same flow, so there's only one operating point: where the curves cross. Respiration shifts intrathoracic pressure around the heart, sliding the cardiac function curve back and forth each breath — the crossing point rides up and down the (fixed) venous-return curve as it does, which is how breathing modulates beat-to-beat output. The faint circle marks the resting position, at the cycle's mean pressure.</div>
+        </div>
+      </div>
+
+      <button class="detail-toggle" id="detailToggle" aria-expanded="false">
+        <span id="detailToggleLabel">Show detail waveforms (Paw, Ppl, V<sub>t</sub>, CVP, PA/PCWP)</span>
+        <span class="chev">▾</span>
+      </button>
+
+      <div class="detail-charts" id="detailCharts">
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Airway / alveolar pressure <span class="unit">cmH₂O</span></div>
+            <div class="legend"><span class="item"><i class="swatch" style="background:var(--c-airway)"></i>Paw</span></div>
+          </div>
+          <canvas class="wave" id="c-airway" height="96"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Pleural (intrathoracic) pressure <span class="unit">cmH₂O</span></div>
+            <div class="legend"><span class="item"><i class="swatch" style="background:var(--c-pleural)"></i>Ppl</span></div>
+          </div>
+          <canvas class="wave" id="c-pleural" height="96"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Lung volume <span class="unit">mL above FRC</span></div>
+            <div class="legend"><span class="item"><i class="swatch" style="background:var(--c-volume)"></i>Vt</span></div>
+          </div>
+          <canvas class="wave" id="c-volume" height="80"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Right atrial pressure / CVP <span class="unit">mmHg</span></div>
+            <div class="legend"><span class="item"><i class="swatch" style="background:var(--c-cvp)"></i>RA</span></div>
+          </div>
+          <canvas class="wave" id="c-cvp" height="80"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-head">
+            <div class="chart-title">Pulmonary artery &amp; wedge pressure <span class="unit">mmHg</span></div>
+            <div class="legend">
+              <span class="item"><i class="swatch" style="background:var(--c-pa)"></i>PA</span>
+              <span class="item"><i class="swatch" style="background:var(--c-pcwp)"></i>PCWP</span>
+            </div>
+          </div>
+          <canvas class="wave" id="c-pa" height="96"></canvas>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2 id="explainerTitle">What you're seeing — spontaneous breathing</h2>
+        <div class="explainer" id="explainerText"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Teaching model only — waveform shapes and transmission fractions are simplified approximations of intrathoracic pressure
+    transmission, not patient-specific hemodynamic simulation. PEEP is inactive in spontaneous mode. Read PCWP and CVP at
+    end-expiration in both modes, since intrathoracic pressure swings transiently raise or lower the measured value.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------- state ----------
+  var mode = "spont"; // "spont" | "vent"
+  // cl/ccw: lung / chest-wall compliance, modeled in series (Kenny Eq.12 transmission fraction fPpl = CL/(CL+CCW)).
+  // cvp0: baseline mean right-atrial pressure — lets presets represent volume status (e.g. hypovolemia -> low cvp0,
+  // closer to the Starling-resistor floor where venous return becomes flow-limited).
+  // interdep: ventricular-interdependence gain (0 = off). Represents septal bowing into the LV from
+  // RV volume/pressure overload (tamponade, severe air-trapping/hyperinflation, status asthmaticus —
+  // Kenny ch.5, citing Jardin) — a distinct mechanism from the pleural-transmission afterload/preload
+  // effects already modeled, layered on top only when a preset sets it >0.
+  // resGain: multiplier on the model's resistive-pressure terms (1 = normal airway resistance) — lets
+  // a preset represent "crazy resistance" (bronchospasm) distinctly from a compliance change.
+  // autoPeep: illustrative intrinsic/auto-PEEP (cmH₂O) from incomplete exhalation (dynamic
+  // hyperinflation) — a sustained, cycle-average elevation of pleural pressure, distinct from the
+  // breath-to-breath swing already modeled. See the "chronic vs dynamic" note above cardioState().
+  var params = { rr:14, vt:450, peep:5, cl:100, ccw:100, hr:75, cvp0:6, interdep:0, resGain:1, autoPeep:0, hpvGain:0 };
+  var t0 = performance.now();
+  var running = true;
+
+  // ---------- DOM ----------
+  var $ = function(id){ return document.getElementById(id); };
+  var btnSpont = $("btn-spont"), btnVent = $("btn-vent");
+  var elRR = $("rr"), elVT = $("vt"), elPEEP = $("peep"), elCL = $("cl"), elCCW = $("ccw"), elHR = $("hr");
+  var fieldPeep = $("field-peep");
+
+  function syncLabels(){
+    $("v-rr").textContent = params.rr + " /min";
+    $("v-vt").textContent = params.vt + " mL";
+    $("v-peep").textContent = mode === "spont" ? "inactive (spontaneous)" : params.peep + " cmH₂O";
+    $("v-cl").textContent = params.cl + " mL/cmH₂O";
+    $("v-ccw").textContent = params.ccw + " mL/cmH₂O";
+    $("v-hr").textContent = params.hr + " /min";
+    elRR.value = params.rr; elVT.value = params.vt; elPEEP.value = params.peep;
+    elCL.value = params.cl; elCCW.value = params.ccw; elHR.value = params.hr;
+  }
+  elRR.addEventListener("input", function(){ params.rr = +elRR.value; syncLabels(); goCustom(); });
+  elVT.addEventListener("input", function(){ params.vt = +elVT.value; syncLabels(); goCustom(); });
+  elPEEP.addEventListener("input", function(){ params.peep = +elPEEP.value; syncLabels(); goCustom(); });
+  elCL.addEventListener("input", function(){ params.cl = +elCL.value; syncLabels(); goCustom(); });
+  elCCW.addEventListener("input", function(){ params.ccw = +elCCW.value; syncLabels(); goCustom(); });
+  elHR.addEventListener("input", function(){ params.hr = +elHR.value; syncLabels(); goCustom(); });
+  function goCustom(){
+    currentPreset = "custom";
+    renderScenario();
+    document.querySelectorAll("#presets button").forEach(function(bb){ bb.classList.remove("active"); });
+  }
+
+  // ---------- clinical presets ----------
+  // Illustrative parameter sets for the mechanisms this model represents: compliance-driven pressure
+  // transmission, lung-volume-driven RV afterload, Starling-resistor venous return limit, and — via
+  // the interdep gain — ventricular interdependence/septal bowing (tamponade, severe air-trapping;
+  // Kenny ch.5/ch.6, citing Jardin's status-asthmaticus study).
+  var PRESETS = {
+    normalSpont: { mode:"spont", rr:14, vt:450, peep:5, cl:100, ccw:100, hr:75,  cvp0:6 },
+    // Two distinct obstructive-lung-disease mechanisms — deliberately NOT the same preset, per the
+    // clinical distinction: bronchospasm/resistance-dominant trapping (asthma) vs. lost-elastic-recoil/
+    // compliance-dominant dynamic hyperinflation (COPD/emphysema). Both use the resGain / autoPeep
+    // mechanics below, tuned so each shows a different dominant signature in the readouts.
+    asthma:      { mode:"spont", rr:28, vt:320, peep:5, cl:75,  ccw:100, hr:118, cvp0:8,  resGain:3.4, autoPeep:3 },
+    copd:        { mode:"spont", rr:20, vt:380, peep:5, cl:230, ccw:100, hr:102, cvp0:10, resGain:1.6, autoPeep:8 },
+    normalVent:  { mode:"vent",  rr:14, vt:450, peep:5, cl:100, ccw:100, hr:75,  cvp0:6 },
+    ards:        { mode:"vent",  rr:24, vt:330, peep:14,cl:35,  ccw:80,  hr:100, cvp0:9 },
+    stiffChest:  { mode:"vent",  rr:18, vt:400, peep:10,cl:100, ccw:20,  hr:95,  cvp0:8 },
+    hypoPPV:     { mode:"vent",  rr:16, vt:450, peep:5, cl:100, ccw:100, hr:108, cvp0:1 },
+    tamponade:   { mode:"spont", rr:24, vt:420, peep:0, cl:60,  ccw:100, hr:120, cvp0:16, interdep:1 },
+    // Hypoxic pulmonary vasoconstriction (HPV) — a genuinely different mechanism from every preset
+    // above: those all work through intrathoracic PRESSURE transmission (Ppl/PL swinging chamber
+    // pressures via the chest bellows); HPV instead raises pulmonary vascular TONE directly, largely
+    // independent of the respiratory cycle. hpvGain drives that separate pathway (see cardioState).
+    // rr/hr set to the acute-ascent values below; cl/ccw left normal — this is uncomplicated ascent,
+    // not HAPE (which would additionally drop lung compliance, i.e. move toward the ARDS preset).
+    altitude:    { mode:"spont", rr:20, vt:450, peep:5, cl:100, ccw:100, hr:81,  cvp0:6,  hpvGain:1 }
+  };
+  document.querySelectorAll("#presets button").forEach(function(b){
+    b.addEventListener("click", function(){
+      var key = b.getAttribute("data-preset");
+      var p = PRESETS[key];
+      if (!p) return;
+      params.rr=p.rr; params.vt=p.vt; params.peep=p.peep; params.cl=p.cl; params.ccw=p.ccw; params.hr=p.hr; params.cvp0=p.cvp0;
+      params.interdep = p.interdep || 0;
+      params.resGain = p.resGain || 1;
+      params.autoPeep = p.autoPeep || 0;
+      params.hpvGain = p.hpvGain || 0;
+      currentPreset = key;
+      setMode(p.mode);
+      syncLabels();
+      renderScenario();
+      document.querySelectorAll("#presets button").forEach(function(bb){ bb.classList.toggle("active", bb===b); });
+    });
+  });
+
+  // ---------- scenario walkthrough (left of the diagram) ----------
+  // Short, scenario-specific commentary — distinct from the general Physiology walkthrough tab, which
+  // covers the mechanisms in the abstract. This panel narrates the *currently loaded* preset/settings.
+  var SCENARIO_NOTES = {
+    normalSpont: { name:"Normal breathing", html:"Quiet spontaneous tidal breathing. Pleural pressure makes a small excursion around -5 cmH₂O, venous return rises a little on every inspiration, and the arterial line shows only a couple of mmHg of systolic dip — well under the 10 mmHg pulsus-paradoxus threshold. This is the baseline everything else in the tool is compared against." },
+    asthma: { name:"Severe asthma (resistance-dominant)", html:"Bronchospasm and mucus plugging raise airway <b>resistance</b> dramatically — the model's resGain multiplier is turned way up, forcing much larger, more effortful pleural-pressure swings to move the same air (watch the Ppl trace swing far deeper than normal). Combined with tachypnea leaving too little time to fully exhale, some gas is trapped each breath (a modest illustrative auto-PEEP). The dominant signature here is the <b>acute swing</b>: large SPV/pulsus risk, tachycardia — the mechanism Jardin's classic status-asthmaticus study attributed largely to this plus septal interdependence." },
+    copd: { name:"COPD / emphysema (compliance-dominant)", html:"Loss of elastic recoil pushes lung compliance way up (C<sub>L</sub> ≈ 230) — the opposite lesion from asthma. The dominant mechanism here isn't a huge acute swing; it's a slow airway time constant (resistance × compliance) that leaves too little time to fully exhale each breath, so gas progressively stacks — dynamic hyperinflation with a substantial illustrative auto-PEEP. Watch the CVP/CO readouts: mean CVP sits chronically elevated and mean cardiac output chronically depressed, even though the breath-to-breath Ppl swing is comparatively modest — a persistent, titration-driven effect rather than a per-breath one." },
+    normalVent: { name:"Normal ventilation", html:"Baseline volume-control ventilation: a normal tidal volume against normal lung and chest-wall compliance. Airway pressure rises to a modest PIP/plateau, part of that reaches the pleura (Kenny's transmission fraction, ≈50% when C<sub>L</sub> and C<sub>cw</sub> are similar), and the arterial line shows a small systolic <b>rise</b> during the breath — SPV should sit comfortably under the 12–13% fluid-responsiveness threshold." },
+    ards: { name:"ARDS + high PEEP", html:"Stiff, non-compliant lungs (low C<sub>L</sub>) need high plateau pressure to deliver even a small tidal volume — but Kenny's transmission fraction f = C<sub>L</sub>/(C<sub>L</sub>+C<sub>cw</sub>) is <i>low</i> when the lung is the stiff element, so relatively little of that alarming plateau pressure actually reaches the pleura and heart. Hemodynamics stay comparatively stable despite intimidating airway numbers — a useful teaching contrast with the next preset." },
+    stiffChest: { name:"Obesity / stiff chest wall", html:"Here the chest wall, not the lung, is the stiff element (low C<sub>cw</sub> — obesity, ascites, a tight abdomen). Kenny's transmission fraction flips: f = C<sub>L</sub>/(C<sub>L</sub>+C<sub>cw</sub>) is now <i>high</i>, so a given airway-pressure swing lands hard on the pleura and heart. Watch the pleural, CVP, and PA/PCWP <b>swing-amplitude</b> readouts — they're dramatically larger here than in ARDS despite similar or lower plateau pressures." },
+    hypoPPV: { name:"Hypovolemia + PPV", html:"Low circulating volume pins mean systemic filling pressure low, so the venous-return curve's operating point sits right at the edge of the Starling-resistor plateau (see the Venous return chart). The same respiratory swing that barely moves a well-filled patient now produces a large excursion in venous return and, downstream, in stroke volume — exaggerated SPV/PPV, the physiological basis for using it as a fluid-responsiveness test." },
+    tamponade: { name:"Tamponade / ventricular interdependence", html:"A fixed pericardial volume means the RV can't expand without the septum bowing into the LV — watch the RV box grow and the LV box narrow in the diagram during inspiration. This mechanism is layered <i>on top of</i> ordinary transmural pulsus paradoxus and can push the systolic swing well past the 10 mmHg threshold on its own, even with only modest pleural-pressure swings. Critically, it isn't just a pressure-line artifact: watch the Cardiac output readout — mean CO sits chronically depressed (restricted diastolic filling in a fixed pericardial space), and it dips <i>further</i> with every inspiration as the septum bows. That combination — a low, falling, breath-punished forward output — is the actual physiology behind why untreated tamponade progresses to <b>PEA arrest</b>: the heart keeps generating electrical activity, but can no longer push out enough blood to perfuse." },
+    altitude: { name:"High altitude / acute hypoxic pulmonary hypertension", html:"Every preset above works by mechanically squeezing/stretching the heart via pleural pressure. This one is different: global alveolar hypoxia triggers <b>hypoxic pulmonary vasoconstriction (HPV)</b> — the pulmonary arterioles constrict directly, raising pulmonary artery pressure largely independent of the breathing cycle. Watch the <b>RA and RV</b> numbers in the diagram above: RA (CVP) barely moves, but RV — shown here as ≈PA, since without pulmonic stenosis peak RV pressure tracks PA pressure — rises directly with hpvGain. That's the teaching point: this is <b>acute right-ventricular pressure overload</b>, and unlike fixed pulmonary vascular disease (chronic PAH, CTEPH), it's <b>fully reversible</b> — re-oxygenate the alveoli and the vasoconstriction resolves, no vascular remodeling required (at least at this stage; sustained severe hypoxia can progress to fixed remodeling — the same route as chronic mountain sickness). PCWP <i>falls</i> a little as the strained RV limits how much reaches the LA, and heart rate/brachial BP rise from the accompanying hypoxic sympathetic activation. Numbers are from an echocardiographic cohort of 99 healthy adults measured at 500 m and again ~15 hours after ascent to 4100 m (Yang et al. 2021, <i>Frontiers in Physiology</i>). One honest limitation: this model's cardiac output comes from the preload/afterload Guyton crossing, not heart rate, so it won't reproduce the real tachycardia-driven CO increase climbers show — the HR readout is correct, CO isn't chasing it.<br><br><b>Now put this patient on a ventilator</b> — switch to <b>Ventilator (VC)</b> with this preset still active, and titrate PEEP. Two afterload mechanisms now stack on the same RV: HPV's direct vasoconstriction (unchanged by the vent) plus PPV's own PEEP-driven rise in mean pleural/transpulmonary pressure (§3 in The math). An already hypoxia-strained RV tolerates that added afterload/preload hit worse than a normal one — a real reason clinicians run low tidal volumes and the least PEEP that achieves adequate oxygenation in these patients. One nuance this model does <i>not</i> capture, worth raising with students directly: PEEP's effect on pulmonary vascular resistance is actually biphasic — modest PEEP can recruit collapsed, hypoxic alveoli and <i>lower</i> PVR by relieving HPV in those units, while excessive PEEP over-distends alveoli and compresses the alveolar vessels running through them, <i>raising</i> PVR (the West zone 1/2/3 argument). This model only moves pleural pressure, not regional lung recruitment, so it will show PEEP's afterload cost but not its potential oxygenation benefit — ask students what's missing and why real bedside titration in HPV-driven pulmonary hypertension has to weigh both." },
+    custom: { name:"Custom settings", html:"" }
+  };
+  var currentPreset = "normalSpont";
+  function renderScenario(){
+    var note = SCENARIO_NOTES[currentPreset] || SCENARIO_NOTES.custom;
+    var html;
+    if (currentPreset === "custom"){
+      html = "<b>Custom settings</b> — sliders adjusted by hand, no longer matching a preset. " +
+        (mode === "spont"
+          ? "Spontaneous mode: pleural pressure is generated by respiratory effort (driven by lung compliance C<sub>L</sub>); venous return and LV afterload track its swing."
+          : "Ventilator mode: airway pressure is set by tidal volume against total respiratory-system compliance; Kenny's f = C<sub>L</sub>/(C<sub>L</sub>+C<sub>cw</sub>) sets how much of it reaches the pleura and heart.") +
+        " Pick a preset above for a worked scenario with commentary.";
+    } else {
+      html = "<b>" + note.name + "</b> — " + note.html;
+    }
+    $("scenarioText").innerHTML = html;
+  }
+
+  function setMode(m){
+    mode = m;
+    btnSpont.classList.toggle("active", m === "spont");
+    btnVent.classList.toggle("active", m === "vent");
+    elPEEP.disabled = (m === "spont");
+    fieldPeep.classList.toggle("disabled", m === "spont");
+    syncLabels();
+    $("explainerTitle").textContent = m === "spont"
+      ? "What you're seeing — spontaneous breathing"
+      : "What you're seeing — volume-control ventilation";
+    $("explainerText").innerHTML = m === "spont"
+      ? "The diaphragm contracts against the lung's elastic recoil, so pleural pressure (Ppl) falls further below atmospheric — driven mainly by <b>V/C<sub>L</sub></b>, lung compliance alone, plus a resistive component that appears only while flow is occurring and vanishes at end-inspiration/end-expiration. That negative Ppl swing pulls alveolar pressure below zero, drawing air in, and widens <b>transpulmonary pressure P<sub>L</sub> = Paw − Ppl</b> — the lung's own distending pressure, which rises with lung volume in both breathing modes. The fall in Ppl is transmitted to intrathoracic vascular structures: <b>right atrial pressure/CVP dip</b>, steepening the gradient for venous return — until RA pressure nears the pressure just outside the great veins at the thoracic inlet, at which point the vein collapses (a <b>Starling resistor</b>) and further effort can't pull CVP down any more — the flat part of the venous-return curve below. The same Ppl fall raises LV transmural pressure, <b>increasing LV afterload</b>, while rising P<sub>L</sub> tends to raise pulmonary vascular resistance and <b>RV afterload</b>. Net effect on the arterial line: systolic pressure normally dips only a few mmHg on inspiration; a fall <b>&gt;10 mmHg</b> is <b>pulsus paradoxus</b> — classically from a large pleural-pressure swing (severe asthma/COPD, upper-airway obstruction) or from mechanisms this model doesn't include (tamponade, tension pneumothorax)."
+      : "Positive pressure from the ventilator pushes gas in, so <b>airway pressure rises to a peak (PIP)</b>, settles to a plateau once flow stops (the PIP–Pplat gap reflects airway resistance), then falls back to PEEP on exhalation. Only part of that airway-pressure rise reaches the pleural space — the fraction is set by the <b>compliance ratio, f = C<sub>L</sub>/(C<sub>L</sub>+C<sub>cw</sub>)</b> (Kenny's transmission equation): a stiff chest wall transmits more of a given ΔPaw to the pleura, a stiff lung (e.g. ARDS) transmits less. Rising Ppl <b>impedes venous return</b> (RA/CVP rise), transiently squeezes pulmonary venous blood into the left heart, and <b>reduces LV afterload</b> — the basis for using PPV to unload a failing left ventricle — while the accompanying rise in <b>transpulmonary pressure P<sub>L</sub></b> tends to raise RV afterload via alveolar-vessel compression. The arterial line typically shows systolic pressure <b>rise</b> during the breath; the resulting <b>systolic pressure variation (SPV)</b>, or its pulse-pressure analogue, is used to gauge fluid responsiveness — commonly cited thresholds (Michard 2000, Marik 2009) are in the <b>12–13%</b> range, and the swing is exaggerated by hypovolemia — a lower mean systemic filling pressure shifts the whole venous-return curve down, so the operating point sits nearer the Starling-resistor plateau (see the curve below).";
+    if (params.interdep > 0){
+      $("explainerText").innerHTML += " <br><br><b>Ventricular interdependence (this preset):</b> beyond the transmural afterload/preload effects above, a volume- or pressure-overloaded RV sharing a fixed pericardial/thoracic space — cardiac tamponade, or severe gas-trapping/hyperinflation in status asthmaticus or COPD — bows the interventricular septum leftward as RV filling rises each inspiration, directly stealing LV volume (Kenny ch.5–6, citing Jardin's asthmaticus study). Watch the RV box grow and the LV box narrow in the diagram above during inspiration — this mechanism adds on top of, and can substantially exceed, ordinary respiratory pulsus paradoxus.";
+    }
+    $("cap-art").textContent = m === "spont"
+      ? "Systolic pressure falls a little during inspiration; a fall >10 mmHg is pulsus paradoxus."
+      : "Systolic pressure rises during the positive-pressure breath (SPV) — larger swings suggest volume responsiveness.";
+  }
+  btnSpont.addEventListener("click", function(){ goCustom(); setMode("spont"); });
+  btnVent.addEventListener("click", function(){ goCustom(); setMode("vent"); });
+
+  // ---------- physiology model ----------
+  // fraction of the respiratory cycle spent in active inspiration
+  var F_INS = 0.34;
+  var F_FLOW = 0.8; // fraction of inspiration that is active flow (vent only; rest is pause)
+
+  function clamp(x,a,b){ return Math.max(a, Math.min(b,x)); }
+  function mod(a,b){ return ((a % b) + b) % b; }
+
+  // Starling-resistor floor: the RA pressure (relative to atmosphere) at which the great veins at the
+  // thoracic inlet collapse, capping further increases in venous return. Shared by the CVP model and
+  // the venous-return curve below so both reflect the same physiology. Kenny's textbook (ch.2/ch.10)
+  // places this critical collapse pressure (Pcrit) "normally about atmospheric pressure (zero)", with
+  // a worked PEEP example giving Pcrit ≈ 1.5 mmHg — so 0 mmHg is the calibrated reference here.
+  var STARLING_FLOOR = 0;
+
+  // ---------- phase stepper ----------
+  // frozenPhase: null = continuous/live; 0..1 = held at a fixed fraction of the respiratory cycle
+  var frozenPhase = null;
+  var PHASE_FRAC = { endexp: 0.001, insp: F_INS * 0.5, endinsp: F_INS * 0.999, exp: F_INS + (1 - F_INS) * 0.5 };
+  var PHASE_NAMES = { endexp: "end-expiration", insp: "inspiration", endinsp: "end-inspiration", exp: "expiration" };
+
+  // returns {V, Paw, Ppl, flowPhase} at time t (seconds) for the current mode/params.
+  // phaseOverride: omit to respect the global frozenPhase; pass null to force live/continuous
+  // (used internally by baselines that must stay representative of the full cycle even while paused);
+  // pass a 0..1 number to force that exact phase.
+  function respState(t, phaseOverride){
+    var Tresp = 60 / params.rr;
+    var usesGlobal = (phaseOverride === undefined);
+    var effOverride = usesGlobal ? frozenPhase : phaseOverride;
+    var phase = (effOverride != null) ? effOverride : mod(t, Tresp) / Tresp;
+    var Vt = params.vt;
+    var CL = params.cl, CCW = params.ccw;
+    var Crs = (CL*CCW)/(CL+CCW);          // lung + chest wall in series
+    var fPpl = CL/(CL+CCW);               // Kenny Eq.12: fraction of an externally-applied ΔPaw
+                                           // that appears at the pleural surface
+    var peep = params.peep;
+    var V, Paw, Ppl;
+
+    if (mode === "spont") {
+      if (phase < F_INS) {
+        var x = phase / F_INS;
+        V = Vt * Math.sin(x * Math.PI/2);
+      } else {
+        var y = (phase - F_INS) / (1 - F_INS);
+        V = Vt * Math.exp(-3.2*y);
+      }
+      // Ppl is generated by the respiratory muscles, not "transmitted" from Paw — it is driven by
+      // lung compliance alone (elastic recoil the muscles must overcome) plus a resistive component
+      // that is present only while flow is occurring and vanishes at the zero-flow points
+      // (end-inspiration, end-expiration), matching Ppl ≈ -V/CL at those instants.
+      var elasticPpl = V / CL;
+      var flowShape = phase < F_INS ? Math.sin(Math.PI * phase / F_INS) : 0.55*Math.sin(Math.PI * Math.min((phase-F_INS)/(1-F_INS)*2.4,1));
+      // resGain scales the resistive component only — a preset representing "crazy resistance"
+      // (bronchospasm) moves this term without touching CL, distinct from a compliance-driven preset.
+      var resistivePpl = clamp((Vt/450) * 3.2, 1, 9) * flowShape * params.resGain;
+      // autoPeep: a sustained (cycle-average) elevation from incomplete exhalation/dynamic
+      // hyperinflation — applied as a constant offset, not part of the breath-to-breath swing.
+      Ppl = -5 - elasticPpl - resistivePpl + params.autoPeep;
+      // alveolar pressure ~ driving pressure, negative on inspiration, small positive on expiration —
+      // amplitude loosely scales with how much elastic+resistive work is being done
+      var ampScale = clamp((elasticPpl+resistivePpl)/8, 0.5, 3);
+      if (phase < F_INS) {
+        Paw = -1.6 * ampScale * Math.sin(Math.PI * phase / F_INS);
+      } else {
+        var y2 = (phase - F_INS) / (1 - F_INS);
+        Paw = 0.9 * ampScale * Math.sin(Math.PI * Math.min(y2*2.2,1)) * Math.exp(-2.2*y2);
+      }
+    } else {
+      // volume-controlled ventilation
+      var flowFrac = F_INS * F_FLOW;
+      var elasticSwing = Vt / Crs; // cmH2O of airway pressure from respiratory-system compliance
+      var resistiveBump = 4.5 * params.resGain; // cmH2O reflecting airway resistance during flow
+      if (phase < flowFrac) {
+        var xf = phase / flowFrac;
+        V = Vt * xf;
+        Paw = peep + elasticSwing * xf + resistiveBump * (1 - xf*0.15);
+      } else if (phase < F_INS) {
+        V = Vt;
+        Paw = peep + elasticSwing; // plateau: resistive component gone, flow = 0
+      } else {
+        var y3 = (phase - F_INS) / (1 - F_INS);
+        V = Vt * Math.exp(-3.2*y3);
+        Paw = peep + elasticSwing * Math.exp(-4.2*y3);
+      }
+      // Kenny Eq.12 applied to the FULL airway pressure (not just the tidal excursion above PEEP) —
+      // a stiff lung (low CL relative to CCW) blunts transmission, a stiff chest wall (low CCW
+      // relative to CL) increases it. Applying f to all of Paw (rather than just Paw−PEEP) is what
+      // lets PEEP itself — not only the tidal swing riding on top of it — chronically raise mean
+      // pleural pressure, so titrating PEEP has a real, sustained hemodynamic effect (see cardioState).
+      Ppl = -5 + fPpl * Paw + params.autoPeep;
+    }
+    // Transpulmonary pressure PL = (effective alveolar pressure) − Ppl. In spontaneous breathing,
+    // auto-PEEP means gas is trapped in the alveoli even though mouth pressure (Paw, plotted/read
+    // out above) still reads ~atmospheric — the trapping is "occult" at the mouth, which is exactly
+    // why auto-PEEP is easy to miss clinically. So alveolar pressure — not the displayed Paw — carries
+    // the autoPeep offset here, alongside the Ppl it already elevates (Kenny's Eq.12 handles this
+    // automatically in vent mode, where autoPeep already sits inside Ppl AND Paw both derive from the
+    // circuit's true PEEP).
+    var PalvEff = mode === "spont" ? (Paw + params.autoPeep) : Paw;
+    var PL = PalvEff - Ppl; // transpulmonary pressure — the distending pressure of the lung itself
+    return { phase: phase, V: V, Paw: Paw, Ppl: Ppl, PL: PL, Crs: Crs, fPpl: fPpl, Tresp: Tresp };
+  }
+
+  // mean pleural pressure over a full cycle at current settings (numeric average).
+  // Always computed live/continuous (phaseOverride=null) — this is the physiological
+  // baseline transmission is measured against, so it must not collapse to a single
+  // frozen value when the phase stepper holds the display at one instant.
+  function meanPpl(){
+    var Tresp = 60/params.rr, n = 40, s = 0;
+    for (var i=0;i<n;i++){ s += respState(i/n*Tresp, null).Ppl; }
+    return s/n;
+  }
+  // mean transpulmonary pressure over a cycle — the baseline that RV-afterload / PA pressure is
+  // measured against, since PL (not Ppl) tracks lung volume and drives alveolar-vessel compression.
+  function meanPL(){
+    var Tresp = 60/params.rr, n = 40, s = 0;
+    for (var i=0;i<n;i++){ s += respState(i/n*Tresp, null).PL; }
+    return s/n;
+  }
+
+  // ---------- per-frame chronic/dynamic decomposition ----------
+  // Every respiratory pressure signal (Ppl, PL) is split into two parts: a DYNAMIC, zero-mean,
+  // breath-to-breath swing (dPpl/dPL, deviation from the signal's own cycle mean — unchanged from
+  // before) and a CHRONIC, sustained offset caused specifically by titrating PEEP and/or auto-PEEP
+  // (chronicPpl/chronicPL — the cycle mean's deviation from what it would be at PEEP=0, autoPeep=0
+  // with everything else unchanged). This split matters because the two have OPPOSITE-signed effects
+  // on arterial pressure: a transient positive Ppl swing during a ventilator breath squeezes pulmonary
+  // venous blood into the LV, transiently RAISING SBP (the classic SPV mechanism) — but a SUSTAINED
+  // rise in mean Ppl from higher PEEP chronically impedes venous return, LOWERING mean SBP/CO over
+  // many breaths. Conflating the two would make raising PEEP incorrectly raise mean blood pressure.
+  // Computed once per animation frame (not per chart pixel) since it only depends on params, not t.
+  // itpMode: chronicPpl (below) is deliberately relative to EACH MODE's own PEEP=0/autoPeep=0
+  // baseline, so it's blind to the fact that spontaneous breathing and passive ventilator breathing
+  // have DIFFERENT zero-PEEP baselines to begin with — a passive, sedated/paralyzed chest at ZEEP
+  // sits at a less-negative mean Ppl than an actively-breathing one at the SAME rr/Vt/compliance,
+  // because the diaphragmatic effort that pulls Ppl very negative during spontaneous breathing is
+  // simply absent. itpMode captures exactly that gap: how far THIS MODE's own zero-PEEP mean Ppl
+  // sits from what spontaneous breathing's zero-PEEP mean Ppl would be at the SAME rr/Vt/compliance
+  // (spontaneous breathing is the reference mode, so itpMode is always 0 there by construction) — so
+  // it can be added to chronicPpl without double-counting (both anchor at the same mode-zero-PEEP
+  // point). Computed by momentarily flipping the global `mode` to "spont" — not a fixed constant —
+  // because the spontaneous-mode zero-PEEP baseline itself shifts with rr/Vt/compliance.
+  var ITP_MODE_GAIN = 0.5;
+  var FRAME = { meanPplAbs:-5, meanPLAbs:5, chronicPpl:0, chronicPL:0, itpMode:0 };
+  function updateFrameCache(){
+    var meanPplNow = meanPpl(), meanPLNow = meanPL();
+    var savedPeep = params.peep, savedAuto = params.autoPeep;
+    params.peep = 0; params.autoPeep = 0;
+    var refPpl = meanPpl(), refPL = meanPL();
+    var itpModeNow = 0;
+    if (mode === "vent"){
+      var savedMode = mode;
+      mode = "spont";
+      var refPplSpont = meanPpl();
+      mode = savedMode;
+      // ITP_MODE_GAIN < 1: the raw model difference between spontaneous and passive-ventilator
+      // zero-PEEP mean Ppl is large (~5 cmH2O — mostly reflecting the absence of inspiratory
+      // muscle effort), but a real patient transitioning onto sedation/paralysis and a ventilator
+      // isn't a step function against an unchanging circulation — some baroreflex/venous-tone
+      // buffering happens on top of the raw mechanical transmission this model otherwise assumes
+      // for PEEP itself. Damping the mode-switch term (but not chronicPpl/PEEP titration, which
+      // stays at full transmission) keeps the direction of every claim intact — mode-switch and
+      // higher PEEP both raise CVP/PA/PCWP and lower CO/SBP — without making the default "Normal
+      // ventilation" preset itself read as an alarming, off-calibration patient.
+      itpModeNow = (refPpl - refPplSpont) * ITP_MODE_GAIN;
+    }
+    params.peep = savedPeep; params.autoPeep = savedAuto;
+    FRAME.meanPplAbs = meanPplNow;
+    FRAME.meanPLAbs = meanPLNow;
+    FRAME.chronicPpl = meanPplNow - refPpl;
+    FRAME.chronicPL = meanPLNow - refPL;
+    FRAME.itpMode = itpModeNow;
+  }
+
+  // forceLive=true bypasses the phase stepper (used for baselines/summary stats that
+  // must stay representative of the whole cycle); omitted/false respects it (used for
+  // anything the user is meant to see "frozen" — charts, the chamber diagram, readouts).
+  function cardioState(t, forceLive){
+    var r = respState(t, forceLive ? null : undefined);
+    var dPpl = r.Ppl - FRAME.meanPplAbs;
+    var dPL = r.PL - FRAME.meanPLAbs;
+    var chronicPpl = FRAME.chronicPpl, chronicPL = FRAME.chronicPL;
+    // totalChronicPpl folds in itpMode (the mode's own zero-PEEP baseline offset from the canonical
+    // reference, see PPL_REST_REF above) on top of chronicPpl (the PEEP/auto-PEEP titration offset
+    // from THAT baseline) — together the full sustained deviation in mean pleural pressure from a
+    // quiet-spontaneous-breathing reference, whatever combination of mode + PEEP produced it. This is
+    // what lets switching from spontaneous breathing to passive ventilation (even at matched PEEP=0)
+    // move CVP/PA/PCWP/CO/SBP baselines, not just PEEP titration within a single mode.
+    var totalChronicPpl = chronicPpl + FRAME.itpMode;
+
+    var PA0 = 15, PCWP0 = 9;
+    var kPa = 0.16, kPaPL = 0.55;   // PA: small direct-transmission term + volume-driven afterload term
+    var kPcwp = 0.65;               // PCWP behaves as a fairly faithful "index of transmission" of Ppl
+
+    // Hypoxic pulmonary vasoconstriction (HPV) — the high-altitude mechanism, and a genuinely
+    // different pathway from everything else in this model: every other pressure shift here comes
+    // from PLEURAL/TRANSPULMONARY pressure being mechanically transmitted to the chambers (the chest
+    // bellows squeezing/stretching them). HPV instead raises pulmonary vascular TONE — global alveolar
+    // hypoxia constricts the pulmonary arterioles — largely independent of the respiratory cycle, so
+    // it's modeled as a flat offset rather than something that scales with dPpl/dPL. Magnitudes are
+    // from Yang et al. 2021 (Frontiers in Physiology), an echocardiographic cohort of 99 healthy
+    // adults measured at 500 m and again 15±3 h after ascent to 4100 m: mean PAP rose 14.4→18.1 mmHg
+    // (Δ3.7) and PCWP fell 9.9→8.9 mmHg (Δ−1.0, reduced LV filling as the RV struggles against the
+    // higher afterload); brachial SBP/DBP rose 117/73→121/81 mmHg, consistent with the hypoxia-driven
+    // sympathetic activation layered on top. DOI: 10.3389/fphys.2021.639761.
+    var HPV_PA_BUMP = 3.7, HPV_PCWP_DROP = 1.0, HPV_SBP_BUMP = 4, HPV_DBP_BUMP = 8;
+
+    // CVP: rises/falls with intrathoracic pressure transmission — both the breath-to-breath swing
+    // (dPpl) AND the sustained level set by PEEP/auto-PEEP (chronicPpl), same sign for both since
+    // elevated pleural pressure of any duration raises measured central venous pressure. But venous
+    // return — and so the fall in CVP — cannot continue indefinitely: as RA pressure approaches the
+    // pressure just outside the great veins at the thoracic inlet, the vein collapses (Starling
+    // resistor) and further inspiratory effort no longer pulls CVP down further. Modeled as a soft
+    // floor near 0 mmHg.
+    var floor = STARLING_FLOOR;
+    var CVP_raw = params.cvp0 + 0.55*dPpl + 0.55*totalChronicPpl;
+    var CVP = CVP_raw < floor ? (floor + (CVP_raw - floor) * 0.15) : CVP_raw;
+
+    var PA  = PA0  + kPa*dPpl + kPaPL*dPL + kPa*totalChronicPpl + kPaPL*chronicPL + params.hpvGain*HPV_PA_BUMP;
+    var PCWP= PCWP0+ kPcwp*dPpl + kPcwp*totalChronicPpl - params.hpvGain*HPV_PCWP_DROP;
+
+    // arterial pulse
+    var HRr = params.hr/60;
+    var Tcard = 1/HRr;
+    var cphase = mod(t, Tcard) / Tcard;
+
+    // SBP swing is driven mainly by the pleural-pressure-mediated change in LV transmural pressure
+    // (afterload/preload) — calibrated so normal quiet spontaneous breathing gives an SBP swing of a
+    // few mmHg (well under the >10 mmHg pulsus paradoxus threshold), while a large pleural swing
+    // (asthma preset) crosses it. A low baseline CVP (params.cvp0, near the Starling-resistor floor)
+    // means venous return sits on the steep part of the venous-return curve, so the same intrathoracic
+    // pressure swing produces a larger stroke-volume — and SBP — swing: the mechanism behind
+    // hypovolemia amplifying SPV/PPV under positive-pressure ventilation.
+    var preloadGain = clamp(0.7 + 3.6*Math.exp(-(params.cvp0-floor)/1.8), 0.7, 5.5);
+    var SBP0 = 118, DBP0 = 76;
+    var kArt = 0.85 * preloadGain;
+    // Chronic term is NEGATIVE-signed (opposite the dynamic term) — sustained PEEP/auto-PEEP reduces
+    // mean venous return/stroke volume over many breaths, distinct from (and outweighing, over time)
+    // the transient per-breath squeeze effect the dynamic term captures. This is what makes titrating
+    // PEEP visibly move the arterial line's baseline and pulse pressure ("area under the curve"),
+    // not just its swing.
+    var kArtChronic = kArt;
+
+    // LV transmural-afterload RELIEF — a second, OPPOSING effect of the same sustained rise in mean
+    // intrathoracic pressure, distinct from (and smaller than) the preload-limitation term above.
+    // True LV afterload is set by transmural pressure (P_LV,intra − P_pleural), not by the
+    // atmospherically-referenced number this monitor displays as "SBP": raising mean Ppl lowers
+    // transmural pressure for the same intraventricular pressure, i.e. it makes it mechanically
+    // EASIER for the LV to eject, exactly like reducing afterload pharmacologically. This is the
+    // standard rationale for positive-pressure ventilation helping a failing, afterload-sensitive
+    // heart — and it's why the preload and afterload effects of the same PEEP/mode change must be
+    // shown as two separate, opposite-signed terms rather than netted into one number: which one
+    // dominates clinically depends on whether the heart is preload- or afterload-limited. Kept
+    // deliberately smaller than kArtChronic here (a normal, non-failing heart) since preload
+    // limitation dominates in this model's default "normal heart" — a future heart-failure preset is
+    // where this term would matter more.
+    var kAfterloadRelief = 0.35;
+
+    // Ventricular interdependence (septal bowing): a mechanism distinct from the transmural
+    // afterload/preload effect above — a volume/pressure-overloaded, poorly-distensible RV bulges the
+    // septum into the LV cavity as RV filling rises, directly stealing LV volume. rvFillProxy tracks
+    // how much RV filling is currently rising (steepest during early inspiration, when venous return
+    // is climbing fastest in spontaneous breathing); only active when a preset sets interdep > 0
+    // (tamponade / severe hyperinflation / status asthmaticus — see PRESETS comment above).
+    var rvFillProxy = clamp(-dPpl, 0, 30);
+    var septalShift = params.interdep * rvFillProxy * 3.2;
+
+    var SBP = SBP0 + kArt*dPpl - kArtChronic*totalChronicPpl + kAfterloadRelief*totalChronicPpl - septalShift + params.hpvGain*HPV_SBP_BUMP;
+    var DBP = DBP0 + kArt*0.45*dPpl - kArtChronic*0.45*totalChronicPpl + kAfterloadRelief*0.45*totalChronicPpl - septalShift*0.5 + params.hpvGain*HPV_DBP_BUMP;
+
+    var shape;
+    if (cphase < 0.10){ shape = easeOutCubic(cphase/0.10); }
+    else if (cphase < 0.30){ shape = 1 - 0.16*((cphase-0.10)/0.20); }
+    else if (cphase < 0.36){ shape = 0.84 - 0.30*((cphase-0.30)/0.06); }
+    else if (cphase < 0.46){ shape = 0.54 + 0.14*Math.sin(((cphase-0.36)/0.10)*Math.PI); }
+    else { var yy=(cphase-0.46)/0.54; shape = 0.60*Math.exp(-2.6*yy); }
+
+    var ABP = DBP + (SBP-DBP)*shape;
+
+    return { r:r, CVP:CVP, PA:PA, PCWP:PCWP, ABP:ABP, SBP:SBP, DBP:DBP, dPpl:dPpl, dPL:dPL, chronicPpl:chronicPpl, chronicPL:chronicPL, itpMode:FRAME.itpMode, totalChronicPpl:totalChronicPpl, kAfterloadRelief:kAfterloadRelief, rvFillProxy:rvFillProxy, septalShift:septalShift };
+  }
+  function easeOutCubic(x){ return 1 - Math.pow(1-x,3); }
+
+  // ---------- venous return (Guyton curve) ----------
+  // Classic venous-return curve: VR = (Pmsf - RA)/Rvr for RA above the Starling-resistor floor;
+  // below the floor the great veins collapse and VR plateaus regardless of further RA fall.
+  // Pmsf (mean systemic filling pressure) is pinned 6 mmHg above the preset's baseline RA/CVP
+  // (params.cvp0) so that, at a normal resting RA, venous return sits at a "normal" ~5 L/min —
+  // and so that presets representing volume status (e.g. hypovolemia's low cvp0) shift the whole
+  // curve down/left, exactly as a lower Pmsf would in the Guyton model.
+  var VR_NORMAL = 5; // L/min, illustrative — the operating point at a normal resting RA
+  function vrParams(){
+    var Pmsf = params.cvp0 + 6;
+    var Rvr = (Pmsf - params.cvp0) / VR_NORMAL;
+    var plateau = (Pmsf - STARLING_FLOOR) / Rvr;
+    return { Pmsf: Pmsf, Rvr: Rvr, plateau: plateau };
+  }
+  function venousReturnAt(RA){
+    var vp = vrParams();
+    if (RA <= STARLING_FLOOR) return vp.plateau;
+    return clamp((vp.Pmsf - RA) / vp.Rvr, 0, vp.plateau);
+  }
+
+  // Cardiac function (Frank-Starling) curve: cardiac output rises steeply with RA/preload from
+  // near-zero filling, then plateaus as contractile reserve is exhausted — the other half of the
+  // classic Guyton diagram. Held fixed (a "normal" heart) so that shifting the venous-return curve
+  // (via presets / volume status) visibly moves the equilibrium point along a stationary heart curve,
+  // the standard way this diagram is used to reason about preload, volume, and venous tone.
+  // CO_MAX/CO_TAU chosen so (a) the cardiac-function curve passes through VR_NORMAL (5 L/min, the
+  // classic Guyton/Kenny "normal resting adult" figure — see VR_NORMAL above) at the Normal-breathing
+  // preset's resting RA (=cvp0=6, no respiratory shift), and (b) the curve is NOT already saturated
+  // there — a wider CO_TAU keeps real dynamic range on the ascending limb, so titrating PEEP (or
+  // interdependence/tamponade) visibly depresses CO instead of barely moving a curve that's already
+  // pinned near its ceiling.
+  var CO_RA0 = -4, CO_TAU = 7.2, CO_MAX = 6.66;
+  // dynSeptalFrac: an ADDITIONAL, momentary ceiling cut from active septal bowing (0..~0.85),
+  // separate from the static interdep depression below. Modeled as a ceiling cut rather than an
+  // RA-axis shift because at the high CVP tamponade/hyperinflation usually run, RA already sits deep
+  // in the curve's saturated region — an RA-shift there barely moves CO (tiny slope), which hid the
+  // effect entirely. Septal encroachment is mechanically a direct volume theft from the LV, so it
+  // should cut the achievable output regardless of how "full" venous return already made RA look.
+  function cardiacOutputAt(RA, dynSeptalFrac){
+    // Ventricular interdependence (tamponade, severe hyperinflation) doesn't just raise CVP —
+    // a fixed pericardial/thoracic volume restricts diastolic filling itself, depressing the
+    // whole cardiac-function (Starling) curve rather than just sliding the equilibrium along a
+    // normal one. Without this, high CVP alone would push the crossing toward CO_MAX, which is
+    // physiologically backwards for tamponade (elevated CVP + LOW cardiac output).
+    var coMaxHere = CO_MAX * (1 - 0.45 * params.interdep) * (1 - (dynSeptalFrac || 0));
+    return Math.max(0, coMaxHere * (1 - Math.exp(-(RA - CO_RA0) / CO_TAU)));
+  }
+  // Shared by cardioState's implicit preload effect (via CVP), coStateAt, and the Venous return chart —
+  // how strongly a given deviation in transmural pleural pressure slides the cardiac-function curve.
+  var CO_SHIFT_GAIN = 0.65;
+  // How hard the septal-bowing term (ventricular interdependence — tamponade, severe hyperinflation)
+  // additionally drags the cardiac-function curve backward, on top of the ordinary transmural
+  // dPpl/chronicPpl shift above — see coStateAt.
+  // Fraction of the cardiac-function ceiling (per unit rvFillProxy) that active septal bowing cuts —
+  // e.g. rvFillProxy=4 (a typical inspiratory surge) with SEPTAL_CO_GAIN=0.12 cuts ~48% of the
+  // (already-depressed) ceiling. This is a direct ceiling cut, not an RA-axis shift (see
+  // cardiacOutputAt) — at the high CVP tamponade runs, RA sits deep in the curve's saturated region
+  // where an RA-shift barely moves CO, which hid the effect entirely.
+  var SEPTAL_CO_GAIN = 0.12;
+
+  // Operating point where the (preset-dependent) venous-return curve crosses a cardiac-function curve
+  // shifted by shiftAmt along the RA axis — venous return and cardiac output are the same flow, so
+  // this crossing is the only physically consistent point. shiftAmt=0 gives the resting/mean
+  // equilibrium; shiftAmt tied to the instantaneous respiratory pressure gives the live operating
+  // point. Found by bisection since venousReturnAt is piecewise and not worth inverting analytically.
+  function findCrossing(shiftAmt, dynSeptalFrac){
+    var lo = -8, hi = 30;
+    function f(ra){ return venousReturnAt(ra) - cardiacOutputAt(ra + shiftAmt, dynSeptalFrac); }
+    var flo = f(lo);
+    for (var i=0;i<40;i++){
+      var mid = (lo+hi)/2, fm = f(mid);
+      if ((fm>0) === (flo>0)) { lo = mid; flo = fm; } else { hi = mid; }
+    }
+    var ra = (lo+hi)/2;
+    return { ra: ra, val: venousReturnAt(ra) };
+  }
+
+  // Cardiac output at time t, from the SAME Guyton crossing the Venous return chart plots — the
+  // "ground truth" flow number, incorporating both the dynamic (breath-to-breath) and chronic
+  // (PEEP/auto-PEEP titration) shift of the cardiac-function curve, PLUS — when ventricular
+  // interdependence is active — the septal-bowing term. This is what makes tamponade's cardiac
+  // output visibly DIP further during the same inspiration that produces its pulsus paradoxus,
+  // rather than only the arterial line showing it: the septum stealing LV volume doesn't just change
+  // loading pressure, it transiently reduces the heart's actual forward output — the mechanism behind
+  // tamponade progressing to PEA arrest. forceLive mirrors cardioState's parameter (bypass vs. respect
+  // the phase stepper).
+  function coStateAt(t, forceLive){
+    var r = respState(t, forceLive ? null : undefined);
+    var dPpl = r.Ppl - FRAME.meanPplAbs;
+    var rvFillProxy = clamp(-dPpl, 0, 30);
+    var shiftAmt = -CO_SHIFT_GAIN * (dPpl + FRAME.chronicPpl + FRAME.itpMode);
+    var dynSeptalFrac = clamp(params.interdep * rvFillProxy * SEPTAL_CO_GAIN, 0, 0.85);
+    return findCrossing(shiftAmt, dynSeptalFrac).val;
+  }
+  // The settled/resting operating point given only the CHRONIC (PEEP/auto-PEEP + mode-baseline,
+  // itpMode) shift, ignoring the instantaneous breath-to-breath swing — used as the Venous return
+  // chart's "resting" landmark, so it correctly moves when PEEP is titrated OR mode is switched,
+  // rather than staying pinned to the ZEEP-spontaneous-equivalent position.
+  function restingShiftAmt(){ return -CO_SHIFT_GAIN * (FRAME.chronicPpl + FRAME.itpMode); }
+
+  // SBP/DBP swing over one respiratory cycle (for PPV%/pulsus readout).
+  // Always forced live — this describes the typical swing for the current
+  // parameters, independent of whether the display is currently held on a phase.
+  function respSwing(t){
+    var Tresp = respState(t, null).Tresp, n = 60, mn=1e9, mx=-1e9;
+    for (var i=0;i<n;i++){
+      var tt = t - Tresp + i/n*Tresp;
+      var c = cardioState(tt, true);
+      if (c.SBP < mn) mn = c.SBP;
+      if (c.SBP > mx) mx = c.SBP;
+    }
+    return { min:mn, max:mx };
+  }
+  // generic peak-to-trough amplitude of any cardioState-derived quantity over one respiratory cycle —
+  // always forced live. A "mean" readout is, by construction, largely insensitive to how much
+  // transmission is happening (a symmetric swing around baseline still averages to ~baseline); this
+  // is what actually shows the effect of e.g. chest wall compliance on hemodynamic transmission.
+  function cycleSwingOf(fn, t){
+    var Tresp = respState(t, null).Tresp, n = 60, mn=1e9, mx=-1e9;
+    for (var i=0;i<n;i++){
+      var v = fn(t - Tresp + i/n*Tresp);
+      if (v < mn) mn = v;
+      if (v > mx) mx = v;
+    }
+    return { min:mn, max:mx, amp:mx-mn };
+  }
+
+  // ---------- canvas waveform rendering ----------
+  var WINDOW_S = 8;
+  function setupCanvas(cv){
+    var dpr = window.devicePixelRatio || 1;
+    var rectW = cv.clientWidth || cv.parentElement.clientWidth;
+    var rectH = cv.height; // css sets attribute height as logical px target
+    cv.width = rectW * dpr;
+    cv.height = rectH * dpr;
+    cv.style.height = rectH + "px";
+    var ctx = cv.getContext("2d");
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    return { ctx:ctx, w:rectW, h:rectH };
+  }
+
+  function css(varName){
+    return getComputedStyle(document.body).getPropertyValue(varName).trim();
+  }
+
+  function drawGrid(ctx,w,h,pad){
+    ctx.strokeStyle = css("--grid");
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (var i=0;i<=4;i++){
+      var y = pad.t + (h-pad.t-pad.b)*i/4;
+      ctx.moveTo(pad.l, y+0.5); ctx.lineTo(w-pad.r, y+0.5);
+    }
+    ctx.stroke();
+  }
+
+  function drawSeries(ctx, w, h, pad, tNow, sampleFn, yMin, yMax, color, fill, lineW){
+    var innerW = w - pad.l - pad.r, innerH = h - pad.t - pad.b;
+    var N = Math.max(60, Math.floor(innerW));
+    ctx.beginPath();
+    for (var i=0;i<=N;i++){
+      var frac = i/N;
+      var t = tNow - WINDOW_S + frac*WINDOW_S;
+      var val = sampleFn(t);
+      var x = pad.l + frac*innerW;
+      var yn = (val - yMin)/(yMax-yMin);
+      yn = clamp(yn,-0.05,1.05);
+      var y = pad.t + innerH*(1-yn);
+      if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    }
+    if (fill){
+      var lastX = pad.l+innerW, baseY = pad.t+innerH;
+      ctx.lineTo(lastX, baseY); ctx.lineTo(pad.l, baseY); ctx.closePath();
+      ctx.fillStyle = color.replace(")", ",0.14)").replace("rgb","rgba");
+      ctx.fill();
+      ctx.beginPath();
+      for (var j=0;j<=N;j++){
+        var frac2=j/N, t2=tNow-WINDOW_S+frac2*WINDOW_S, val2=sampleFn(t2);
+        var x2=pad.l+frac2*innerW, yn2=clamp((val2-yMin)/(yMax-yMin),-0.05,1.05);
+        var y2=pad.t+innerH*(1-yn2);
+        if (j===0) ctx.moveTo(x2,y2); else ctx.lineTo(x2,y2);
+      }
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = lineW || 2;
+    ctx.lineJoin = "round"; ctx.lineCap = "round";
+    ctx.stroke();
+  }
+
+  function yLabels(ctx,w,h,pad,yMin,yMax,unit){
+    ctx.fillStyle = css("--ink-muted");
+    ctx.font = "10.5px 'IBM Plex Mono', monospace";
+    ctx.textBaseline = "middle";
+    ctx.fillText(Math.round(yMax)+"", 4, pad.t+4);
+    ctx.fillText(Math.round(yMin)+"", 4, h-pad.b-4);
+  }
+
+  var charts = [
+    { id:"c-art", yMin:function(){return 30;}, yMax:function(){return 150;},
+      draw:function(ctx,w,h,pad,tNow){
+        drawSeries(ctx,w,h,pad,tNow, function(t){return cardioState(t).ABP;}, 30,150, colorOf("--c-art"), true, 2.25);
+      }},
+    { id:"c-airway", yMin:function(){return mode==="vent" ? -1: -4;}, yMax:function(){return mode==="vent" ? Math.max(params.peep+params.vt/((params.cl*params.ccw)/(params.cl+params.ccw))+8,20) : 4;},
+      draw:function(ctx,w,h,pad,tNow){
+        var ymin = this.yMin(), ymax=this.yMax();
+        drawSeries(ctx,w,h,pad,tNow, function(t){return respState(t).Paw;}, ymin, ymax, colorOf("--c-airway"), true, 2.25);
+      }},
+    { id:"c-pleural", yMin:function(){return mode==="vent" ? -8 : -32;},
+      yMax:function(){
+        if (mode!=="vent") return 0;
+        var Crs=(params.cl*params.ccw)/(params.cl+params.ccw), fPpl=params.cl/(params.cl+params.ccw);
+        var pplat = params.peep + params.vt/Crs;
+        return Math.max(12, -5 + fPpl*(pplat+9) + params.autoPeep + 4);
+      },
+      draw:function(ctx,w,h,pad,tNow){
+        var ymin=this.yMin(), ymax=this.yMax();
+        drawSeries(ctx,w,h,pad,tNow, function(t){return respState(t).Ppl;}, ymin, ymax, colorOf("--c-pleural"), true, 2.25);
+      }},
+    { id:"c-volume", yMin:function(){return 0;}, yMax:function(){return 850;},
+      draw:function(ctx,w,h,pad,tNow){
+        drawSeries(ctx,w,h,pad,tNow, function(t){return respState(t).V;}, 0, 850, colorOf("--c-volume"), true, 2.25);
+      }},
+    { id:"c-cvp", yMin:function(){return -4;}, yMax:function(){return Math.max(22, params.cvp0 + params.autoPeep + 14);},
+      draw:function(ctx,w,h,pad,tNow){
+        var ymax=this.yMax();
+        drawSeries(ctx,w,h,pad,tNow, function(t){return cardioState(t).CVP;}, -4, ymax, colorOf("--c-cvp"), true, 2.25);
+      }},
+    { id:"c-pa", yMin:function(){return 0;}, yMax:function(){return Math.max(34, params.cvp0 + params.autoPeep + 26);},
+      draw:function(ctx,w,h,pad,tNow){
+        var ymax=this.yMax();
+        drawSeries(ctx,w,h,pad,tNow, function(t){return cardioState(t).PA;}, 0, ymax, colorOf("--c-pa"), false, 2.25);
+        drawSeries(ctx,w,h,pad,tNow, function(t){return cardioState(t).PCWP;}, 0, ymax, colorOf("--c-pcwp"), false, 2.25);
+      }}
+  ];
+
+  function colorOf(varName){
+    var v = css(varName);
+    // convert hex to rgb() for alpha manipulation
+    if (v[0] === "#"){
+      var hex = v.replace("#","");
+      if (hex.length === 3) hex = hex.split("").map(function(c){return c+c;}).join("");
+      var r=parseInt(hex.substr(0,2),16), g=parseInt(hex.substr(2,2),16), b=parseInt(hex.substr(4,2),16);
+      return "rgb("+r+","+g+","+b+")";
+    }
+    return v;
+  }
+
+  var canvasCache = {};
+  function ensureCanvas(id){
+    if (!canvasCache[id]){
+      canvasCache[id] = setupCanvas($(id));
+      window.addEventListener("resize", function(){ canvasCache[id] = setupCanvas($(id)); });
+    }
+    return canvasCache[id];
+  }
+
+  var PAD = { l:34, r:8, t:10, b:16 };
+
+  function renderCharts(tNow){
+    charts.forEach(function(c){
+      var el = $(c.id);
+      if (el.offsetParent === null) return; // hidden (e.g. behind the collapsed detail-charts toggle)
+      var cc = ensureCanvas(c.id);
+      if (!cc.w || !cc.h) return;
+      var ctx = cc.ctx, w = cc.w, h = cc.h;
+      ctx.clearRect(0,0,w,h);
+      drawGrid(ctx,w,h,PAD);
+      c.draw(ctx,w,h,PAD,tNow);
+      var ymin = c.yMin(), ymax = c.yMax();
+      yLabels(ctx,w,h,PAD,ymin,ymax);
+    });
+  }
+
+  // ---------- venous return (Guyton) chart ----------
+  function renderVenousReturn(tNow){
+    var el = $("c-vr");
+    if (el.offsetParent === null) return;
+    var cc = ensureCanvas("c-vr");
+    if (!cc.w || !cc.h) return;
+    var ctx = cc.ctx, w = cc.w, h = cc.h;
+    ctx.clearRect(0,0,w,h);
+    // extra top/bottom/right margin for the axis arrows, titles and drop-line labels —
+    // styled after the classic hand-drawn Guyton textbook diagram rather than a data-grid chart
+    var pad = { l:20, r:26, t:28, b:40 };
+
+    var vp = vrParams();
+    var xMin = -6, xMax = Math.max(16, Math.ceil(vp.Pmsf)+6);
+    var yMin = 0, yMax = Math.max(vp.plateau, CO_MAX)*1.15;
+    function X(ra){ return pad.l + (ra-xMin)/(xMax-xMin)*(w-pad.l-pad.r); }
+    function Y(vr){ return pad.t + (1-(vr-yMin)/(yMax-yMin))*(h-pad.t-pad.b); }
+
+    var axisColor = css("--good");
+    var x0 = pad.l, y0 = h-pad.b; // plot origin (bottom-left corner), not necessarily RA=0
+
+    function arrowHead(tipX,tipY,dx,dy,color){
+      var len=7, wid=4.5;
+      var nx=-dy, ny=dx; // perpendicular
+      ctx.beginPath();
+      ctx.moveTo(tipX,tipY);
+      ctx.lineTo(tipX-dx*len+nx*wid, tipY-dy*len+ny*wid);
+      ctx.lineTo(tipX-dx*len-nx*wid, tipY-dy*len-ny*wid);
+      ctx.closePath();
+      ctx.fillStyle = color; ctx.fill();
+    }
+
+    // axes drawn as bold arrows in the classic teaching-diagram style
+    ctx.strokeStyle = axisColor; ctx.lineWidth = 2; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(w-pad.r+14, y0); ctx.stroke();
+    arrowHead(w-pad.r+16, y0, 1, 0, axisColor);
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0, pad.t-12); ctx.stroke();
+    arrowHead(x0, pad.t-14, 0, -1, axisColor);
+
+    ctx.fillStyle = axisColor;
+    ctx.font = "600 11px 'IBM Plex Sans', sans-serif";
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText("Blood flow", x0+6, pad.t-16);
+    ctx.textAlign = "right";
+    ctx.fillText("P", w-pad.r+18, y0-6);
+    ctx.font = "600 8px 'IBM Plex Sans', sans-serif";
+    ctx.fillText("RA", w-pad.r+18, y0+3);
+
+    function strokeCurve(fn, color){
+      ctx.beginPath();
+      var N = 90;
+      for (var i=0;i<=N;i++){
+        var ra = xMin + i/N*(xMax-xMin);
+        var x = X(ra), y = Y(fn(ra));
+        if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      }
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.stroke();
+    }
+    var vrColor = colorOf("--c-pleural"), coColor = colorOf("--c-airway");
+
+    // The heart's Frank-Starling curve is driven by transmural filling pressure (RA pressure minus
+    // the pressure surrounding the heart), while venous return is driven by the gradient between the
+    // (largely extrathoracic) mean systemic filling pressure and atmospherically-referenced RA
+    // pressure. Because respiration changes the surrounding intrathoracic pressure but is read on the
+    // readouts as an atmospherically-referenced RA, its net effect — in this simplified single-curve
+    // model — is to slide the WHOLE cardiac function curve left and right along the RA axis each
+    // breath, while the venous-return curve itself stays put (it only moves with preset/volume
+    // status). Venous return and cardiac output are literally the same flow at every instant, so
+    // there is only ever one operating point: wherever the (moving) blue curve currently crosses the
+    // (fixed) orange curve.
+    var cs = cardioState(tNow);
+    // full shift = dynamic (breath-to-breath, cs.dPpl) + chronic (PEEP/auto-PEEP titration,
+    // cs.chronicPpl) — cs.dPpl respects the phase stepper, like the readouts. Septal bowing, when
+    // interdependence is active, additionally cuts the curve's ceiling (dynSeptalFrac) rather than
+    // shifting it along the RA axis (see cardiacOutputAt) — that's why the blue curve visibly
+    // flattens/lowers, not just slides, during inspiration in the Tamponade preset.
+    var shiftAmt = -CO_SHIFT_GAIN * (cs.dPpl + cs.totalChronicPpl);
+    var dynSeptalFrac = clamp(params.interdep * cs.rvFillProxy * SEPTAL_CO_GAIN, 0, 0.85);
+    function coPlotAt(RA){ return cardiacOutputAt(RA + shiftAmt, dynSeptalFrac); }
+
+    strokeCurve(venousReturnAt, vrColor);
+    strokeCurve(coPlotAt, coColor);
+
+    // in-plot curve labels, textbook-style, instead of a separate legend — the cardiac-function label
+    // tracks the plateau of the (currently shifted) blue curve so it never drifts off it
+    ctx.font = "600 10.5px 'IBM Plex Sans', sans-serif";
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillStyle = coColor;
+    var coMaxHere = CO_MAX * (1 - 0.45 * params.interdep);
+    var coPlateauRa = clamp(CO_RA0 + 3.2*CO_TAU - shiftAmt, xMin, xMax);
+    ctx.fillText("cardiac function curve", X(coPlateauRa)-40, Y(coMaxHere)-16);
+
+    ctx.fillStyle = css("--ink-muted");
+    ctx.font = "9.5px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "center"; ctx.textBaseline = "alphabetic";
+    if (vp.Pmsf <= xMax) ctx.fillText("Pmsf "+vp.Pmsf.toFixed(0), X(vp.Pmsf), y0+15);
+
+    // resting equilibrium: where the curves cross with only the CHRONIC (PEEP/auto-PEEP) shift
+    // applied — a landmark independent of the phase stepper and of breath-to-breath swing, but one
+    // that correctly moves when PEEP itself is titrated, drawn faint since it's a reference, not the
+    // live reading
+    var eq = findCrossing(restingShiftAmt());
+    var ex = X(clamp(eq.ra,xMin,xMax)), ey = Y(eq.val);
+    ctx.save();
+    ctx.strokeStyle = css("--ink-muted"); ctx.setLineDash([2,3]); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(ex, ey); ctx.lineTo(ex, y0); ctx.stroke();
+    ctx.beginPath(); ctx.arc(ex,ey,5,0,Math.PI*2);
+    ctx.fillStyle = css("--surface"); ctx.fill();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = css("--ink-muted"); ctx.stroke();
+    ctx.restore();
+
+    // venous-return label sits clear of the equilibrium marker and the curve's own slope
+    ctx.font = "600 10.5px 'IBM Plex Sans', sans-serif";
+    ctx.fillStyle = vrColor;
+    var vrLabelRa = clamp(eq.ra + (xMax-eq.ra)*0.55, xMin, xMax);
+    ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+    ctx.fillText("venous return curve", X(vrLabelRa)-6, Y(venousReturnAt(vrLabelRa))-14);
+
+    // live operating point: the single spot where the moving cardiac-function curve currently
+    // crosses the venous-return curve — venous return AND cardiac output at this instant, together
+    var inst = findCrossing(shiftAmt);
+    var ix = X(clamp(inst.ra,xMin,xMax)), iy = Y(inst.val);
+    ctx.save();
+    ctx.strokeStyle = css("--ink-2"); ctx.setLineDash([2,3]); ctx.lineWidth = 1.25;
+    ctx.beginPath(); ctx.moveTo(ix, pad.t-4); ctx.lineTo(ix, y0); ctx.stroke();
+    ctx.restore();
+    ctx.fillStyle = css("--ink-muted");
+    ctx.font = "9.5px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "center";
+    ctx.fillText(inst.ra.toFixed(1), ix, y0+15);
+
+    ctx.beginPath(); ctx.arc(ix,iy,3,0,Math.PI*2);
+    ctx.fillStyle = css("--ink-2"); ctx.fill();
+    ctx.beginPath(); ctx.arc(ix,iy,5.5,0,Math.PI*2);
+    ctx.fillStyle = colorOf("--c-art"); ctx.fill();
+    ctx.lineWidth = 2; ctx.strokeStyle = css("--surface"); ctx.stroke();
+  }
+
+  // ---------- readouts ----------
+  function renderReadouts(tNow){
+    var cs = cardioState(tNow);
+    var sw = respSwing(tNow);
+    var sbpFall = sw.max - sw.min;                          // absolute mmHg, the pulsus-paradoxus criterion
+    var ppv = ((sw.max - sw.min) / ((sw.max+sw.min)/2) * 100); // % swing, the SPV/PPV fluid-responsiveness criterion
+    var vent = mode === "vent";
+    var Crs = (params.cl*params.ccw)/(params.cl+params.ccw);
+    var pip = mode==="vent" ? (params.peep + params.vt/Crs + 4.5) : null;
+    var pplat = mode==="vent" ? (params.peep + params.vt/Crs) : null;
+
+    var html = "";
+    html += stat("Mode", vent ? "Ventilator (VC)" : "Spontaneous");
+    html += stat(vent ? "PIP / Pplat" : "Neg. insp. Paw", vent ? (pip.toFixed(0)+" / "+pplat.toFixed(0)+" <small>cmH₂O</small>") : (respState(tNow).Paw.toFixed(1)+" <small>cmH₂O</small>"));
+    var held = frozenPhase !== null;
+    html += stat("Pleural swing (typical)", (Math.max.apply(null,cyclePpl(tNow))-Math.min.apply(null,cyclePpl(tNow))).toFixed(1)+" <small>cmH₂O</small>");
+    html += stat("Transpulm. pressure P<sub>L</sub>", (held ? cs.r.PL : meanOf(function(t){return respState(t,null).PL;}, tNow)).toFixed(1)+" <small>cmH₂O</small>");
+    html += stat("Arterial (SBP/DBP)", cs.SBP.toFixed(0)+" / "+cs.DBP.toFixed(0)+" <small>mmHg</small>");
+    html += stat(held ? "Cardiac output (this phase)" : "Cardiac output (mean)",
+      (held ? coStateAt(tNow,false) : meanOf(function(t){return coStateAt(t,true);}, tNow)).toFixed(1)+" <small>L/min</small>");
+    html += vent
+      ? stat("Systolic pressure variation (SPV)", ppv.toFixed(1)+" <small>% · fluid-responsive if &gt;12–13%</small>", ppv>12.5)
+      : stat("Pulsus paradoxus (ΔSBP)", sbpFall.toFixed(0)+" <small>mmHg · paradoxus if &gt;10</small>", sbpFall>10);
+    html += stat(held ? "CVP (this phase)" : "CVP (mean)", (held ? cs.CVP : meanOf(function(t){return cardioState(t,true).CVP;}, tNow)).toFixed(1)+" <small>mmHg</small>");
+    html += stat(held ? "PA / PCWP (this phase)" : "PA / PCWP (mean)",
+      (held ? cs.PA   : meanOf(function(t){return cardioState(t,true).PA;},   tNow)).toFixed(0)+" / "+
+      (held ? cs.PCWP : meanOf(function(t){return cardioState(t,true).PCWP;}, tNow)).toFixed(0)+" <small>mmHg</small>");
+    // "mean" above is largely flat by construction (a symmetric swing averages back to baseline) —
+    // these two show the actual peak-to-trough transmission, which is what compliance, PEEP, and the
+    // presets are meant to change
+    var cvpSwing = cycleSwingOf(function(t){return cardioState(t,true).CVP;}, tNow);
+    var paSwing  = cycleSwingOf(function(t){return cardioState(t,true).PA;},  tNow);
+    var pcwpSwing= cycleSwingOf(function(t){return cardioState(t,true).PCWP;},tNow);
+    var coSwing  = cycleSwingOf(function(t){return coStateAt(t,true);}, tNow);
+    html += stat("CVP swing (cycle)", cvpSwing.amp.toFixed(1)+" <small>mmHg</small>");
+    html += stat("PA / PCWP swing (cycle)", paSwing.amp.toFixed(1)+" / "+pcwpSwing.amp.toFixed(1)+" <small>mmHg</small>");
+    html += stat("Cardiac output swing (cycle)", coSwing.amp.toFixed(1)+" <small>L/min</small>");
+    html += stat("Heart rate", params.hr+" <small>bpm</small>");
+    $("readouts").innerHTML = html;
+  }
+  function stat(k,v,flag){
+    return '<div class="stat'+(flag?' flag':'')+'"><div class="k">'+k+'</div><div class="v">'+v+'</div></div>';
+  }
+  // typical pleural pressure excursion over one cycle — always live, regardless of the phase stepper
+  function cyclePpl(tNow){
+    var Tresp = respState(tNow, null).Tresp, out=[];
+    for (var i=0;i<24;i++){ out.push(respState(tNow - Tresp + i/24*Tresp, null).Ppl); }
+    return out;
+  }
+  function meanOf(fn,tNow){
+    var Tresp = respState(tNow, null).Tresp, s=0, n=30;
+    for (var i=0;i<n;i++){ s += fn(tNow - Tresp + i/n*Tresp); }
+    return s/n;
+  }
+
+  // ---------- pressure-chamber diagram ----------
+  var RULER_TOP = 50, RULER_BOTTOM = 325, RULER_PMAX = 15, RULER_PMIN = -25;
+  function rulerY(p){
+    var f = (RULER_PMAX - p) / (RULER_PMAX - RULER_PMIN);
+    return RULER_TOP + f * (RULER_BOTTOM - RULER_TOP);
+  }
+  function buildRulerTicks(){
+    var g = $("rulerTicks"), vals = [10,-10,-20];
+    vals.forEach(function(v){
+      var y = rulerY(v);
+      var ln = document.createElementNS("http://www.w3.org/2000/svg","line");
+      ln.setAttribute("x1",26); ln.setAttribute("x2",35); ln.setAttribute("y1",y); ln.setAttribute("y2",y);
+      ln.setAttribute("stroke","var(--axis)"); ln.setAttribute("stroke-width","1");
+      g.appendChild(ln);
+      var tx = document.createElementNS("http://www.w3.org/2000/svg","text");
+      tx.setAttribute("x",22); tx.setAttribute("y",y+3.5); tx.setAttribute("text-anchor","end");
+      tx.setAttribute("font-size","9.5"); tx.setAttribute("fill","var(--ink-muted)");
+      tx.textContent = v;
+      g.appendChild(tx);
+    });
+  }
+
+  function stepLabel(){
+    for (var k in PHASE_FRAC){ if (PHASE_FRAC[k] === frozenPhase) return PHASE_NAMES[k]; }
+    return "this phase";
+  }
+
+  function renderDiagram(tNow){
+    var r = respState(tNow);      // respects the phase stepper
+    var cs = cardioState(tNow);   // respects the phase stepper for pressures; cardiac beat stays live
+
+    var y0 = rulerY(0);
+    $("atmLine").setAttribute("y1",y0); $("atmLine").setAttribute("y2",y0);
+    var pClamped = clamp(r.Ppl, RULER_PMIN, RULER_PMAX);
+    var yP = rulerY(pClamped);
+    $("pplTick").setAttribute("y1",yP); $("pplTick").setAttribute("y2",yP);
+    var lbl = $("pplTickLabel");
+    lbl.setAttribute("x", 56); lbl.setAttribute("y", yP+3.5);
+    lbl.textContent = r.Ppl.toFixed(1)+" cmH₂O";
+
+    $("raNum").textContent = cs.CVP.toFixed(0);
+    $("paNum").textContent = cs.PA.toFixed(0);
+    $("pcwpNum").textContent = cs.PCWP.toFixed(0);
+    $("aortaNum").textContent = cs.ABP.toFixed(0);
+    // RV pressure isn't separately modeled — in the absence of pulmonic stenosis, peak RV pressure
+    // approximates PA pressure (the standard basis for echo RVSP estimation from a TR jet), so it's
+    // shown here as the same number, explicitly captioned as an approximation rather than a fabricated
+    // independent value.
+    $("rvNum").textContent = cs.PA.toFixed(0);
+
+    var base = meanPpl();
+    var dPpl = r.Ppl - base;
+    var tint = clamp(0.10 + Math.abs(dPpl)*0.010, 0.08, 0.32);
+    $("lungL").setAttribute("fill-opacity", tint.toFixed(2));
+    $("lungR").setAttribute("fill-opacity", tint.toFixed(2));
+
+    var HRr = params.hr/60, Tcard = 1/HRr, cphase = mod(tNow, Tcard)/Tcard;
+    var pulse = cphase < 0.12 ? (1 + 1.7*Math.sin(cphase/0.12*Math.PI)) : 1;
+    ["boxRA","boxRV","boxLA","boxLV"].forEach(function(id){
+      $(id).setAttribute("stroke-width",(1.5*pulse).toFixed(2));
+    });
+
+    // venous-return flow strength, normalized 0..1 (0 = collapsed/minimal, 1 = maximal inspiratory surge)
+    var vrNorm = mode === "spont" ? clamp(0.42 - dPpl*0.038, 0, 1) : clamp(0.42 - dPpl*0.032, 0, 1);
+    var vrStrokeW = 2 + 7*vrNorm;
+    var vrSpeed = 16 + 70*vrNorm; // px/s of dash travel — faster dashes read as faster flow
+    var dashOff = -(tNow*vrSpeed % 13);
+    [ "svc2","ivc2","raRv" ].forEach(function(id){
+      var el = $(id);
+      el.setAttribute("stroke-width", vrStrokeW.toFixed(2));
+      el.setAttribute("stroke-dashoffset", dashOff.toFixed(1));
+    });
+    $("vrFlowLabel").setAttribute("opacity", vrNorm>0.62 ? Math.min(1,(vrNorm-0.62)/0.25).toFixed(2) : 0);
+
+    // ventricular interdependence: RV encroaches on the septal space, visibly narrowing the LV, scaled
+    // by both the current RV-filling surge (rvFillProxy) and the preset's interdependence gain
+    var shiftPx = clamp(cs.rvFillProxy * params.interdep, 0, 30) * 4.5;
+    $("boxRV").setAttribute("width", (115+shiftPx).toFixed(1));
+    $("boxLV").setAttribute("x", (470+shiftPx*0.6).toFixed(1));
+    $("boxLV").setAttribute("width", (115-shiftPx*0.6).toFixed(1));
+    $("rvLabel").setAttribute("x", (357+shiftPx/2).toFixed(1));
+    $("rvNum").setAttribute("x", (357+shiftPx/2).toFixed(1));
+    $("rvCaption").setAttribute("x", (357+shiftPx/2).toFixed(1));
+    $("lvLabel").setAttribute("x", (527+shiftPx*0.3).toFixed(1));
+    $("septalLabel").setAttribute("opacity", shiftPx>4 ? Math.min(1,(shiftPx-4)/12).toFixed(2) : 0);
+    $("septalLabel").setAttribute("x", (415+shiftPx*0.5).toFixed(1));
+
+    var liveCaption = frozenPhase === null
+      ? (mode === "spont"
+          ? (r.phase < F_INS ? "Inspiration: ↓ pleural pressure → ↑ venous return, ↑ LV afterload" : "Expiration: pressures return toward baseline")
+          : (r.phase < F_INS ? "Inspiration: ↑ intrathoracic pressure → ↓ venous return, ↓ LV afterload" : "Expiration: venous return recovers"))
+      : "Held at " + stepLabel() + " — the heart keeps beating at this fixed lung volume";
+    $("diagramCaption").textContent = liveCaption;
+    $("scenarioLive").textContent = "right now: " + liveCaption;
+  }
+
+  // ---------- collapsible detail charts ----------
+  var DETAIL_IDS = ["c-airway","c-pleural","c-volume","c-cvp","c-pa"];
+  var detailToggle = $("detailToggle"), detailToggleLabel = $("detailToggleLabel"), detailCharts = $("detailCharts");
+  var detailOpen = false;
+  detailToggle.addEventListener("click", function(){
+    detailOpen = !detailOpen;
+    detailCharts.classList.toggle("open", detailOpen);
+    detailToggle.setAttribute("aria-expanded", detailOpen ? "true" : "false");
+    detailToggleLabel.innerHTML = detailOpen
+      ? "Hide detail waveforms"
+      : "Show detail waveforms (Paw, Ppl, V<sub>t</sub>, CVP, PA/PCWP)";
+    // canvases inside a display:none container report 0 width; drop the cached size so
+    // they're re-measured against their real, now-visible layout the next time they draw.
+    if (detailOpen) DETAIL_IDS.forEach(function(id){ delete canvasCache[id]; });
+  });
+
+  // ---------- phase stepper controls ----------
+  var btnPlay = $("btn-play"), playLabel = $("playLabel");
+  var stepButtons = Array.prototype.slice.call(document.querySelectorAll("#phaseStepper button"));
+
+  function updateStepperUI(){
+    var held = frozenPhase !== null;
+    btnPlay.classList.toggle("active", !held);
+    playLabel.textContent = held ? "Resume" : "Continuous";
+    stepButtons.forEach(function(b){
+      b.classList.toggle("active", held && PHASE_FRAC[b.getAttribute("data-phase")] === frozenPhase);
+    });
+  }
+  btnPlay.addEventListener("click", function(){ frozenPhase = null; updateStepperUI(); });
+  stepButtons.forEach(function(b){
+    b.addEventListener("click", function(){
+      frozenPhase = PHASE_FRAC[b.getAttribute("data-phase")];
+      updateStepperUI();
+    });
+  });
+
+  // ---------- physiology walkthrough ----------
+  var WALK_STEPS = [
+    { title:"The chest: two pumps sharing one pressure",
+      html:"<p>The thorax holds two pumps in one sealed box: a bellows (the lungs, driven by <b>pleural pressure, Ppl</b>) and a set of chambers (the heart and great vessels, sitting inside that same pleural space). Because they share the box, whatever moves Ppl — a breath in or out, a ventilator breath — pushes on the heart and vessels too, not just the lungs. That's the whole premise of this tool: one pressure, two pumps, watch them interact.</p><p>The <b>pressure chambers</b> panel keeps a live ruler of Ppl on the left, referenced to atmosphere (0). Everything else — right atrium (RA/CVP), pulmonary artery (PA), wedge pressure (PCWP), the aorta — updates as that one number moves through the cycle.</p><div class='try'>Switch to <b>Live monitor</b> and watch the Ppl tick on the ruler move as the cycle runs.</div>" },
+    { title:"Spontaneous breathing: a negative-pressure pump",
+      html:"<p>To inspire, the diaphragm and intercostals contract, expanding the chest against the lung's elastic recoil. That pulls <b>Ppl further below atmospheric</b> — driven mainly by V/C<sub>L</sub> (lung compliance) plus a resistive component present only while air is actually flowing. The falling Ppl pulls alveolar pressure below zero, drawing air in.</p><p>That same negative swing is <b>transmitted to everything else in the chest</b>: right atrial pressure dips, steepening the gradient that drives blood from the (largely extrathoracic) venous reservoir into the RA — <b>venous return rises</b>. LV transmural pressure rises too, which <b>increases LV afterload</b> a little on every breath. Normally these effects are small; systolic pressure dips only a few mmHg on inspiration. A dip &gt;10 mmHg is <b>pulsus paradoxus</b> — seen when the Ppl swing itself is huge (severe asthma/COPD) or when a separate mechanism, ventricular interdependence, is added on top (step 7).</p><div class='try'>Try <b>Severe asthma (resistance)</b> — the pleural swing gets dramatically larger, and so does the arterial dip. <b>COPD (compliance/hyperinflation)</b> reaches a similarly abnormal state by a different, slower route — a long airway time constant and incomplete exhalation (auto-PEEP) rather than a single huge swing — see The math tab, §1, for both mechanisms.</div>" },
+    { title:"The ventilator: a positive-pressure pump — and Kenny's Eq. 12",
+      html:"<p>A ventilator reverses the sign: it pushes air in, so <b>airway pressure (Paw) rises</b> to a peak (PIP), settles to a plateau once flow stops, then falls back to PEEP on exhalation. But only <i>part</i> of that Paw rise reaches the pleural space — the rest goes into stretching the chest wall itself. The fraction that reaches the pleura is Kenny's transmission equation (Eq. 12):</p><p style='font-family:\"IBM Plex Mono\",monospace; font-size:13px; text-align:center; padding:8px 0;'>f<sub>Ppl</sub> = C<sub>L</sub> / (C<sub>L</sub> + C<sub>cw</sub>)</p><p>A <b>stiff chest wall</b> (low C<sub>cw</sub> — obesity, ascites, a tight abdominal binder) transmits <i>more</i> of a given ΔPaw to the pleura and heart. A <b>stiff lung</b> (low C<sub>L</sub> — ARDS) transmits <i>less</i>, because more of the pressure is being used up stretching the lung itself rather than the chest wall. This is why an ARDS patient's hemodynamics can look surprisingly stable on the ventilator despite eye-watering plateau pressures, while a stiff-chested patient with normal lungs can show large swings from a modest-looking Paw.</p><div class='try'>Compare <b>ARDS + high PEEP</b> against <b>Obesity / stiff chest wall</b> — similar plateau pressures, very different pleural and CVP swings (see the swing-amplitude readouts).</div>" },
+    { title:"Transpulmonary pressure: the lung's own afterload term",
+      html:"<p>Subtract Ppl from Paw and you get <b>transpulmonary pressure, P<sub>L</sub> = Paw − Ppl</b> — the distending pressure the lung itself actually feels, independent of what the chest wall is doing. At end-inspiratory plateau, P<sub>L</sub> works out to roughly PEEP·0.95 + V<sub>t</sub>/C<sub>L</sub> — algebraically <b>independent of chest-wall compliance</b> in a passive patient. That's real physiology, not an oversight: the lung doesn't know or care how stiff the ribcage around it is.</p><p>P<sub>L</sub> matters because rising lung volume compresses the <b>alveolar (intra-alveolar) pulmonary vessels</b>, raising pulmonary vascular resistance and RV afterload — a separate pathway from the Ppl-mediated preload/LV-afterload effects in the previous steps. That's why this tool tracks PA pressure as a blend of both: a small direct Ppl-transmission term, and a larger P<sub>L</sub>-driven RV-afterload term.</p><div class='try'>Open <b>Show detail waveforms</b> and compare the Ppl and PA/PCWP traces — PA tracks lung volume more than it tracks Ppl alone.</div>" },
+    { title:"Venous return and the Starling resistor",
+      html:"<p>Blood returns to the RA down a gradient from <b>mean systemic filling pressure (Pmsf)</b> — the pressure everywhere in the systemic circulation if the heart stopped, set by blood volume and venous tone — to RA pressure itself. As Ppl (and RA pressure) falls during spontaneous inspiration, that gradient steepens and venous return rises. But it can't rise forever: as RA pressure approaches the pressure just outside the great veins at the thoracic inlet, the vein walls collapse like a flow-limiting <b>Starling resistor</b>, and venous return plateaus no matter how much further RA pressure is pulled down.</p><p>This matters most in <b>hypovolemia</b>: a low blood volume means a low Pmsf, so the whole venous-return curve sits closer to that collapse floor already — the same respiratory swing then produces a much bigger swing in venous return (and downstream, in stroke volume) than it would in a well-filled patient. That's the physiological basis for using the size of the respiratory swing in arterial pressure — <b>SPV/PPV</b> — as a fluid-responsiveness test.</p><div class='try'>Try <b>Hypovolemia + PPV</b> and watch the venous-return curve's operating point sit right at the edge of its plateau.</div>" },
+    { title:"The Guyton diagram: one crossing point, a moving heart",
+      html:"<p>Venous return and cardiac output are <i>literally the same flow</i>, measured on either side of the right heart — so at any instant there is exactly one physically consistent operating point: <b>wherever the venous-return curve and the heart's Frank-Starling (cardiac function) curve cross</b>. The venous-return chart on the monitor draws both.</p><p>Here's the subtlety this tool works hard to get right: respiration doesn't move the venous-return curve breath-to-breath (that curve only shifts with volume status / venous tone, i.e. between presets). It moves the <b>cardiac function curve</b>, back and forth, once per breath — because Ppl surrounds the heart directly (changing its transmural filling pressure) but doesn't act on the largely extrathoracic venous reservoir that Pmsf is measured against. So on the chart, the blue heart curve slides along the RA axis every breath, and the single red operating dot rides up and down the fixed orange venous-return curve as the crossing point moves — which is the actual mechanism by which breathing modulates beat-to-beat cardiac output.</p><div class='try'>Watch the Venous return chart while <b>Continuous</b> is running — the blue curve visibly shifts and the red dot rides the orange curve.</div>" },
+    { title:"Ventricular interdependence and pulsus paradoxus",
+      html:"<p>Everything so far works by <i>transmural pressure</i> — Ppl and P<sub>L</sub> acting on the outside of chambers whose walls stay a fixed shape. There's a second, distinct mechanism: the two ventricles share a common wall (the interventricular septum) inside a shared, non-infinitely-distensible pericardial/thoracic space. If the RV's volume or pressure rises faster than that space can accommodate — <b>cardiac tamponade</b> (pericardial fluid fixing total cardiac volume), or severe gas-trapping/hyperinflation in status asthmaticus or COPD — the septum <b>bows leftward into the LV</b>, directly stealing LV volume rather than just changing its loading pressure.</p><p>This is layered <i>on top of</i> the transmural pulsus paradoxus from step 2, and can produce a much larger swing — Jardin's classic status-asthmaticus study measured systolic drops of several tens of mmHg from septal shift, far beyond the few-mmHg physiologic dip. On the diagram, watch the RV box visibly grow and the LV box narrow during inspiration when this mechanism is active. It doesn't stop at the arterial line: the same septal encroachment restricts LV filling directly, so <b>cardiac output falls too</b> — chronically depressed at baseline (a fixed pericardial space limits diastolic filling) and dipping further with every inspiration. That's the actual mechanism behind tamponade progressing to <b>PEA arrest</b> if the effusion isn't drained: forward flow keeps falling, breath by breath, until it can no longer sustain a perfusing rhythm.</p><div class='try'>Try <b>Tamponade / interdependence</b> — pulsus paradoxus crosses the 10 mmHg threshold, cardiac output sits low and dips further on inspiration, and you can watch the septum shift in the chamber diagram.</div>" },
+    { title:"A different pathway: hypoxic pulmonary vasoconstriction",
+      html:"<p>Every mechanism so far is <i>mechanical</i> — Ppl/P<sub>L</sub> physically squeezing or stretching a chamber. High altitude introduces something categorically different: global alveolar hypoxia makes the pulmonary arterioles themselves constrict — <b>hypoxic pulmonary vasoconstriction (HPV)</b> — raising pulmonary artery pressure through vascular tone, almost independent of the breathing cycle. Watch the diagram's <b>RA and RV</b> numbers: RA (CVP) barely moves, but RV — shown as ≈PA, since without pulmonic stenosis peak RV pressure tracks PA pressure — rises directly. This is <b>acute right-ventricular pressure overload</b>, and critically, it's <b>reversible</b>: unlike fixed pulmonary vascular disease, resolving the hypoxia resolves the vasoconstriction.</p><p>This is also where the tool's two mechanisms can be made to interact. Select the altitude preset, then switch to <b>Ventilator (VC)</b> and titrate PEEP: now HPV's direct vasoconstriction and PPV's own mechanical afterload/preload hit (step 3) are both loading the same RV, through entirely different pathways, at the same time — a hypoxia-strained RV tolerates a PEEP trial worse than a normal one. One thing this model can't show: PEEP's effect on pulmonary vascular resistance is actually biphasic in reality — enough to recruit collapsed hypoxic alveoli can <i>lower</i> PVR by relieving local HPV, while too much over-distends alveoli and compresses the vessels running through them, <i>raising</i> it (the West-zone argument). This model only moves pleural pressure, not regional recruitment, so it shows PEEP's cost to the RV but not its potential benefit — worth raising explicitly with students rather than letting the model's silence read as an answer.</p><div class='try'>Try <b>High altitude / acute hypoxic pulmonary hypertension</b>, then flip to Ventilator mode and titrate PEEP — watch RV climb from two directions at once.</div>" }
+  ];
+  var walkIdx = 0;
+  var walkPanel = $("walkPanel"), walkTitle = $("walkTitle"), walkBody = $("walkBody"),
+      walkStepLabel = $("walkStepLabel"), walkDots = $("walkDots"),
+      walkPrev = $("walkPrev"), walkNext = $("walkNext"),
+      btnViewMonitor = $("btn-view-monitor"), btnViewWalk = $("btn-view-walk"), viewMonitor = $("viewMonitor"),
+      btnViewMath = $("btn-view-math"), mathPanel = $("mathPanel"),
+      btnViewTeach = $("btn-view-teach"), viewTeach = $("viewTeach");
+
+  WALK_STEPS.forEach(function(s, i){
+    var d = document.createElement("span");
+    d.className = "walk-dot" + (i===0 ? " active" : "");
+    d.addEventListener("click", function(){ walkIdx = i; renderWalk(); });
+    walkDots.appendChild(d);
+  });
+
+  function renderWalk(){
+    var s = WALK_STEPS[walkIdx];
+    walkStepLabel.textContent = "Step " + (walkIdx+1) + " of " + WALK_STEPS.length;
+    walkTitle.textContent = s.title;
+    walkBody.innerHTML = s.html;
+    Array.prototype.forEach.call(walkDots.children, function(d,i){ d.classList.toggle("active", i===walkIdx); });
+    walkPrev.style.visibility = walkIdx===0 ? "hidden" : "visible";
+    walkNext.textContent = walkIdx === WALK_STEPS.length-1 ? "Back to step 1 ↺" : "Next →";
+  }
+  walkPrev.addEventListener("click", function(){ if (walkIdx>0){ walkIdx--; renderWalk(); } });
+  walkNext.addEventListener("click", function(){ walkIdx = (walkIdx+1) % WALK_STEPS.length; renderWalk(); });
+
+  function setView(v){
+    var walk = v === "walk", math = v === "math", monitor = v === "monitor", teach = v === "teach";
+    btnViewMonitor.classList.toggle("active", monitor);
+    btnViewWalk.classList.toggle("active", walk);
+    btnViewMath.classList.toggle("active", math);
+    btnViewTeach.classList.toggle("active", teach);
+    walkPanel.style.display = walk ? "" : "none";
+    mathPanel.style.display = math ? "" : "none";
+    viewMonitor.style.display = monitor ? "" : "none";
+    viewTeach.style.display = teach ? "" : "none";
+    relocateForTeach(teach);
+    if (walk) renderWalk();
+    if (math) renderMath();
+    if (teach) renderTeach();
+  }
+  btnViewMonitor.addEventListener("click", function(){ setView("monitor"); });
+  btnViewWalk.addEventListener("click", function(){ setView("walk"); });
+  btnViewMath.addEventListener("click", function(){ setView("math"); });
+  btnViewTeach.addEventListener("click", function(){ setView("teach"); });
+
+  // ---------- "Teach" tab: lecture-mode slides driving the live diagram ----------
+  // Reuses the SAME diagram/readouts/controls DOM nodes the Live monitor tab uses (moved, not
+  // cloned, so there's exactly one #diagram SVG, one #readouts panel, etc. in the document at any
+  // time — avoids duplicate-ID drift between two "live" copies). relocateForTeach() moves them into
+  // teachLeft when this tab activates and puts them back, in their original position, on exit.
+  var TEACH_HOME = {}; // id -> { parent, next } — original location, captured on first relocation
+  // Cycle controls (play/continuous + phase stepper) deliberately stay behind in Live monitor only —
+  // Teach drives phase entirely through each slide's own `phase` field, so a duplicate manual stepper
+  // here would be redundant chrome eating into vertical space better spent on the diagram/slide text.
+  var TEACH_MOVE_IDS = ["diagramPanelWrap", "readoutsPanel", "presetsPanelWrap", "breathingModePanel"];
+  function relocateForTeach(into){
+    var teachLeft = $("teachLeft");
+    if (into){
+      // Build (once) a collapsible "Manual controls" wrapper for the fine-tuning sliders — kept out
+      // of the way during a live lecture, one click away for self-directed lab exploration afterward.
+      var details = $("teachControlsDetails");
+      if (!details){
+        details = document.createElement("details");
+        details.id = "teachControlsDetails";
+        details.className = "teach-controls-details";
+        var summary = document.createElement("summary");
+        summary.textContent = "Manual controls — rate, tidal volume, PEEP, compliance, HR (for lab / Q&A)";
+        details.appendChild(summary);
+        teachLeft.appendChild(details);
+      }
+      TEACH_MOVE_IDS.forEach(function(id){
+        var el = $(id);
+        if (!el) return;
+        if (!TEACH_HOME[id]) TEACH_HOME[id] = { parent: el.parentNode, next: el.nextSibling };
+        if (id === "breathingModePanel"){ details.appendChild(el); }
+        else { teachLeft.appendChild(el); }
+      });
+    } else {
+      TEACH_MOVE_IDS.forEach(function(id){
+        var el = $(id), home = TEACH_HOME[id];
+        if (!el || !home) return;
+        home.parent.insertBefore(el, home.next);
+      });
+    }
+  }
+
+  // Each slide optionally drives the live diagram: `preset` clicks that preset button (reusing its
+  // existing handler exactly — same code path as a person clicking it), `peep` (vent-mode slides
+  // only) overrides that preset's default PEEP for a specific teaching point (e.g. contrasting ZEEP
+  // vs. PEEP 5 on the SAME normalVent preset), and `phase` either freezes the cycle at a named
+  // instant (matching the phase-stepper buttons) or "live" to resume continuous animation. A slide
+  // with none of these three fields deliberately leaves the diagram exactly as the presenter last
+  // set it — most of the historical/procedural/non-mechanistic slides below do this on purpose, so
+  // paging past them doesn't yank the diagram away from whatever's being discussed.
+  var TEACH_SLIDES = [
+    { title:"Learning objectives",
+      html:"<p>By the end of this session you should be able to:</p><ul style='margin:0 0 12px; padding-left:20px;'><li>Understand the pressures that determine FRC and how they change during spontaneous respiration.</li><li>Describe how changes in intrathoracic pressure influence cardiac output in terms of preload and afterload.</li><li>Describe pulsus paradoxus and why it appears in a variety of disease states, including asthma exacerbations and cardiac tamponade.</li><li>Describe the difference between a Müller maneuver and a Valsalva maneuver.</li><li>Review specifically what all of this means for the right heart, and why you should care.</li></ul><div class='try'>Use <b>Next →</b> to move through the material — most sections will drive the diagram on the left automatically. Use <b>← Back</b> to return, or jump straight to a section with the dropdown above. Nothing here advances on its own timer, so stay on any section as long as the discussion needs.</div>" },
+    { title:"About this material — models, bias, and where the thinking comes from",
+      html:"<p>Much of the underlying research is animal physiology, some of it predating current ethical standards — worth naming rather than glossing over. And every model is a simplification built by people embedded in a particular scientific culture: <i>\"The only pure myth is the idea of a science devoid of all myth\"</i> (Bruno Latour, citing Serres, 1974). That cuts both ways here too — this tool is itself a model, with its own simplifications, flagged throughout wherever they matter.</p><p>Most of the thinking that follows is not original — it's a teaching distillation of <b>Jon-Emile Kenny, MD</b> and his site <a href='https://heart-lung.org' target='_blank' rel='noopener'>heart-lung.org</a> (also the source for the Kenny textbook cited throughout this tool's Math tab).</p>" },
+    { title:"A pressure chamber within a pressure chamber",
+      preset:"normalSpont", phase:"live",
+      html:"<p>The lung and heart are <b>parallel pressure chambers inside the same sealed thoracic cage</b>. Five pressures set the whole picture: P<sub>BS</sub> (body surface / atmosphere, the reference), P<sub>pl</sub> (pleural, i.e. intrathoracic pressure), P<sub>A</sub> (alveolar), and the RV and LV sitting right alongside the lungs in that same box. The chest wall has its own dynamic mechanical properties, but ultimately it imposes a shared volume limit on lungs <i>and</i> heart together — so pressure generated anywhere in the box is mechanically transmitted to everything else in it. That's the single premise underneath every mechanism in this tool: <b>one shared pressure, two pumps, watching each other.</b></p><div class='try'>The diagram on the left <i>is</i> this picture, live — P<sub>pl</sub> on the ruler, P<sub>A</sub>/PA/PCWP in the lungs, RA/RV/LV/Aorta as the heart. Point students to each box as you introduce it.</div>" },
+    { title:"What sets FRC",
+      preset:"normalSpont", phase:"endexp",
+      html:"<p>Functional residual capacity is where the outward spring of the chest wall and the inward elastic recoil of the lung balance — typically around 35% of vital capacity. By convention this tool (like the diagram) reports pressures <b>relative to atmosphere</b> (0 cmH₂O) rather than as absolute pressures (≈760 mmHg) — the two are the same physics, just a more convenient zero point for everything downstream.</p><div class='try'>The diagram is frozen at end-expiration — resting FRC, no active inspiratory effort. This is the zero point everything else in the lecture is a deviation from.</div>" },
+    { title:"Spontaneous breathing: how air actually moves",
+      preset:"normalSpont", phase:"insp",
+      html:"<p>To inspire, the diaphragm and intercostals contract, expanding the chest against the lung's elastic recoil. That pulls <b>pleural pressure further below atmospheric</b>, which pulls alveolar pressure below zero too — and air flows in until alveolar pressure re-equilibrates with the body surface. Compliance is simply ΔVolume/ΔPressure — how much volume change a given pressure change buys you.</p><div class='try'>Frozen mid-inspiration — watch the P<sub>pl</sub> tick on the ruler sit well below atmospheric, and P<sub>L</sub> (transpulmonary pressure) widen.</div>" },
+    { title:"Spontaneous respiration and venous return",
+      preset:"normalSpont", phase:"insp",
+      html:"<p>That same fall in pleural pressure isn't private to the lung — it's transmitted to every intrathoracic structure, including the right atrium. <b>RA pressure falls</b>, steepening the gradient from mean systemic filling pressure to RA, which pulls more blood into the thorax from the (largely extrathoracic) venous reservoir: <b>venous return rises</b> on every inspiration, assuming no change in Pmsf itself.</p><div class='try'>Watch the RA number and the SVC/IVC \"venous return ↑\" indicator as you step between End-expiration and Inspiration.</div>" },
+    { title:"What this does to RA filling and cardiac output — Kenny's Campbell diagram",
+      preset:"normalSpont", phase:"live",
+      html:"<p>Kenny's 3D Campbell diagram — his own students call it \"one figure to give you a headache\" — is the classic way to picture this: rising lung volume (the z-axis) shifts the whole <b>cardiac function curve leftward</b>, and depending on abdominal zone/volume status, mean systemic pressure may rise slightly too, changing the resistance to venous return. The takeaway survives the complexity: inspiration shifts the operating point, breath by breath.</p><div class='try'>Switch to the <b>Live monitor</b> tab and watch the <b>Venous return</b> chart — that's this exact figure, live and interactive, rather than a static image. Come back to Teach with the browser's back-and-forth between tabs, or just continue here.</div>" },
+    { title:"A little history — first central venous catheterization, 1733",
+      html:"<p>Stephen Hales performed the first recorded central venous catheterization in 1733 — on a horse, with a brass pipe and a glass tube, measuring venous pressure directly. Everything downstream in this lecture — CVP, PA catheters, arterial lines — is a direct descendant of that first measurement.</p>" },
+    { title:"Putting it together: four effects of spontaneous respiration",
+      preset:"normalSpont", phase:"insp",
+      html:"<p>In a euvolemic patient breathing quietly, one drop in pleural pressure produces four simultaneous effects: <b>RA pressure falls</b>, increasing venous return (preload); <b>RV afterload rises</b> (rising lung volume compresses the alveolar vessels the RV pumps into); <b>LV afterload rises</b> too, because LV transmural pressure — the pressure the LV actually has to work against — widens as the surrounding pleural pressure drops; and <b>LV filling can fall</b> from decreased septal compliance as the RV distends. Net effect at the arterial line: a small systolic dip, on the order of <b>2–5 mmHg</b> — nowhere near the 10 mmHg pulsus-paradoxus threshold.</p><div class='try'>Step between End-expiration and Inspiration and read the systolic number off the diagram's Aorta box — that's the 2–5 mmHg dip, live.</div>" },
+    { title:"Passive mechanical ventilation at zero PEEP (ZEEP)",
+      preset:"normalVent", peep:0, phase:"live",
+      html:"<p>Flip the sign: a passive ventilator breath pushes gas in, so pleural pressure <b>rises</b> instead of falling — the cardiac function curve shifts <b>rightward</b> instead of left. Right atrial pressure rises and cardiac output falls, the mirror image of spontaneous breathing.</p><p>This is also where the mode itself — not just PEEP — matters: even at matched PEEP=0, a passive breath's mean pleural pressure sits <i>less negative</i> than a spontaneously-breathing patient's, because there's no diaphragmatic effort pulling it very negative. This tool's <code>itpMode</code> term (Math tab, §3) captures exactly that baseline shift, so switching a patient from spontaneous breathing onto a passive ZEEP ventilator moves the CVP/CO baseline here even before you touch PEEP.</p><div class='try'>Compare this section's readouts against the previous spontaneous-breathing sections: CVP up, cardiac output down, at the <i>same</i> nominal PEEP=0. Then try the PEEP-5 section next and see how much of the change is PEEP versus mode alone.</div>" },
+    { title:"Passive mechanical ventilation at PEEP 5 — \"minimally affected\"",
+      preset:"normalVent", peep:5, phase:"live",
+      html:"<p>Applying PEEP raises lung volume and pleural pressure together — but it also raises mean systemic filling pressure slightly (via abdominal capacitance), so the <b>venous-return curve shifts right along with the cardiac-function curve</b>. Net result: transmural pressure and cardiac output are only <b>minimally affected</b> by modest PEEP, even though right atrial pressure clearly rises — a gentler, more accurate story than \"PEEP raises pleural pressure, so CO must fall.\"</p><div class='try'>Compare cardiac output here against the ZEEP section — the change from PEEP 0→5 within ventilator mode should be modest (well under 1 L/min in this model), while RA/CVP visibly rises. Titrate the PEEP slider (in Manual controls) yourself to see the same held true across the range.</div>" },
+    { title:"Auto-PEEP: hyperinflation's hidden pressure",
+      preset:"copd", phase:"live",
+      html:"<p>At typical ICU tidal volumes and rates, real patients don't reliably get a full exhalation before the next breath starts. When the airway time constant (resistance × compliance) is long, gas progressively stacks breath over breath — <b>auto-PEEP</b> — occult at the airway opening (mouth pressure looks normal) but very real at the alveolus. This shifts <i>and bends</i> the cardiac function curve rather than just sliding it, dropping cardiac output and raising right-atrial transmural pressure.</p><div class='try'>The COPD preset is auto-PEEP-dominant (long time constant from high compliance, not from resistance) — watch mean CVP sit chronically high and mean CO chronically low even though the breath-to-breath pleural swing looks modest. Compare with the asthma section next, which reaches an abnormal state by a very different route.</div>" },
+    { title:"When one organ misbehaves: asthma exaggerates the normal response",
+      preset:"asthma", phase:"live",
+      html:"<p>So what happens if a single organ in this system is functioning abnormally? In an asthma exacerbation, bronchospasm and mucus plugging raise airway resistance dramatically, and breathing occurs at higher lung volumes — this <b>exaggerates the normal ~5 mmHg systolic dip</b> of quiet breathing into something much larger, and the impact on RV afterload is well documented: measurable RV stroke-volume decline compared to healthy subjects.</p><div class='try'>Watch the pleural-pressure swing on the ruler — dramatically larger than the Normal-breathing sections — and the resulting pulsus-paradoxus readout, which should be well above the quiet-breathing baseline (though typically still under the 10 mmHg threshold on its own — septal interdependence, next, is what usually pushes it over).</div>" },
+    { title:"Kussmaul's paradoxical pulse, 1873",
+      html:"<p><i>\"Ueber schwielige Mediastino-pericarditis und den paradoxen Puls\"</i> — Adolf Kussmaul's original 1873 description: <i>\"pulse simultaneously slight and irregular, disappearing during inspiration and returning upon expiration.\"</i> He was describing constrictive/effusive pericardial disease — the condition this lecture now turns to.</p>" },
+    { title:"Cardiac tamponade: the RV and LV compete for space",
+      preset:"tamponade", phase:"insp",
+      html:"<p>Tamponade adds a mechanism entirely distinct from transmural pressure: the two ventricles share a wall (the interventricular septum) inside a pericardial space whose total volume is now <b>fixed</b> by the effusion. When RV filling rises on inspiration, the septum has nowhere to go but <b>leftward, into the LV</b> — directly stealing LV volume rather than just changing its loading pressure. This layers on top of ordinary transmural pulsus paradoxus and can produce systolic drops of several tens of mmHg (Jardin's classic status-asthmaticus septal-shift data), easily crossing the 10 mmHg pulsus-paradoxus threshold.</p><p>It doesn't stop at the arterial line: cardiac output is chronically depressed at baseline (fixed pericardial volume limits diastolic filling) and dips <i>further</i> with every inspiration — the actual mechanism behind tamponade progressing to <b>PEA arrest</b> if the effusion isn't drained.</p><div class='try'>Frozen at peak inspiration — watch the RV box visibly grow and the LV box narrow. Then use the phase stepper to compare End-expiration vs. Inspiration cardiac output directly.</div>" },
+    { title:"Bedside logic: SPV, PPV, and pulmonary transit time",
+      preset:"hypoPPV", phase:"live",
+      html:"<p>Clinically, this respiratory-pressure-swing physiology becomes a fluid-responsiveness test. Passive inspiration (in ventilated patients) raises pulmonary vascular capacitance transiently, which can reduce LV stroke volume and arterial pressure — with a real delay, the <b>pulmonary transit time</b>, between the RV-side event and its effect reaching the LV side. A patient sitting on the steep part of the Frank-Starling curve (hypovolemic) shows an exaggerated systolic/pulse-pressure variation (SPV/PPV) with each breath; a well-filled patient on the flat part shows little.</p><div class='try'>The Hypovolemia + PPV preset pins the venous-return operating point right at the Starling-resistor edge — watch the SPV% readout run well above the ~12–13% fluid-responsiveness threshold. One honest limitation: this model applies the respiratory pressure swing to the heart instantaneously, without simulating the real RV→LV pulmonary transit delay explicitly.</div>" },
+    { title:"The failing heart: stuck on the flat part of the curve",
+      html:"<p>Everything so far assumed a normal heart operating on the <b>steep</b> part of its Frank-Starling curve, where RA pressure visibly falls with inspiration and a small volume infusion could meaningfully raise cardiac output. A <b>failing</b> heart can instead sit on the <b>flat</b> part of that same curve: RA pressure barely moves with inspiration, and the same volume infusion that would help the normal heart does little here.</p><p>Worth being explicit with students: this tool doesn't currently ship a dedicated \"failing heart / flat curve\" preset — its cardiac-function curve is fixed in shape except when ventricular interdependence (tamponade) depresses its ceiling. It's also exactly the scenario where the tool's afterload-relief term (Math §3 — positive intrathoracic pressure lowering true LV transmural afterload) would start to matter clinically more than the preload cost that dominates in a normal heart: the textbook rationale for positive-pressure ventilation sometimes <i>helping</i> a failing, afterload-sensitive left ventricle. Flag this as a known gap and a good discussion prompt rather than something to demonstrate live.</p>" },
+    { title:"What this means for the right heart",
+      preset:"altitude", phase:"live",
+      html:"<p>RV function under load is where all of this converges clinically — RV stroke volume with exercise is markedly different in health, heart failure, and heart failure on mechanical support, and the ventilator itself becomes another RV stressor once you're managing a critically ill patient (rising lung volume and pleural pressure both load the RV, as sections above showed).</p><p>This tool includes one worked example beyond the original talk: <b>acute hypoxic pulmonary hypertension at altitude</b> — hypoxic pulmonary vasoconstriction (HPV) raises pulmonary artery pressure directly through vascular tone, independent of the breathing cycle, calibrated against an echocardiographic cohort (Yang et al. 2021, <i>Frontiers in Physiology</i>). Unlike fixed pulmonary vascular disease, it's fully <b>reversible</b> with re-oxygenation.</p><div class='try'>Watch RA barely move while RV (≈PA) rises directly. Then switch to Ventilator mode with this preset still active and titrate PEEP in Manual controls — HPV's vascular-tone hit and PPV's own mechanical afterload hit now stack on the same RV through two different pathways.</div>" },
+    { title:"A practical skill: measuring TAPSE",
+      html:"<p>Tricuspid annular plane systolic excursion (TAPSE) is the bedside echo shorthand for RV systolic function. Quick technique: get an RV-focused apical four-chamber view with the lateral tricuspid annulus visible, place the M-mode cursor through it aligned with annular motion toward the apex, use a medium-to-fast sweep speed, and measure leading-edge-to-leading-edge from the diastolic trough to the systolic peak. Normal range is roughly <b>15–25 mm</b>.</p>" },
+    { title:"Beyond this talk: the Müller and Valsalva maneuvers",
+      html:"<p>Two more maneuvers worth distinguishing, though this tool doesn't simulate either one — both are sustained voluntary maneuvers with distinct time-phases, not a periodic breath, so they'd need a different mechanic than a preset. Covering the reasoning here as a discussion topic:</p><p>An isolated rise in intrathoracic pressure with <i>no change in lung volume</i> (a Müller-maneuver-adjacent idealization) shifts the cardiac function curve right without changing mean systemic filling pressure — RA rises, transmural pressure and cardiac output fall, similar in direction to PPV but via a pure-pressure route.</p><p>The <b>Valsalva maneuver</b> has four distinct phases: phase 1, the initial LV stroke-volume bump, comes mostly from improved LV preload (reduced RV preload feeding the LV less, initially masked by mechanical squeeze) rather than improved afterload; phase 2 shows progressive arterial-pressure and stroke-volume decline as diminished RV preload finally reaches the LV — a <b>\"series,\" not \"parallel,\" ventricular effect</b>, since the LV ultimately only pumps out what the RV sends it; phase 3, on release, shows a further stroke-volume dip as intrathoracic pressure falls rapidly; and phase 4 shows the cardiac-output overshoot as venous return and autonomic reflexes catch up. Whether interdependence or afterload dominates phase 3's dip depends on exactly which point in the cardiac cycle the pressure release happens to land on — a nice illustration of how cycle-timing, not just pressure magnitude, matters. The <b>Müller maneuver</b> (forced inspiration against a closed glottis) is the mirror image — a sustained <i>negative</i> intrathoracic pressure — and can be understood by running the same series-circuit logic in reverse.</p>" },
+    { title:"Key takeaways",
+      preset:"normalSpont", phase:"live",
+      html:"<p>One shared pressure, two pumps in the same box. Spontaneous breathing pulls pleural pressure negative — preload rises a little, both ventricles' afterload rises a little, systolic pressure dips a few mmHg. Positive-pressure ventilation reverses all of it. Exaggerate the swing (asthma), slow the time constant (COPD/auto-PEEP), add a second, non-mechanical vascular-tone pathway (hypoxia/altitude), or fix the pericardial volume so the septum itself has to move (tamponade) — and the same basic transmission mechanism produces a spectrum from a barely-perceptible physiologic dip to pulsus paradoxus to PEA arrest.</p><p>And as a closing hook back to where the original talk opened: a chest wound causing a pneumothorax works through a related but distinct mechanism — an acutely rising, uncontained intrathoracic pressure collapsing venous return and cardiac output — tension physiology, not modeled in this tool, but the same family of ideas as everything above.</p>" }
+  ];
+
+  var teachIdx = 0;
+  var teachStepLabel = $("teachStepLabel"), teachTitle = $("teachTitle"), teachBody = $("teachBody"),
+      teachPrev = $("teachPrev"), teachNext = $("teachNext"), teachJump = $("teachJump");
+
+  TEACH_SLIDES.forEach(function(s, i){
+    var opt = document.createElement("option");
+    opt.value = i;
+    opt.textContent = (i+1) + ". " + s.title;
+    teachJump.appendChild(opt);
+  });
+
+  // Applies one slide's optional preset/peep/phase to the live model — reuses the existing preset
+  // button's own click handler (via .click()) rather than duplicating its logic, so Teach-driven
+  // changes are indistinguishable from a person clicking that button themselves (active-state
+  // highlighting, scenario text, mode switch all update the normal way). A slide that omits all
+  // three fields deliberately touches nothing, leaving the diagram exactly where discussion left it.
+  function applyTeachDiagramState(s){
+    if (s.preset){
+      var btn = document.querySelector('#presets button[data-preset="'+s.preset+'"]');
+      if (btn) btn.click();
+    }
+    if (s.peep !== undefined && mode === "vent"){
+      params.peep = s.peep;
+      elPEEP.value = s.peep;
+      syncLabels();
+    }
+    if (s.phase === "live"){
+      frozenPhase = null;
+    } else if (s.phase){
+      frozenPhase = PHASE_FRAC[s.phase];
+    }
+    updateStepperUI();
+  }
+
+  function renderTeach(){
+    var s = TEACH_SLIDES[teachIdx];
+    teachStepLabel.textContent = "Section " + (teachIdx+1) + " of " + TEACH_SLIDES.length;
+    teachTitle.textContent = s.title;
+    teachBody.innerHTML = s.html;
+    teachJump.value = teachIdx;
+    teachPrev.style.visibility = teachIdx===0 ? "hidden" : "visible";
+    teachNext.textContent = teachIdx === TEACH_SLIDES.length-1 ? "Back to section 1 ↺" : "Next →";
+    applyTeachDiagramState(s);
+  }
+  teachPrev.addEventListener("click", function(){ if (teachIdx>0){ teachIdx--; renderTeach(); } });
+  teachNext.addEventListener("click", function(){ teachIdx = (teachIdx+1) % TEACH_SLIDES.length; renderTeach(); });
+  teachJump.addEventListener("change", function(){ teachIdx = +teachJump.value; renderTeach(); });
+
+  // ---------- "the math" tab: live-substituted formulas ----------
+  function fmt(x, d){ return (typeof d === "number" ? x.toFixed(d) : x.toFixed(1)); }
+  function renderMath(){
+    if (mathPanel.style.display === "none") return;
+    var tNow = (performance.now() - t0)/1000;
+    var r = respState(tNow);
+    var cs = cardioState(tNow);
+    var CL = params.cl, CCW = params.ccw;
+    var Crs = (CL*CCW)/(CL+CCW);
+    var fPpl = CL/(CL+CCW);
+    var vp = vrParams();
+    var restShift = restingShiftAmt();
+    var eq = findCrossing(restShift);
+    var liveShiftAmt = -CO_SHIFT_GAIN * (cs.dPpl + cs.totalChronicPpl);
+    var liveDynSeptalFrac = clamp(params.interdep * cs.rvFillProxy * SEPTAL_CO_GAIN, 0, 0.85);
+    var inst = findCrossing(liveShiftAmt, liveDynSeptalFrac);
+    var COnow = coStateAt(tNow, false);
+
+    $("m-crs").innerHTML = "with C<sub>L</sub>=<b>"+CL+"</b>, C<sub>cw</sub>=<b>"+CCW+"</b> mL/cmH₂O → C<sub>rs</sub> = <b>"+Crs.toFixed(1)+"</b> mL/cmH₂O";
+
+    if (mode === "spont"){
+      $("m-pplspont").innerHTML = "right now: V=<b>"+r.V.toFixed(0)+"</b> mL, C<sub>L</sub>=<b>"+CL+"</b>, resGain=<b>"+params.resGain+"</b>, autoPeep=<b>"+params.autoPeep+"</b> → Ppl = <b>"+r.Ppl.toFixed(1)+"</b> cmH₂O";
+      $("m-pplvent").innerHTML = "(ventilator mode not active — showing spontaneous-mode numbers above)";
+    } else {
+      $("m-pplspont").innerHTML = "(spontaneous mode not active — showing ventilator-mode numbers below)";
+      var pplat = params.peep + params.vt/Crs;
+      $("m-pplvent").innerHTML = "with V<sub>t</sub>=<b>"+params.vt+"</b> mL, PEEP=<b>"+params.peep+"</b>, autoPeep=<b>"+params.autoPeep+"</b> → plateau Paw = <b>"+pplat.toFixed(1)+"</b> cmH₂O; right now Ppl = <b>"+r.Ppl.toFixed(1)+"</b> cmH₂O (note: f<sub>Ppl</sub> now applies to the FULL Paw, so PEEP itself — not just the tidal swing — chronically raises mean Ppl; see §3)";
+    }
+
+    $("m-fppl").innerHTML = "f<sub>Ppl</sub> = "+CL+"/("+CL+"+"+CCW+") = <b>"+fPpl.toFixed(2)+"</b> ("+(fPpl*100).toFixed(0)+"% of Paw reaches the pleura)";
+    $("m-pl").innerHTML = "right now: Paw=<b>"+r.Paw.toFixed(1)+"</b>, Ppl=<b>"+r.Ppl.toFixed(1)+"</b> → P<sub>L</sub> = <b>"+r.PL.toFixed(1)+"</b> cmH₂O";
+
+    $("m-chronic").innerHTML = "cycle-mean Ppl right now = <b>"+FRAME.meanPplAbs.toFixed(1)+"</b> cmH₂O; at PEEP=0/autoPeep=0 in the CURRENT mode, with everything else unchanged, it would be <b>"+(FRAME.meanPplAbs-FRAME.chronicPpl).toFixed(1)+"</b> → chronicPpl = <b>"+FRAME.chronicPpl.toFixed(1)+"</b> cmH₂O (this is what titrating PEEP moves)";
+    $("m-itpmode").innerHTML = "this mode's own zero-PEEP mean Ppl = <b>"+(FRAME.meanPplAbs-FRAME.chronicPpl).toFixed(1)+"</b> cmH₂O"+(mode==="vent" ? " vs. what spontaneous breathing's zero-PEEP mean Ppl would be at this rr/Vt/compliance (<b>"+(FRAME.meanPplAbs-FRAME.chronicPpl-FRAME.itpMode).toFixed(1)+"</b>)" : " (spontaneous breathing IS the reference mode)")+" → itpMode = <b>"+FRAME.itpMode.toFixed(1)+"</b> cmH₂O &nbsp;|&nbsp; totalChronicPpl = chronicPpl + itpMode = <b>"+(FRAME.chronicPpl+FRAME.itpMode).toFixed(1)+"</b> cmH₂O"+(mode==="vent" ? " (this is what makes switching spontaneous→ventilator, even at matched PEEP, move CVP/PA/PCWP/CO/SBP baselines)" : "");
+    $("m-cvppapcwp").innerHTML = "right now: dPpl=<b>"+cs.dPpl.toFixed(1)+"</b>, totalChronicPpl=<b>"+cs.totalChronicPpl.toFixed(1)+"</b> (chronicPpl="+cs.chronicPpl.toFixed(1)+" + itpMode="+cs.itpMode.toFixed(1)+"), dP<sub>L</sub>=<b>"+cs.dPL.toFixed(1)+"</b>, chronicP<sub>L</sub>=<b>"+cs.chronicPL.toFixed(1)+"</b> → CVP=<b>"+cs.CVP.toFixed(1)+"</b>, PA=<b>"+cs.PA.toFixed(1)+"</b>, PCWP=<b>"+cs.PCWP.toFixed(1)+"</b> mmHg";
+
+    var floor = STARLING_FLOOR;
+    var preloadGain = clamp(0.7 + 3.6*Math.exp(-(params.cvp0-floor)/1.8), 0.7, 5.5);
+    $("m-art").innerHTML = "with CVP₀=<b>"+params.cvp0+"</b> (floor="+floor+") → preloadGain=<b>"+preloadGain.toFixed(2)+"</b>; dynamic term=<b>"+(preloadGain*0.85*cs.dPpl).toFixed(1)+"</b>, preload-limitation term=<b>"+(-preloadGain*0.85*cs.totalChronicPpl).toFixed(1)+"</b>, afterload-relief term=<b>"+(cs.kAfterloadRelief*cs.totalChronicPpl).toFixed(1)+"</b> mmHg (opposing the preload term; net chronic effect=<b>"+((-preloadGain*0.85+cs.kAfterloadRelief)*cs.totalChronicPpl).toFixed(1)+"</b>) → right now SBP=<b>"+cs.SBP.toFixed(0)+"</b>, DBP=<b>"+cs.DBP.toFixed(0)+"</b>, pulse pressure=<b>"+(cs.SBP-cs.DBP).toFixed(0)+"</b> mmHg";
+
+    $("m-vr").innerHTML = "with CVP₀=<b>"+params.cvp0+"</b> → Pmsf=<b>"+vp.Pmsf.toFixed(1)+"</b>, R<sub>vr</sub>=<b>"+vp.Rvr.toFixed(2)+"</b>, plateau=<b>"+vp.plateau.toFixed(1)+"</b> L/min";
+    $("m-co").innerHTML = "right now: dPpl=<b>"+cs.dPpl.toFixed(1)+"</b>, totalChronicPpl=<b>"+cs.totalChronicPpl.toFixed(1)+"</b> → shiftAmt=<b>"+liveShiftAmt.toFixed(2)+"</b> mmHg (cardiac-function curve shift) &nbsp;|&nbsp; resting-only shift=<b>"+restShift.toFixed(2)+"</b> &nbsp;|&nbsp; dynSeptalFrac=<b>"+liveDynSeptalFrac.toFixed(2)+"</b>"+(params.interdep>0 ? " (ceiling cut "+(liveDynSeptalFrac*100).toFixed(0)+"% right now)" : "");
+    $("m-crossing").innerHTML = "resting equilibrium (chronic shift only): RA=<b>"+eq.ra.toFixed(1)+"</b> mmHg, CO=<b>"+eq.val.toFixed(1)+"</b> L/min &nbsp;|&nbsp; live operating point: RA=<b>"+inst.ra.toFixed(1)+"</b> mmHg, CO=<b>"+inst.val.toFixed(1)+"</b> L/min &nbsp;|&nbsp; cardiac output right now = <b>"+COnow.toFixed(1)+"</b> L/min";
+
+    var rvFillProxy = clamp(-cs.dPpl, 0, 30);
+    var septalShift = params.interdep * rvFillProxy * 3.2;
+    $("m-septal").innerHTML = params.interdep > 0
+      ? "interdep=<b>"+params.interdep+"</b> (active) → rvFillProxy=<b>"+rvFillProxy.toFixed(1)+"</b> → septalShift=<b>"+septalShift.toFixed(1)+"</b> mmHg subtracted from SBP/DBP right now"
+      : "interdep=<b>0</b> for the current preset/settings — this term is inactive (SBP/DBP unaffected). Try the Tamponade / interdependence preset.";
+  }
+
+  // ---------- main loop ----------
+  function frame(){
+    var tNow = (performance.now() - t0)/1000;
+    updateFrameCache();
+    $("clock").textContent = frozenPhase === null ? ("t = " + tNow.toFixed(1) + " s") : ("held — " + stepLabel());
+    renderCharts(tNow);
+    renderVenousReturn(tNow);
+    renderReadouts(tNow);
+    renderDiagram(tNow);
+    renderMath();
+    requestAnimationFrame(frame);
+  }
+
+  syncLabels();
+  setMode("spont");
+  renderScenario();
+  var initPresetBtn = document.querySelector('#presets button[data-preset="normalSpont"]');
+  if (initPresetBtn) initPresetBtn.classList.add("active");
+  buildRulerTicks();
+  updateStepperUI();
+  updateFrameCache();
+  requestAnimationFrame(frame);
+})();
+</script>
