@@ -140,6 +140,14 @@
     background:var(--accent); color:var(--accent-ink);
   }
 
+  /* ---- header preset dropdown ---- */
+  .preset-select{
+    font-family:inherit; font-size:12.5px; font-weight:600; color:var(--ink);
+    background:var(--surface-2); border:1px solid var(--border); border-radius:8px;
+    padding:9px 10px; max-width:220px;
+  }
+  @media (max-width: 760px){ .preset-select{ max-width:150px; } }
+
   /* ---- sliders ---- */
   .field{margin-top:16px;}
   .field:first-child{margin-top:0;}
@@ -393,13 +401,14 @@
 <div class="wrap">
   <header class="top">
     <h1>Cardiopulmonary Pressure Monitor</h1>
-    <div style="display:flex; align-items:center; gap:14px;">
+    <div style="display:flex; align-items:center; gap:14px; flex-wrap:wrap;">
       <div class="mode-switch" id="viewSwitch" style="width:auto;">
         <button id="btn-view-monitor" class="active">Live monitor</button>
         <button id="btn-view-walk">Physiology walkthrough</button>
         <button id="btn-view-math">The math</button>
         <button id="btn-view-teach" style="display:none;">Presentation</button>
       </div>
+      <select class="preset-select" id="presetSelect" aria-label="Preset"></select>
       <div class="sub" id="clock">t = 0.0 s</div>
     </div>
   </header>
@@ -519,9 +528,10 @@
 
   <div class="layout" id="viewTeach" style="display:none;">
     <div class="teach-left" id="teachLeft">
-      <!-- diagramPanelWrap, readoutsPanel, cyclePanel, presetsPanelWrap, and (collapsed)
-           breathingModePanel are MOVED here from viewMonitor by JS when this tab is active,
-           and moved back on exit — see relocateForTeach(). No duplicate IDs are created. -->
+      <!-- diagramPanelWrap, readoutsPanel, and (collapsed) breathingModePanel are MOVED here from
+           viewMonitor by JS when this tab is active, and moved back on exit — see relocateForTeach().
+           No duplicate IDs are created. Presets live in the shared page-header dropdown instead, so
+           they need no relocation. -->
     </div>
     <div class="main">
       <div class="panel" style="margin-bottom:16px;">
@@ -590,26 +600,6 @@
 
     <!-- ===== RIGHT: READOUTS + CHARTS ===== -->
     <div class="main">
-      <div class="panel" style="margin-bottom:16px;" id="readoutsPanel">
-        <h2>Live readouts</h2>
-        <div class="readouts" id="readouts"><!-- filled by JS --></div>
-      </div>
-
-      <div class="panel" style="margin-bottom:16px;" id="presetsPanelWrap">
-        <h2>Presets</h2>
-        <div class="stepper" id="presets" style="grid-template-columns:repeat(auto-fill, minmax(190px,1fr));">
-          <button data-preset="normalSpont"><span class="n">Spont.</span>Normal breathing</button>
-          <button data-preset="asthma"><span class="n">Spont.</span>Severe asthma (resistance)</button>
-          <button data-preset="copd"><span class="n">Spont.</span>COPD (compliance/hyperinflation)</button>
-          <button data-preset="normalVent"><span class="n">Vent.</span>Normal ventilation</button>
-          <button data-preset="ards"><span class="n">Vent.</span>ARDS + high PEEP</button>
-          <button data-preset="stiffChest"><span class="n">Vent.</span>Obesity / stiff chest wall</button>
-          <button data-preset="hypoPPV"><span class="n">Vent.</span>Hypovolemia + PPV</button>
-          <button data-preset="tamponade"><span class="n">Spont.</span>Tamponade / interdependence</button>
-          <button data-preset="altitude"><span class="n">Spont.</span>High altitude — acute reversible pulm. HTN</button>
-        </div>
-      </div>
-
       <div class="scenario-row" style="margin-bottom:16px;">
         <div class="panel scenario-panel">
           <h2>Scenario</h2>
@@ -701,6 +691,11 @@
         </svg>
         <div class="diagram-caption" id="diagramCaption">Inspiration draws blood into the thorax</div>
         </div>
+      </div>
+
+      <div class="panel" style="margin-bottom:16px;" id="readoutsPanel">
+        <h2>Live readouts</h2>
+        <div class="readouts" id="readouts"><!-- filled by JS --></div>
       </div>
 
       <div class="chart-row">
@@ -833,7 +828,7 @@
   function goCustom(){
     currentPreset = "custom";
     renderScenario();
-    document.querySelectorAll("#presets button").forEach(function(bb){ bb.classList.remove("active"); });
+    presetSelect.value = "custom";
   }
 
   // ---------- clinical presets ----------
@@ -862,23 +857,48 @@
     // not HAPE (which would additionally drop lung compliance, i.e. move toward the ARDS preset).
     altitude:    { mode:"spont", rr:20, vt:450, peep:5, cl:100, ccw:100, hr:81,  cvp0:6,  hpvGain:1 }
   };
-  document.querySelectorAll("#presets button").forEach(function(b){
-    b.addEventListener("click", function(){
-      var key = b.getAttribute("data-preset");
-      var p = PRESETS[key];
-      if (!p) return;
-      params.rr=p.rr; params.vt=p.vt; params.peep=p.peep; params.cl=p.cl; params.ccw=p.ccw; params.hr=p.hr; params.cvp0=p.cvp0;
-      params.interdep = p.interdep || 0;
-      params.resGain = p.resGain || 1;
-      params.autoPeep = p.autoPeep || 0;
-      params.hpvGain = p.hpvGain || 0;
-      currentPreset = key;
-      setMode(p.mode);
-      syncLabels();
-      renderScenario();
-      document.querySelectorAll("#presets button").forEach(function(bb){ bb.classList.toggle("active", bb===b); });
-    });
+  // Display labels for the header dropdown — same category+name text the old button grid used.
+  var PRESET_LABELS = [
+    ["normalSpont", "Spont. — Normal breathing"],
+    ["asthma",      "Spont. — Severe asthma (resistance)"],
+    ["copd",        "Spont. — COPD (compliance/hyperinflation)"],
+    ["normalVent",  "Vent. — Normal ventilation"],
+    ["ards",        "Vent. — ARDS + high PEEP"],
+    ["stiffChest",  "Vent. — Obesity / stiff chest wall"],
+    ["hypoPPV",     "Vent. — Hypovolemia + PPV"],
+    ["tamponade",   "Spont. — Tamponade / interdependence"],
+    ["altitude",    "Spont. — High altitude — acute reversible pulm. HTN"]
+  ];
+  var presetSelect = $("presetSelect");
+  PRESET_LABELS.forEach(function(pair){
+    var opt = document.createElement("option");
+    opt.value = pair[0];
+    opt.textContent = pair[1];
+    presetSelect.appendChild(opt);
   });
+  var customOpt = document.createElement("option");
+  customOpt.value = "custom";
+  customOpt.textContent = "Custom settings";
+  customOpt.disabled = true; // only ever reached programmatically (goCustom), not directly pickable
+  presetSelect.appendChild(customOpt);
+
+  // Applies one preset by key — the single source of truth for "select a preset," used by the header
+  // dropdown directly and by the Presentation tab's slide-driven diagram (see applyTeachDiagramState).
+  function applyPresetByKey(key){
+    var p = PRESETS[key];
+    if (!p) return;
+    params.rr=p.rr; params.vt=p.vt; params.peep=p.peep; params.cl=p.cl; params.ccw=p.ccw; params.hr=p.hr; params.cvp0=p.cvp0;
+    params.interdep = p.interdep || 0;
+    params.resGain = p.resGain || 1;
+    params.autoPeep = p.autoPeep || 0;
+    params.hpvGain = p.hpvGain || 0;
+    currentPreset = key;
+    setMode(p.mode);
+    syncLabels();
+    renderScenario();
+    presetSelect.value = key;
+  }
+  presetSelect.addEventListener("change", function(){ applyPresetByKey(presetSelect.value); });
 
   // ---------- scenario walkthrough (left of the diagram) ----------
   // Short, scenario-specific commentary — distinct from the general Physiology walkthrough tab, which
@@ -1892,7 +1912,9 @@
   // Cycle controls (play/continuous + phase stepper) deliberately stay behind in Live monitor only —
   // Teach drives phase entirely through each slide's own `phase` field, so a duplicate manual stepper
   // here would be redundant chrome eating into vertical space better spent on the diagram/slide text.
-  var TEACH_MOVE_IDS = ["diagramPanelWrap", "readoutsPanel", "presetsPanelWrap", "breathingModePanel"];
+  // Presets aren't in this list either — the preset control now lives in the page header (#presetSelect,
+  // shared by every tab), so there's nothing tab-specific left to relocate for it.
+  var TEACH_MOVE_IDS = ["diagramPanelWrap", "readoutsPanel", "breathingModePanel"];
   function relocateForTeach(into){
     var teachLeft = $("teachLeft");
     if (into){
@@ -2002,15 +2024,14 @@
     teachJump.appendChild(opt);
   });
 
-  // Applies one slide's optional preset/peep/phase to the live model — reuses the existing preset
-  // button's own click handler (via .click()) rather than duplicating its logic, so Teach-driven
-  // changes are indistinguishable from a person clicking that button themselves (active-state
-  // highlighting, scenario text, mode switch all update the normal way). A slide that omits all
-  // three fields deliberately touches nothing, leaving the diagram exactly where discussion left it.
+  // Applies one slide's optional preset/peep/phase to the live model — reuses applyPresetByKey, the
+  // same function the header dropdown's own change handler calls, so Teach-driven changes are
+  // indistinguishable from a person picking that preset themselves (dropdown value, scenario text,
+  // mode switch all update the normal way). A slide that omits all three fields deliberately touches
+  // nothing, leaving the diagram exactly where discussion left it.
   function applyTeachDiagramState(s){
     if (s.preset){
-      var btn = document.querySelector('#presets button[data-preset="'+s.preset+'"]');
-      if (btn) btn.click();
+      applyPresetByKey(s.preset);
     }
     if (s.peep !== undefined && mode === "vent"){
       params.peep = s.peep;
@@ -2106,8 +2127,7 @@
   syncLabels();
   setMode("spont");
   renderScenario();
-  var initPresetBtn = document.querySelector('#presets button[data-preset="normalSpont"]');
-  if (initPresetBtn) initPresetBtn.classList.add("active");
+  presetSelect.value = "normalSpont";
   buildRulerTicks();
   updateStepperUI();
   updateFrameCache();
