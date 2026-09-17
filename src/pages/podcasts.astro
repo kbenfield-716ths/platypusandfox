@@ -1,0 +1,328 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// ─── CONFIGURATION ──────────────────────────────────────────────────────────
+//
+// Podcast episodes are hosted in a separate public GitHub repo (same pattern
+// as the Lecture Library) so this site's repo stays small and fast to deploy.
+// Once you've created that repo and pushed the contents of
+// `podcast-repo-template/` to it, this page will pick up episodes
+// automatically from its manifest.json — no code changes needed to add,
+// update, or remove an episode.
+//
+const GITHUB_USERNAME = 'kbenfield-716ths';
+const PUBLIC_REPO = 'platypusandfox-podcasts-public';
+const MANIFEST_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${PUBLIC_REPO}/main/manifest.json`;
+const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${PUBLIC_REPO}/main/`;
+// ────────────────────────────────────────────────────────────────────────────
+---
+
+<BaseLayout
+  title="Podcasts"
+  description="Listen to and download Platypus & Fox podcast episodes — conversations at the seams between medicine, systems, and writing."
+>
+  <section class="podcasts-hero">
+    <div class="container">
+      <h1>Podcasts</h1>
+      <p>Episodes you can stream here or download and take with you.</p>
+    </div>
+  </section>
+
+  <div class="container podcasts-body">
+    <!-- Loading state -->
+    <div id="loading-state" class="loading-state">
+      <div class="spinner"></div>
+      <p>Loading episodes…</p>
+    </div>
+
+    <!-- Error state -->
+    <div id="error-state" class="error-state" style="display:none">
+      <p>⚠️ Could not load episodes right now. Please try refreshing the page.</p>
+    </div>
+
+    <!-- Empty state -->
+    <div id="empty-state" class="empty-state" style="display:none">
+      <p>No episodes published yet — check back soon.</p>
+    </div>
+
+    <!-- Episode content -->
+    <div id="episode-content" style="display:none"></div>
+  </div>
+</BaseLayout>
+
+<script define:vars={{ MANIFEST_URL, FILES_BASE_URL }}>
+  // ── Utilities ──────────────────────────────────────────────────────────────
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00');
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+
+  function getFilename(filepath) {
+    return filepath.split('/').pop();
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  // ── Load Episodes ─────────────────────────────────────────────────────────
+
+  async function loadEpisodes() {
+    const loadingEl = document.getElementById('loading-state');
+    const errorEl = document.getElementById('error-state');
+    const emptyEl = document.getElementById('empty-state');
+    const contentEl = document.getElementById('episode-content');
+
+    try {
+      const res = await fetch(MANIFEST_URL + '?t=' + Date.now());
+      if (!res.ok) throw new Error('Failed to fetch manifest');
+      const manifest = await res.json();
+      const episodes = manifest.episodes || [];
+
+      loadingEl.style.display = 'none';
+
+      if (episodes.length === 0) {
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      contentEl.style.display = 'block';
+      contentEl.innerHTML = renderLibrary(manifest, episodes);
+    } catch (err) {
+      console.error('Episode load error:', err);
+      loadingEl.style.display = 'none';
+      errorEl.style.display = 'block';
+    }
+  }
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
+  function renderLibrary(manifest, episodes) {
+    const updated = manifest.updated ? `<p class="library-updated">Last updated: ${formatDate(manifest.updated)}</p>` : '';
+    const sorted = [...episodes].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    const cards = sorted.map(renderEpisodeCard).join('');
+    return `${updated}<div class="episode-list">${cards}</div>`;
+  }
+
+  function renderEpisodeCard(episode) {
+    const audioUrl = encodeURI(FILES_BASE_URL + episode.filename);
+    const filename = getFilename(episode.filename);
+    const dateStr = episode.date ? `<span class="episode-date">${formatDate(episode.date)}</span>` : '';
+    const durationStr = episode.duration ? `<span class="episode-duration">${escapeHtml(episode.duration)}</span>` : '';
+
+    return `
+      <div class="episode-card">
+        <div class="episode-card-header">
+          <div class="podcast-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="23"></line>
+              <line x1="8" y1="23" x2="16" y2="23"></line>
+            </svg>
+          </div>
+          <div class="episode-meta">
+            ${dateStr}
+            ${durationStr}
+          </div>
+        </div>
+        <h3 class="episode-title">${escapeHtml(episode.title)}</h3>
+        ${episode.description ? `<p class="episode-description">${escapeHtml(episode.description)}</p>` : ''}
+        <audio class="episode-player" controls preload="none" src="${audioUrl}"></audio>
+        <a href="${audioUrl}" download="${escapeHtml(filename)}" class="download-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download episode
+        </a>
+      </div>
+    `;
+  }
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+
+  loadEpisodes();
+</script>
+
+<style>
+  /* ── Podcasts Hero ──────────────────────────────────────────────────────── */
+  .podcasts-hero {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-teal) 100%);
+    color: var(--white);
+    padding: 4rem 0 3rem;
+    text-align: center;
+  }
+
+  .podcasts-hero h1 {
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 700;
+    margin-bottom: 1rem;
+  }
+
+  .podcasts-hero p {
+    font-size: 1.15rem;
+    opacity: 0.9;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* ── Podcasts Body ──────────────────────────────────────────────────────── */
+  .podcasts-body {
+    padding: 3rem 2rem 5rem;
+  }
+
+  .library-updated {
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin-bottom: 2rem;
+  }
+
+  /* ── Loading / Error / Empty ───────────────────────────────────────────── */
+  .loading-state,
+  .error-state,
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    color: var(--text-light);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #e2e8f0;
+    border-top-color: var(--primary-green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 1rem;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ── Episode List ───────────────────────────────────────────────────────── */
+  .episode-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  /* ── Episode Card ───────────────────────────────────────────────────────── */
+  .episode-card {
+    background: var(--white);
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    transition: var(--transition);
+  }
+
+  .episode-card:hover {
+    border-color: var(--primary-green);
+    box-shadow: 0 4px 20px rgba(45, 122, 77, 0.12);
+  }
+
+  .episode-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .podcast-icon {
+    width: 44px;
+    height: 44px;
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-orange) 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .podcast-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  .episode-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.35rem;
+  }
+
+  .episode-date {
+    font-size: 0.78rem;
+    color: var(--text-light);
+  }
+
+  .episode-duration {
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: var(--cream);
+    color: var(--primary-green);
+    padding: 0.2rem 0.5rem;
+    border-radius: 999px;
+    border: 1px solid var(--light-green);
+  }
+
+  .episode-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    line-height: 1.4;
+  }
+
+  .episode-description {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    line-height: 1.55;
+  }
+
+  .episode-player {
+    width: 100%;
+    height: 40px;
+  }
+
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.65rem 1.1rem;
+    background: var(--primary-green);
+    color: var(--white);
+    border-radius: 7px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    align-self: flex-start;
+  }
+
+  .download-btn:hover {
+    background: var(--dark-teal);
+    color: var(--white);
+    transform: none;
+  }
+
+  /* ── Responsive ─────────────────────────────────────────────────────────── */
+  @media (max-width: 640px) {
+    .episode-card {
+      padding: 1.25rem;
+    }
+  }
+</style>
