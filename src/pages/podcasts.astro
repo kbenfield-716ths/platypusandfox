@@ -14,6 +14,57 @@ const GITHUB_USERNAME = 'kbenfield-716ths';
 const PUBLIC_REPO = 'platypusandfox-podcasts-public';
 const MANIFEST_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${PUBLIC_REPO}/main/manifest.json`;
 const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${PUBLIC_REPO}/main/`;
+
+// ─── SCCM PODCAST (iCritical Care) — episodes hosted by Kyle B. Enfield ────
+//
+// This is a static list, not fetched from anywhere — SCCM doesn't publish a
+// machine-readable feed of "episodes by host". To add a new one once you've
+// hosted it, just add an object to this array (title, date as YYYY-MM-DD,
+// url, and an optional short topic tag).
+//
+const sccmEpisodes = [
+  { title: 'Central Line Innovation: Rethinking a Procedure Stuck in Time', date: '2026-08-31', code: 'SCCMPod-576', topic: 'Vascular access', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccmpod-576-central-line-innovation-rethinking-a-procedure-stuck-in-time' },
+  { title: 'Long COVID After Critical Illness', date: '2026-07-20', code: 'SCCMPod-573 CCE', topic: 'Post-ICU / long COVID', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccmpod-573-cce-long-covid-after-critical-illness' },
+  { title: 'Propofol in the ICU: Balancing Sedation and Stability', date: '2026-06-30', code: 'SCCMPod-572', topic: 'Analgesia / sedation', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccmpod-572-propofol-in-the-icu-balancing-sedation-and-stability' },
+  { title: 'Key Updates for the 2026 Adult Surviving Sepsis Campaign Guidelines', date: '2026-05-07', code: 'SCCMPod-565 CCM', topic: 'Surviving Sepsis Campaign', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccmpod-565-ccm-key-updates-for-the-2026-adult-surviving-sepsis-campaign-guidelines' },
+  { title: 'Therapy Dogs Ease ICU Anxiety', date: '2025-12-06', code: 'SCCMPod-560 CCE', topic: 'ICU wellbeing', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccmpod560-cce-therapy-dogs-ease-icu-anxiety' },
+  { title: 'Choosing Induction Agents in Critical Care', date: '2025-10-02', code: 'SCCM Pod-550 CCM', topic: 'Airway / sedation', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccmpod-550-ccm-choosing-induction-agents-in-critical-care' },
+  { title: 'Improving Intubation in Critical Illness', date: '2025-08-14', code: 'SCCM Pod-545 CCM', topic: 'Airway management', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccmpod-545-ccm-improving-intubation-in-critical-illness' },
+  { title: 'Supersizing Your SCCM Membership', date: '2025-07-24', code: 'SCCM Pod-543', topic: 'SCCM engagement / mentorship', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccmpod-543-supersizing-your-sccm-membership' },
+  { title: 'Leading With Purpose: Career Growth and Well-Being', date: '2025-04-18', code: 'SCCM Pod-538', topic: 'Wellbeing / leadership', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-538-leading-with-purpose-career-growth-and-well-being' },
+  { title: 'Healing Sleep Patterns Post-ICU', date: '2025-04-09', code: 'SCCM Pod-536 CCM', topic: 'Sleep medicine', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-536-ccm-healing-sleep-patterns-post-icu' },
+  { title: 'Bridging the Gap: Communication During Sepsis Transfers', date: '2024-12-04', code: 'SCCM Pod-529', topic: 'Sepsis / communication', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-529-bridging-the-gap-communication-during-sepsis-transfers' },
+  { title: 'Can ICU Liberation Bundle Compliance Impact PICS Rates?', date: '2024-07-24', code: 'SCCM Pod-521 CCM', topic: 'ICU Liberation', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-521-ccm-can-icu-liberation-bundle-compliance-impact-post-intensive-care-syndrome-rates' },
+  { title: 'Crisis and Chaos: Pandemic Perspectives', date: '2024-07-10', code: 'SCCM Pod-519', topic: 'Pandemic / health equity', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-519-crisis-and-chaos-pandemic-perspectives' },
+  { title: 'Benefits of Hemodynamic Monitoring in Critical Care', date: '2024-06-26', code: 'SCCM Pod-517', topic: 'Hemodynamics / shock', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-517-benefits-of-hemodynamic-monitoring-in-critical-care' },
+  { title: 'Crafting Captivating Presentations', date: '2024-04-22', code: 'SCCM Pod-511 LEAD', topic: 'Leadership / education', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-511-lead-crafting-captivating-presentations' },
+  { title: 'Elevating PICU Outcomes in Bronchiolitis', date: '2024-03-25', code: 'SCCM Pod-505 PCCM', topic: 'Pediatric critical care', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-505-pccm-elevating-picu-outcomes-in-bronchiolitis' },
+  { title: 'Is Mentorship Obsolete in Our Modern Healthcare Environment?', date: '2023-12-05', code: 'SCCM Pod-499', topic: 'Mentorship', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-499-is-mentorship-obsolete-in-our-modern-healthcare-environment' },
+  { title: 'The Intersection of Climate Change and Critical Care', date: '2023-08-11', code: 'SCCM Pod-487', topic: 'Climate / administration', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-487-the-intersection-of-climate-change-and-critical-care' },
+  { title: 'Data Science and the Future of Critical Care Research', date: '2023-04-13', code: 'SCCM Pod-475', topic: 'Research / data science', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-475-data-science-and-the-future-of-critical-care-research' },
+  { title: 'Racial Disparities in ICU Outcome', date: '2022-02-28', code: 'SCCM Pod-452 CCM', topic: 'Health equity', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-452-ccm-racial-disparities-in-icu-outcome' },
+  { title: 'Coagulopathy in COVID-19 Patients', date: '2020-09-30', code: 'SCCM Pod-423', topic: 'COVID-19 / hematology', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-423-coagulopathy-in-covid-19-patients' },
+  { title: 'SSC COVID-19 Guidelines', date: '2020-04-03', code: 'SCCM Pod-409', topic: 'COVID-19 / sepsis guidelines', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-409-ssc-covid-19-guidelines' },
+  { title: 'Post-ICU Clinics and Peer Support Groups to Reduce PICS', date: '2019-10-06', code: 'SCCM Pod-396', topic: 'Post-ICU syndrome', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-396-post-icu-clinics-and-peer-support-groups-to-reduce-post-intensive-care-syndrome-(pics)' },
+  { title: '2018 PADIS Guidelines', date: '2019-01-16', code: 'SCCM Pod-376', topic: 'Sedation / delirium guidelines', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-376-2018-padis-guidelines' },
+  { title: 'Achieving Fluid Balance', date: '2018-08-09', code: 'SCCM Pod-368', topic: 'Fluid management', url: 'https://www.sccm.org/communications/sccm-podcast/sccm-podcast-all-episodes/sccm-pod-368-achieving-fluid-balance' },
+];
+
+function fmtShortDate(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+// ─── GUEST APPEARANCES ──────────────────────────────────────────────────────
+const guestAppearances = [
+  {
+    title: 'UPDATE: What You Need to Know NOW about COVID-19',
+    show: 'The Hard Way With Joe De Sena (formerly Spartan Up!)',
+    date: '2020-11-30',
+    note: 'Interviewed by Joe De Sena early in the pandemic, running UVA’s COVID ICU at the time.',
+    url: 'https://podcasts.apple.com/us/podcast/update-what-you-need-to-know-now-about-covid-19-kyle/id952870930?i=1000500836494',
+  },
+];
 // ────────────────────────────────────────────────────────────────────────────
 ---
 
@@ -57,6 +108,54 @@ const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${P
     <!-- Episode content -->
     <div id="episode-content" style="display:none"></div>
   </div>
+
+  <section class="external-section">
+    <div class="container">
+      <h2 class="external-heading">iCritical Care — SCCM Podcast</h2>
+      <p class="external-intro">
+        I've been a volunteer rotating host for the Society of Critical Care Medicine's podcast,
+        iCritical Care, since 2018. Here are the episodes I've hosted — click through to listen
+        on SCCM's site.
+      </p>
+      <ul class="external-list">
+        {sccmEpisodes.map((ep) => (
+          <li class="external-item">
+            <a href={ep.url} target="_blank" rel="noopener noreferrer" class="external-title">
+              {ep.title}
+              <svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+            <span class="external-meta">{ep.code} &middot; {fmtShortDate(ep.date)} &middot; {ep.topic}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="external-section external-section-alt">
+    <div class="container">
+      <h2 class="external-heading">Guest Appearances</h2>
+      <ul class="external-list">
+        {guestAppearances.map((ep) => (
+          <li class="external-item">
+            <a href={ep.url} target="_blank" rel="noopener noreferrer" class="external-title">
+              {ep.title}
+              <svg class="external-link-icon" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </a>
+            <span class="external-meta">{ep.show} &middot; {fmtShortDate(ep.date)}</span>
+            {ep.note && <p class="external-note">{ep.note}</p>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
 </BaseLayout>
 
 <script define:vars={{ MANIFEST_URL, FILES_BASE_URL }}>
@@ -310,10 +409,97 @@ const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${P
     transform: none;
   }
 
+  /* ── External Sections (SCCM host list, Guest Appearances) ─────────────── */
+  .external-section {
+    padding: 3rem 2rem;
+    border-top: 1px solid #e2e8f0;
+  }
+
+  .external-section-alt {
+    background: var(--light-gray);
+  }
+
+  .external-heading {
+    max-width: 720px;
+    margin: 0 auto 0.6rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--primary-green);
+  }
+
+  .external-intro {
+    max-width: 720px;
+    margin: 0 auto 1.75rem;
+    color: var(--text-light);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+
+  .external-list {
+    max-width: 720px;
+    margin: 0 auto;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .external-item {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
+
+  .external-item:first-child {
+    padding-top: 0;
+  }
+
+  .external-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .external-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+
+  .external-title:hover {
+    color: var(--primary-green);
+  }
+
+  .external-link-icon {
+    flex-shrink: 0;
+    opacity: 0.55;
+  }
+
+  .external-meta {
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+
+  .external-note {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    font-style: italic;
+    margin-top: 0.15rem;
+  }
+
   /* ── Responsive ─────────────────────────────────────────────────────────── */
   @media (max-width: 640px) {
     .episode-card {
       padding: 1.25rem;
+    }
+
+    .external-section {
+      padding: 2.5rem 1.25rem;
     }
   }
 </style>
