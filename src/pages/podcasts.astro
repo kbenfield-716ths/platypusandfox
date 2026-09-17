@@ -29,6 +29,15 @@ const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${P
   </section>
 
   <div class="container podcasts-body">
+    <div class="ai-disclosure">
+      <p>
+        Note: These podcasts were developed through my choice of articles and prompts in Google
+        Notebook, so yes these are AI voices working through educational ideas I came up with. I
+        am responsible for the science errors not the machine; however, the machine butchers a
+        few words.
+      </p>
+    </div>
+
     <!-- Loading state -->
     <div id="loading-state" class="loading-state">
       <div class="spinner"></div>
@@ -114,23 +123,11 @@ const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${P
     const filename = getFilename(episode.filename);
     const dateStr = episode.date ? `<span class="episode-date">${formatDate(episode.date)}</span>` : '';
     const durationStr = episode.duration ? `<span class="episode-duration">${escapeHtml(episode.duration)}</span>` : '';
+    const hasMeta = dateStr || durationStr;
 
     return `
       <div class="episode-card">
-        <div class="episode-card-header">
-          <div class="podcast-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-              <line x1="12" y1="19" x2="12" y2="23"></line>
-              <line x1="8" y1="23" x2="16" y2="23"></line>
-            </svg>
-          </div>
-          <div class="episode-meta">
-            ${dateStr}
-            ${durationStr}
-          </div>
-        </div>
+        ${hasMeta ? `<div class="episode-meta">${dateStr}${durationStr}</div>` : ''}
         <h3 class="episode-title">${escapeHtml(episode.title)}</h3>
         ${episode.description ? `<p class="episode-description">${escapeHtml(episode.description)}</p>` : ''}
         <audio class="episode-player" controls preload="none" src="${audioUrl}"></audio>
@@ -151,7 +148,7 @@ const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${P
   loadEpisodes();
 </script>
 
-<style>
+<style is:global>
   /* ── Podcasts Hero ──────────────────────────────────────────────────────── */
   .podcasts-hero {
     background: linear-gradient(135deg, var(--primary-green) 0%, var(--dark-teal) 100%);
@@ -178,11 +175,30 @@ const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${P
     padding: 3rem 2rem 5rem;
   }
 
+  /* ── AI Disclosure ──────────────────────────────────────────────────────── */
+  .ai-disclosure {
+    max-width: 720px;
+    margin: 0 auto 2.5rem;
+    background: var(--cream);
+    border-left: 3px solid var(--primary-orange);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+
+  .ai-disclosure p {
+    font-size: 0.88rem;
+    color: var(--text-dark);
+    line-height: 1.65;
+  }
+
   .library-updated {
     text-align: right;
     font-size: 0.85rem;
     color: var(--text-light);
     margin-bottom: 2rem;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   /* ── Loading / Error / Empty ───────────────────────────────────────────── */
@@ -234,35 +250,10 @@ const FILES_BASE_URL = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${P
     box-shadow: 0 4px 20px rgba(45, 122, 77, 0.12);
   }
 
-  .episode-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .podcast-icon {
-    width: 44px;
-    height: 44px;
-    background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-orange) 100%);
-    border-radius: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    flex-shrink: 0;
-  }
-
-  .podcast-icon svg {
-    width: 22px;
-    height: 22px;
-  }
-
   .episode-meta {
     display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 0.35rem;
+    align-items: center;
+    gap: 0.6rem;
   }
 
   .episode-date {
